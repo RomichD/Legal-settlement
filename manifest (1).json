@@ -1,0 +1,26 @@
+{
+  "background_color": "#4d85c9",
+  "description": "Legal-settlement",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "Legal-settlement",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "Legal-settlement",
+  "start_url": "/",
+  "theme_color": "#2bba6f",
+  "id": "Юридический расчётчик",
+  "lang": "ru",
+  "display_override": [
+    "fullscreen",
+    "standalone",
+    "window-controls-overlay",
+    "minimal-ui"
+  ],
+  "prefer_related_applications": true,
+  "categories": [
+    "business",
+    "finance",
+    "government"
+  ]
+}
