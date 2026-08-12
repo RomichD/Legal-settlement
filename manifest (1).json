@@ -1,45 +1,34 @@
+```джсон
 {
-"short_name": "Legal settlement",
-"name": "Legal settlement",
-"start_url": "/Универсальный расчётчик.html",
-"display": "standalone",
-"background_color": "#4d85c9",
-"theme_color": "#2bba6f",
-"icons": 
+"короткое_имя": "Юридическое урегулирование",
+"имя": "Юридическое урегулирование",
+"начальный_url": "/Универсальный расчётчик.html",
+"дисплей": "автономный",
+"цвет_фона": "#4d85c9",
+"цвет_темы": "#2bba6f",
+"описание": "Юридическое урегулирование",
+"дир": "лтр",
+"ориентация": "любой",
+"область применения": "/",
+"ид": "Юридический расчётчик",
+"ланг": "ру",
+"предпочитаю_связанные_приложения": ложный,
+"категории": [
+"бизнес",
+"финансы",
+"правительство"
+],
+"иконы": [
 {
-"src": "icon-192x192.png",
-"sizes": "192x192",
-"type": "image/png"
+"источник": "icon-192x192.png",
+"размеры": "192х192",
+"тип": "изображение/png"
 },
 {
-"src": "launchericon-192x192.png",
-"sizes": "512x512",
-"type": "image/png"
+"источник": "icon-512x512.png",
+"размеры": "512х512",
+"тип": "изображение/png"
 }
-
-{
-  "background_color": "#4d85c9",
-  "description": "Legal-settlement",
-  "dir": "ltr",
-  "display": "standalone",
-  "name": "Legal-settlement",
-  "orientation": "any",
-  "scope": "/",
-  "short_name": "Legal-settlement",
-  "start_url": "/",
-  "theme_color": "#2bba6f",
-  "id": "Юридический расчётчик",
-  "lang": "ru",
-  "display_override": [
-    "fullscreen",
-    "standalone",
-    "window-controls-overlay",
-    "minimal-ui"
-  ],
-  "prefer_related_applications": true,
-  "categories": [
-    "business",
-    "finance",
-    "government"
-  ]
+]
 }
+```
