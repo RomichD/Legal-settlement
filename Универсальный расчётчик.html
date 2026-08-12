@@ -1,0 +1,967 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Юридический калькулятор</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f5f7fa;
+    padding: 20px;
+    color: #333;
+}
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+    overflow: hidden;
+}
+h1 {
+    background: #1a237e;
+    color: #fff;
+    margin: 0;
+    padding: 20px 25px;
+    font-size: 24px;
+    font-weight: 500;
+}
+.tabs {
+    display: flex;
+    flex-wrap: wrap;
+    background: #e8eaf6;
+    border-bottom: 2px solid #c5cae9;
+}
+.tab-btn {
+    flex: 1 0 auto;
+    padding: 12px 16px;
+    background: transparent;
+    border: none;
+    font-size: 15px;
+    font-weight: 600;
+    color: #3949ab;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-bottom: 3px solid transparent;
+    text-align: center;
+    min-width: 100px;
+}
+.tab-btn:hover { background: #d5d8f0; }
+.tab-btn.active {
+    background: #fff;
+    border-bottom: 3px solid #1a237e;
+    color: #1a237e;
+}
+.tab-content { display: none; padding: 25px; animation: fadeIn 0.25s ease; }
+.tab-content.active { display: block; }
+@keyframes fadeIn { from { opacity: 0.4; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.form-group { margin-bottom: 18px; }
+label { display: block; font-weight: 500; margin-bottom: 5px; color: #37474f; }
+input, select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #cfd8dc;
+    border-radius: 6px;
+    font-size: 16px;
+    background: #fafafa;
+    transition: border 0.2s;
+}
+input:focus, select:focus {
+    border-color: #1a237e;
+    outline: none;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(26,35,126,0.15);
+}
+.btn {
+    background: #1a237e;
+    color: #fff;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 8px;
+    width: 100%;
+}
+.btn:hover { background: #0d1559; }
+.result-box {
+    margin-top: 20px;
+    padding: 18px;
+    background: #e8f5e9;
+    border-left: 5px solid #2e7d32;
+    border-radius: 6px;
+    font-size: 15px;
+    line-height: 1.6;
+    color: #1b5e20;
+    max-height: 600px;
+    overflow-y: auto;
+}
+.result-box.error { background: #ffebee; border-color: #c62828; color: #b71c1c; }
+.inline-group { display: flex; gap: 12px; flex-wrap: wrap; }
+.inline-group .form-group { flex: 1; min-width: 120px; }
+@media (max-width: 600px) {
+    .tab-btn { font-size: 13px; padding: 10px 8px; min-width: 60px; }
+    .container { border-radius: 0; }
+    h1 { font-size: 20px; padding: 15px; }
+}
+.radio-group { display: flex; gap: 20px; margin-top: 5px; }
+.radio-group label { font-weight: normal; display: flex; align-items: center; gap: 6px; }
+.radio-group input[type="radio"] { width: auto; }
+.table-wrapper { overflow-x: auto; margin: 15px 0; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+table th { background: #e8eaf6; padding: 10px 8px; text-align: left; font-weight: 600; }
+table td { padding: 8px; border-bottom: 1px solid #e0e0e0; }
+table input { width: 100%; padding: 6px 8px; border: 1px solid #cfd8dc; border-radius: 4px; font-size: 14px; background: #fff; }
+.add-row-btn {
+    background: #3949ab;
+    color: #fff;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-top: 6px;
+}
+.add-row-btn:hover { background: #1a237e; }
+.payment-block {
+    margin-top: 15px;
+    padding: 12px;
+    background: #f3f4f6;
+    border-radius: 6px;
+}
+.payment-block .form-group { margin-bottom: 10px; }
+.scroll-table {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-top: 15px;
+}
+.scroll-table table th {
+    position: sticky;
+    top: 0;
+    background: #e8eaf6;
+    z-index: 2;
+}
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>⚖️ Универсальный юридический калькулятор</h1>
+
+    <div class="tabs" id="tabs">
+        <button class="tab-btn active" data-tab="tab1">Проценты по займу</button>
+        <button class="tab-btn" data-tab="tab2">Неустойка</button>
+        <button class="tab-btn" data-tab="tab3">Простые дроби</button>
+        <button class="tab-btn" data-tab="tab4">Кредитная карта</button>
+        <button class="tab-btn" data-tab="tab5">Срок исковой давности</button>
+    </div>
+
+    <!-- ========== ВКЛАДКА 1 ========== -->
+    <div id="tab1" class="tab-content active">
+        <h2>Расчёт процентов по займу (помесячно)</h2>
+        <div class="form-group"><label>Сумма займа (руб.)</label><input type="number" id="loan-amount" value="100000" step="any"></div>
+        <div class="form-group"><label>Годовая ставка (% годовых, например 15)</label><input type="number" id="loan-rate" value="15" step="0.01"></div>
+        <div class="form-group"><label>Дата выдачи (ГГГГ-ММ-ДД)</label><input type="date" id="loan-start" value="2025-01-01"></div>
+        <div class="form-group"><label>Дата расчёта (ГГГГ-ММ-ДД)</label><input type="date" id="loan-end" value="2026-06-01"></div>
+        <button class="btn" onclick="calcLoanInterest()">Рассчитать проценты</button>
+        <div id="loan-result" class="result-box">Результат появится здесь</div>
+    </div>
+
+    <!-- ========== ВКЛАДКА 2 ========== -->
+    <div id="tab2" class="tab-content">
+        <h2>Расчёт неустойки (с частичными погашениями)</h2>
+        <div class="form-group"><label>Сумма задолженности (руб.)</label><input type="number" id="penalty-debt" value="45000" step="any"></div>
+        <div class="form-group"><label>Дата начала просрочки (ГГГГ-ММ-ДД)</label><input type="date" id="penalty-start" value="2023-09-14"></div>
+        <div class="form-group"><label>Дата окончания просрочки (ГГГГ-ММ-ДД)</label><input type="date" id="penalty-end" value="2024-03-06"></div>
+        <div class="form-group"><label>Тип процентной ставки</label>
+            <div class="radio-group">
+                <label><input type="radio" name="percent-type" value="daily" checked> Дневной процент</label>
+                <label><input type="radio" name="percent-type" value="yearly"> Годовой процент</label>
+            </div>
+        </div>
+        <div class="form-group"><label>Значение процента (например, 0.26 для дневного или 26 для годового)</label><input type="number" id="penalty-percent" value="0.26" step="0.001"></div>
+        <div class="form-group"><label>Ограничение неустойки (% от суммы долга, 0 = без ограничения)</label><input type="number" id="penalty-limit" value="100" step="any"></div>
+        <div class="payment-block">
+            <label><strong>Частичные погашения (дата и сумма)</strong></label>
+            <div class="table-wrapper">
+                <table id="penalty-payment-table">
+                    <thead><tr><th>Дата оплаты</th><th>Сумма (руб.)</th><th></th></tr></thead>
+                    <tbody id="penalty-payment-tbody">
+                        <tr><td><input type="date" class="penalty-pay-date" value="2023-10-01"></td><td><input type="number" class="penalty-pay-sum" value="5000" step="any"></td><td><button class="add-row-btn" onclick="removePenaltyRow(this)">✕</button></td></tr>
+                        <tr><td><input type="date" class="penalty-pay-date" value="2023-11-15"></td><td><input type="number" class="penalty-pay-sum" value="3000" step="any"></td><td><button class="add-row-btn" onclick="removePenaltyRow(this)">✕</button></td></tr>
+                        <tr><td><input type="date" class="penalty-pay-date" value="2024-01-10"></td><td><input type="number" class="penalty-pay-sum" value="2000" step="any"></td><td><button class="add-row-btn" onclick="removePenaltyRow(this)">✕</button></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <button class="add-row-btn" onclick="addPenaltyRow()">➕ Добавить частичное погашение</button>
+        </div>
+        <button class="btn" onclick="calcPenalty()" style="margin-top:15px;">Рассчитать неустойку</button>
+        <div id="penalty-result" class="result-box">Результат появится здесь</div>
+    </div>
+
+    <!-- ========== ВКЛАДКА 3 ========== -->
+    <div id="tab3" class="tab-content">
+        <h2>Арифметика простых дробей</h2>
+        <div class="inline-group">
+            <div class="form-group"><label>Числитель 1</label><input type="number" id="frac-num1" value="2" step="1"></div>
+            <div class="form-group"><label>Знаменатель 1</label><input type="number" id="frac-den1" value="3" step="1"></div>
+        </div>
+        <div class="inline-group">
+            <div class="form-group"><label>Числитель 2</label><input type="number" id="frac-num2" value="4" step="1"></div>
+            <div class="form-group"><label>Знаменатель 2</label><input type="number" id="frac-den2" value="5" step="1"></div>
+        </div>
+        <div class="form-group"><label>Операция (+, -, *, /)</label>
+            <select id="frac-op"><option value="+">+</option><option value="-">-</option><option value="*">*</option><option value="/">/</option></select>
+        </div>
+        <button class="btn" onclick="calcFraction()">Вычислить</button>
+        <div id="frac-result" class="result-box">Результат появится здесь</div>
+    </div>
+
+    <!-- ========== ВКЛАДКА 4 (ОКОНЧАТЕЛЬНАЯ ВЕРСИЯ) ========== -->
+    <div id="tab4" class="tab-content">
+        <h2>Кредитная карта (расчёт с минимальными платежами)</h2>
+
+        <div class="form-group">
+            <label>Лимит кредитования (руб.)</label>
+            <input type="number" id="card-limit" value="100000" step="any">
+        </div>
+        <div class="form-group">
+            <label>Полученная сумма (руб.)</label>
+            <input type="number" id="card-amount" value="30000" step="any">
+        </div>
+        <div class="form-group">
+            <label>Дата получения (ГГГГ-ММ-ДД)</label>
+            <input type="date" id="card-date" value="2023-01-18">
+        </div>
+        <div class="form-group">
+            <label>Годовая ставка (% годовых, например 25)</label>
+            <input type="number" id="card-rate-percent" value="25" step="0.01">
+        </div>
+
+        <div class="inline-group">
+            <div class="form-group">
+                <label>Минимальный платёж (% от баланса, например 5)</label>
+                <input type="number" id="card-min-percent" value="5" step="0.1">
+            </div>
+            <div class="form-group">
+                <label>Фиксированный минимум (руб.)</label>
+                <input type="number" id="card-min-fixed" value="500" step="any">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Фиксированный платёж (опционально, если указан – заменяет расчётный минимум)</label>
+            <input type="number" id="card-fixed-payment" value="" step="any" placeholder="Например, 3000">
+        </div>
+
+        <!-- Таблица внесённых сумм -->
+        <div class="payment-block">
+            <label><strong>Внесённые суммы в счёт погашения (фактические платежи)</strong></label>
+            <div class="table-wrapper">
+                <table id="card-extra-payment-table">
+                    <thead><tr><th>Дата внесения</th><th>Сумма (руб.)</th><th></th></tr></thead>
+                    <tbody id="card-extra-payment-tbody">
+                        <tr><td><input type="date" class="card-extra-date" value="2023-02-16"></td><td><input type="number" class="card-extra-sum" value="12000" step="any"></td><td><button class="add-row-btn" onclick="removeCardExtraRow(this)">✕</button></td></tr>
+                        <tr><td><input type="date" class="card-extra-date" value="2023-03-18"></td><td><input type="number" class="card-extra-sum" value="1500" step="any"></td><td><button class="add-row-btn" onclick="removeCardExtraRow(this)">✕</button></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <button class="add-row-btn" onclick="addCardExtraRow()">➕ Добавить внесённую сумму</button>
+        </div>
+
+        <button class="btn" onclick="calcCreditCard()">Рассчитать график платежей</button>
+        <div id="card-result" class="result-box">Результат появится здесь</div>
+    </div>
+
+    <!-- ========== ВКЛАДКА 5 ========== -->
+    <div id="tab5" class="tab-content">
+        <h2>Срок исковой давности</h2>
+        <div class="form-group"><label>Дата подачи заявления о судебном приказе (ГГГГ-ММ-ДД)</label><input type="date" id="lim-order" value="2023-11-10"></div>
+        <div class="form-group"><label>Дата отмены судебного приказа (ГГГГ-ММ-ДД)</label><input type="date" id="lim-cancel" value="2024-12-19"></div>
+        <div class="form-group"><label>Дата подачи искового заявления (ГГГГ-ММ-ДД)</label><input type="date" id="lim-claim" value="2025-11-12"></div>
+        <div style="margin-top:10px;">
+            <label><strong>Периодические платежи (дата и сумма)</strong></label>
+            <div class="table-wrapper">
+                <table id="payment-table">
+                    <thead><tr><th>Дата платежа</th><th>Сумма (руб.)</th><th></th></tr></thead>
+                    <tbody id="payment-tbody">
+                        <tr><td><input type="date" class="pay-date" value="2022-05-12"></td><td><input type="number" class="pay-sum" value="1500" step="any"></td><td><button class="add-row-btn" onclick="removeRow(this)">✕</button></td></tr>
+                        <tr><td><input type="date" class="pay-date" value="2022-06-12"></td><td><input type="number" class="pay-sum" value="1500" step="any"></td><td><button class="add-row-btn" onclick="removeRow(this)">✕</button></td></tr>
+                        <tr><td><input type="date" class="pay-date" value="2022-07-12"></td><td><input type="number" class="pay-sum" value="1500" step="any"></td><td><button class="add-row-btn" onclick="removeRow(this)">✕</button></td></tr>
+                        <tr><td><input type="date" class="pay-date" value="2022-08-12"></td><td><input type="number" class="pay-sum" value="1500" step="any"></td><td><button class="add-row-btn" onclick="removeRow(this)">✕</button></td></tr>
+                        <tr><td><input type="date" class="pay-date" value="2022-09-12"></td><td><input type="number" class="pay-sum" value="1500" step="any"></td><td><button class="add-row-btn" onclick="removeRow(this)">✕</button></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <button class="add-row-btn" onclick="addRow()">➕ Добавить платёж</button>
+        </div>
+        <button class="btn" onclick="calcLimitation()" style="margin-top:18px;">Проверить сроки</button>
+        <div id="lim-result" class="result-box">Результат появится здесь</div>
+    </div>
+</div>
+
+<script>
+// ============================================================
+// Вкладки
+// ============================================================
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        this.classList.add('active');
+        document.getElementById(this.dataset.tab).classList.add('active');
+    });
+});
+
+// ============================================================
+// Утилиты
+// ============================================================
+function parseDate(str) {
+    const parts = str.split('-');
+    return new Date(parts[0], parts[1]-1, parts[2]);
+}
+function formatDate(d) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,'0');
+    const day = String(d.getDate()).padStart(2,'0');
+    return `${y}-${m}-${day}`;
+}
+function daysBetween(d1, d2) {
+    const ms = Math.abs(d2 - d1);
+    return Math.floor(ms / (1000*60*60*24));
+}
+function addMonths(d, months) {
+    let r = new Date(d);
+    r.setMonth(r.getMonth() + months);
+    return r;
+}
+function addDays(d, days) {
+    let r = new Date(d);
+    r.setDate(r.getDate() + days);
+    return r;
+}
+function isLeapYear(year) {
+    return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+}
+function daysInYear(year) {
+    return isLeapYear(year) ? 366 : 365;
+}
+function formatPeriod(days) {
+    if (days === 0) return '0 дней';
+    const years = Math.floor(days / 365);
+    const months = Math.floor((days % 365) / 30);
+    const d = days - years*365 - months*30;
+    let parts = [];
+    if (years > 0) parts.push(years + ' ' + getYearWord(years));
+    if (months > 0) parts.push(months + ' ' + getMonthWord(months));
+    if (d > 0) parts.push(d + ' ' + getDayWord(d));
+    return parts.join(' ');
+}
+function getYearWord(n) {
+    if (n % 10 === 1 && n % 100 !== 11) return 'год';
+    if (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20)) return 'года';
+    return 'лет';
+}
+function getMonthWord(n) {
+    if (n % 10 === 1 && n % 100 !== 11) return 'месяц';
+    if (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20)) return 'месяца';
+    return 'месяцев';
+}
+function getDayWord(n) {
+    if (n % 10 === 1 && n % 100 !== 11) return 'день';
+    if (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20)) return 'дня';
+    return 'дней';
+}
+
+// ============================================================
+// 1. Проценты по займу
+// ============================================================
+function calcLoanInterest() {
+    const principal = parseFloat(document.getElementById('loan-amount').value);
+    const ratePercent = parseFloat(document.getElementById('loan-rate').value);
+    const startStr = document.getElementById('loan-start').value;
+    const endStr = document.getElementById('loan-end').value;
+    const resultDiv = document.getElementById('loan-result');
+    if (!principal || !ratePercent || !startStr || !endStr) {
+        resultDiv.className = 'result-box error';
+        resultDiv.textContent = 'Заполните все поля.';
+        return;
+    }
+    const start = parseDate(startStr);
+    const end = parseDate(endStr);
+    if (end < start) {
+        resultDiv.className = 'result-box error';
+        resultDiv.textContent = 'Дата расчёта должна быть позже даты выдачи.';
+        return;
+    }
+    const rate = ratePercent / 100;
+    const totalDays = daysBetween(start, end);
+    const totalInterest = principal * rate * totalDays / 365;
+    let monthlyDetails = [];
+    let current = new Date(start);
+    let nextMonth = new Date(current.getFullYear(), current.getMonth() + 1, 1);
+    while (current < end) {
+        const monthStart = new Date(current);
+        const monthEnd = nextMonth > end ? new Date(end) : new Date(nextMonth);
+        const daysInMonth = daysBetween(monthStart, monthEnd);
+        if (daysInMonth === 0) break;
+        const monthInterest = principal * rate * daysInMonth / 365;
+        monthlyDetails.push(
+            `${monthStart.toLocaleString('ru', {month:'long', year:'numeric'})}: ${daysInMonth} дн. → ${monthInterest.toFixed(2)} руб.`
+        );
+        current = new Date(nextMonth);
+        nextMonth = new Date(current.getFullYear(), current.getMonth() + 1, 1);
+    }
+    const output =
+        `Сумма займа: ${principal} руб.\n` +
+        `Годовая ставка: ${ratePercent}%\n` +
+        `Период: с ${formatDate(start)} по ${formatDate(end)} (${totalDays} дней)\n` +
+        `Всего процентов: ${totalInterest.toFixed(2)} руб.\n\n` +
+        `Помесячный расчёт:\n${monthlyDetails.join('\n')}`;
+    resultDiv.className = 'result-box';
+    resultDiv.textContent = output;
+}
+
+// ============================================================
+// 2. Неустойка
+// ============================================================
+function addPenaltyRow() {
+    const tbody = document.getElementById('penalty-payment-tbody');
+    const tr = document.createElement('tr');
+    const today = new Date().toISOString().slice(0,10);
+    tr.innerHTML = `
+        <td><input type="date" class="penalty-pay-date" value="${today}"></td>
+        <td><input type="number" class="penalty-pay-sum" value="1000" step="any"></td>
+        <td><button class="add-row-btn" onclick="removePenaltyRow(this)">✕</button></td>
+    `;
+    tbody.appendChild(tr);
+}
+function removePenaltyRow(btn) {
+    const tr = btn.closest('tr');
+    if (document.querySelectorAll('#penalty-payment-tbody tr').length > 1) {
+        tr.remove();
+    } else {
+        alert('Должна быть хотя бы одна строка.');
+    }
+}
+function calcPenalty() {
+    const debt = parseFloat(document.getElementById('penalty-debt').value);
+    const startStr = document.getElementById('penalty-start').value;
+    const endStr = document.getElementById('penalty-end').value;
+    const percentType = document.querySelector('input[name="percent-type"]:checked').value;
+    const percentVal = parseFloat(document.getElementById('penalty-percent').value);
+    const limitPercent = parseFloat(document.getElementById('penalty-limit').value) || 0;
+    const resultDiv = document.getElementById('penalty-result');
+    if (isNaN(debt) || debt <= 0) {
+        resultDiv.className = 'result-box error';
+        resultDiv.textContent = 'Введите корректную сумму задолженности.';
+        return;
+    }
+    if (!startStr || !endStr) {
+        resultDiv.className = 'result-box error';
+        resultDiv.textContent = 'Заполните даты начала и окончания просрочки.';
+        return;
+    }
+    if (isNaN(percentVal) || percentVal < 0) {
+        resultDiv.className = 'result-box error';
+        resultDiv.textContent = 'Введите корректное значение процента.';
+        return;
+    }
+    const start = parseDate(startStr);
+    const end = parseDate(endStr);
+    if (end <= start) {
+        resultDiv.className = 'result-box error';
+        resultDiv.textContent = 'Дата окончания должна быть позже даты начала.';
+        return;
+    }
+    const rows = document.querySelectorAll('#penalty-payment-tbody tr');
+    const payments = [];
+    rows.forEach(tr => {
+        const dateVal = tr.querySelector('.penalty-pay-date').value;
+        const sumVal = tr.querySelector('.penalty-pay-sum').value;
+        if (dateVal && sumVal) {
+            const dt = parseDate(dateVal);
+            if (dt >= start && dt <= end) {
+                payments.push({ date: dt, sum: parseFloat(sumVal) });
+            }
+        }
+    });
+    payments.sort((a, b) => a.date - b.date);
+
+    let totalPenalty = 0;
+    let details = [];
+    let currentDebt = debt;
+    let currentDate = new Date(start);
+
+    function calcPeriodPenalty(amount, fromDate, toDate) {
+        if (amount <= 0 || fromDate >= toDate) return 0;
+        const days = daysBetween(fromDate, toDate);
+        if (days === 0) return 0;
+        let penalty = 0;
+        if (percentType === 'daily') {
+            const dailyRate = percentVal / 100;
+            penalty = amount * dailyRate * days;
+        } else {
+            let current = new Date(fromDate);
+            while (current < toDate) {
+                const year = current.getFullYear();
+                const dInYear = daysInYear(year);
+                const nextYear = new Date(year + 1, 0, 1);
+                const segmentEnd = nextYear < toDate ? nextYear : toDate;
+                const segDays = daysBetween(current, segmentEnd);
+                if (segDays === 0) break;
+                const yearRate = percentVal / 100;
+                penalty += amount * yearRate * (segDays / dInYear);
+                current = new Date(segmentEnd);
+            }
+        }
+        return penalty;
+    }
+
+    let lastDate = new Date(start);
+    for (let i = 0; i <= payments.length; i++) {
+        let nextDate;
+        if (i < payments.length) {
+            nextDate = new Date(payments[i].date);
+        } else {
+            nextDate = new Date(end);
+        }
+        if (nextDate > lastDate) {
+            const periodPenalty = calcPeriodPenalty(currentDebt, lastDate, nextDate);
+            totalPenalty += periodPenalty;
+            if (periodPenalty > 0) {
+                details.push(
+                    `Период с ${formatDate(lastDate)} по ${formatDate(nextDate)}: ` +
+                    `долг ${currentDebt.toFixed(2)} руб. → ${periodPenalty.toFixed(2)} руб.`
+                );
+            }
+        }
+        if (i < payments.length) {
+            const paySum = payments[i].sum;
+            if (paySum > currentDebt) {
+                details.push(`⚠️ Платёж ${formatDate(payments[i].date)} на ${paySum.toFixed(2)} руб. превышает остаток долга (${currentDebt.toFixed(2)} руб.). Учитываем только ${currentDebt.toFixed(2)} руб.`);
+                currentDebt = 0;
+            } else {
+                currentDebt -= paySum;
+                details.push(`Платёж ${formatDate(payments[i].date)} на ${paySum.toFixed(2)} руб. Остаток долга: ${currentDebt.toFixed(2)} руб.`);
+            }
+            lastDate = new Date(nextDate);
+        }
+    }
+
+    if (limitPercent > 0) {
+        const maxPenalty = debt * (limitPercent / 100);
+        if (totalPenalty > maxPenalty) {
+            totalPenalty = maxPenalty;
+            details.push(`Ограничение: не более ${limitPercent}% от суммы долга (${maxPenalty.toFixed(2)} руб.)`);
+        }
+    }
+
+    const summary = `Итоговая неустойка: ${totalPenalty.toFixed(2)} руб.\n\nДетали расчёта:\n${details.join('\n')}`;
+    resultDiv.className = 'result-box';
+    resultDiv.textContent = summary;
+}
+
+// ============================================================
+// 3. Простые дроби
+// ============================================================
+function gcd(a, b) {
+    a = Math.abs(a); b = Math.abs(b);
+    while (b) { [a, b] = [b, a % b]; }
+    return a;
+}
+function calcFraction() {
+    const n1 = parseInt(document.getElementById('frac-num1').value);
+    const d1 = parseInt(document.getElementById('frac-den1').value);
+    const n2 = parseInt(document.getElementById('frac-num2').value);
+    const d2 = parseInt(document.getElementById('frac-den2').value);
+    const op = document.getElementById('frac-op').value;
+    const resultDiv = document.getElementById('frac-result');
+    if (d1 === 0 || d2 === 0) {
+        resultDiv.className = 'result-box error';
+        resultDiv.textContent = 'Знаменатель не может быть нулём.';
+        return;
+    }
+    let num, den;
+    switch (op) {
+        case '+': num = n1*d2 + n2*d1; den = d1*d2; break;
+        case '-': num = n1*d2 - n2*d1; den = d1*d2; break;
+        case '*': num = n1*n2; den = d1*d2; break;
+        case '/': num = n1*d2; den = d1*n2; break;
+        default:
+            resultDiv.className = 'result-box error';
+            resultDiv.textContent = 'Неизвестная операция.';
+            return;
+    }
+    if (den === 0) {
+        resultDiv.className = 'result-box error';
+        resultDiv.textContent = 'Деление на ноль в результате.';
+        return;
+    }
+    const g = gcd(num, den);
+    num /= g; den /= g;
+    const decimal = num / den;
+    resultDiv.className = 'result-box';
+    resultDiv.textContent = `Результат: ${num}/${den}  (≈ ${decimal.toFixed(6)})`;
+}
+
+// ============================================================
+// 4. Кредитная карта (ОКОНЧАТЕЛЬНАЯ ВЕРСИЯ)
+// ============================================================
+function addCardExtraRow() {
+    const tbody = document.getElementById('card-extra-payment-tbody');
+    const tr = document.createElement('tr');
+    const today = new Date().toISOString().slice(0,10);
+    tr.innerHTML = `
+        <td><input type="date" class="card-extra-date" value="${today}"></td>
+        <td><input type="number" class="card-extra-sum" value="1000" step="any"></td>
+        <td><button class="add-row-btn" onclick="removeCardExtraRow(this)">✕</button></td>
+    `;
+    tbody.appendChild(tr);
+}
+function removeCardExtraRow(btn) {
+    const tr = btn.closest('tr');
+    if (document.querySelectorAll('#card-extra-payment-tbody tr').length > 1) {
+        tr.remove();
+    } else {
+        alert('Должна быть хотя бы одна строка.');
+    }
+}
+
+function calcCreditCard() {
+    const limit = parseFloat(document.getElementById('card-limit').value) || 0;
+    const amount = parseFloat(document.getElementById('card-amount').value);
+    const dateStr = document.getElementById('card-date').value;
+    const ratePercent = parseFloat(document.getElementById('card-rate-percent').value);
+    const minPercentInput = parseFloat(document.getElementById('card-min-percent').value) || 0;
+    const minPercent = minPercentInput / 100;
+    const minFixed = parseFloat(document.getElementById('card-min-fixed').value) || 0;
+    const fixedPayment = parseFloat(document.getElementById('card-fixed-payment').value) || null;
+
+    const resultDiv = document.getElementById('card-result');
+
+    if (isNaN(amount) || amount <= 0) {
+        resultDiv.className = 'result-box error';
+        resultDiv.textContent = 'Введите корректную полученную сумму.';
+        return;
+    }
+    if (!dateStr) {
+        resultDiv.className = 'result-box error';
+        resultDiv.textContent = 'Укажите дату получения.';
+        return;
+    }
+    if (isNaN(ratePercent) || ratePercent < 0) {
+        resultDiv.className = 'result-box error';
+        resultDiv.textContent = 'Введите корректную годовую ставку.';
+        return;
+    }
+    if (minPercentInput < 0 || minFixed < 0) {
+        resultDiv.className = 'result-box error';
+        resultDiv.textContent = 'Процент и фиксированный минимум не могут быть отрицательными.';
+        return;
+    }
+    if (fixedPayment !== null && fixedPayment < 0) {
+        resultDiv.className = 'result-box error';
+        resultDiv.textContent = 'Фиксированный платёж не может быть отрицательным.';
+        return;
+    }
+
+    const startDate = parseDate(dateStr);
+    const monthlyRate = ratePercent / 100 / 12;
+
+    // Сбор внесённых сумм
+    const extraRows = document.querySelectorAll('#card-extra-payment-tbody tr');
+    let extraPayments = [];
+    extraRows.forEach(tr => {
+        const d = tr.querySelector('.card-extra-date').value;
+        const s = tr.querySelector('.card-extra-sum').value;
+        if (d && s) {
+            const dt = parseDate(d);
+            if (dt >= startDate) {
+                extraPayments.push({ date: dt, sum: parseFloat(s) });
+            }
+        }
+    });
+    extraPayments.sort((a, b) => a.date - b.date);
+
+    let extraByMonth = {};
+    extraPayments.forEach(p => {
+        const key = formatDate(new Date(p.date.getFullYear(), p.date.getMonth(), 1));
+        if (!extraByMonth[key]) extraByMonth[key] = 0;
+        extraByMonth[key] += p.sum;
+    });
+
+    // Расчёт
+    let balance = amount;
+    let monthIndex = 1;
+    let schedule = [];
+    let totalInterest = 0;
+    let totalPaid = 0;
+    const MAX_MONTHS = 600;
+
+    while (monthIndex <= MAX_MONTHS) {
+        const currentDate = addMonths(startDate, monthIndex);
+        let paymentDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), startDate.getDate());
+        if (paymentDate.getMonth() !== currentDate.getMonth()) {
+            paymentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+        }
+
+        // Начисленные проценты за месяц
+        const interest = balance * monthlyRate;
+        totalInterest += interest;
+
+        // Расчёт обязательного платежа (только для информации)
+        let requiredPayment;
+        if (fixedPayment !== null) {
+            requiredPayment = Math.min(fixedPayment, balance + interest);
+        } else {
+            let minPayment = Math.max(balance * minPercent, minFixed);
+            requiredPayment = Math.min(minPayment, balance + interest);
+        }
+
+        // Определяем фактический платёж за месяц
+        const monthKey = formatDate(new Date(paymentDate.getFullYear(), paymentDate.getMonth(), 1));
+        let actualPayment = 0;
+        let extraPayment = 0;
+        if (extraByMonth[monthKey] !== undefined && extraByMonth[monthKey] > 0) {
+            actualPayment = extraByMonth[monthKey];
+            extraPayment = actualPayment;
+            if (actualPayment > balance + interest) {
+                actualPayment = balance + interest;
+                extraPayment = actualPayment;
+            }
+        } else {
+            actualPayment = 0;
+            extraPayment = 0;
+        }
+
+        // Распределение: сначала проценты, остальное – основной долг
+        const principalPaid = actualPayment - interest;
+        const newBalance = balance - principalPaid;
+        balance = Math.max(0, newBalance);
+
+        schedule.push({
+            month: monthIndex,
+            date: formatDate(paymentDate),
+            requiredPayment: requiredPayment,
+            extraPayment: extraPayment,
+            totalPayment: actualPayment,
+            interest: interest,
+            principal: principalPaid,
+            balance: balance
+        });
+
+        totalPaid += actualPayment;
+        monthIndex++;
+
+        // Если долг погашен, выходим из цикла
+        if (balance < 0.01) break;
+    }
+
+    // Итоги
+    const isRepaid = balance < 0.01;
+    const totalMonths = schedule.length;
+    const finalPaymentDate = isRepaid ? schedule[schedule.length-1].date : '— (не погашен)';
+    const totalPaidFormatted = totalPaid.toFixed(2);
+
+    let tableHtml = `<table>
+        <thead><tr>
+            <th>№</th>
+            <th>Дата платежа</th>
+            <th>Обязательный платёж (расчётный)</th>
+            <th>Внесённая сумма</th>
+            <th>Итого платёж</th>
+            <th>Проценты</th>
+            <th>Погашение ОД</th>
+            <th>Остаток долга</th>
+        </tr></thead><tbody>`;
+
+    schedule.forEach(row => {
+        tableHtml += `<tr>
+            <td>${row.month}</td>
+            <td>${row.date}</td>
+            <td>${row.requiredPayment.toFixed(2)}</td>
+            <td>${row.extraPayment.toFixed(2)}</td>
+            <td>${row.totalPayment.toFixed(2)}</td>
+            <td>${row.interest.toFixed(2)}</td>
+            <td>${row.principal.toFixed(2)}</td>
+            <td>${row.balance.toFixed(2)}</td>
+        </tr>`;
+    });
+    tableHtml += `</tbody></table>`;
+
+    const summary =
+        `Лимит: ${limit.toFixed(2)} руб. | Получено: ${amount.toFixed(2)} руб.\n` +
+        `Дата получения: ${formatDate(startDate)}\n` +
+        `Годовая ставка: ${ratePercent}%\n` +
+        `Минимальный платёж: ${minPercentInput}% от баланса, но не менее ${minFixed.toFixed(2)} руб.` +
+        (fixedPayment !== null ? `\nФиксированный платёж (заменяет расчётный): ${fixedPayment.toFixed(2)} руб.` : '') +
+        `\n\nКоличество месяцев: ${totalMonths}` +
+        `\nСтатус погашения: ${isRepaid ? 'Погашен' : 'Не погашен (превышен лимит месяцев)'}` +
+        `\nДата полного погашения: ${finalPaymentDate}` +
+        `\nВсего выплачено: ${totalPaidFormatted} руб.`;
+
+    resultDiv.className = 'result-box';
+    resultDiv.innerHTML = `<pre>${summary}</pre>\n<div class="scroll-table">${tableHtml}</div>`;
+}
+
+// ============================================================
+// 5. Срок исковой давности
+// ============================================================
+function addRow() {
+    const tbody = document.getElementById('payment-tbody');
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+        <td><input type="date" class="pay-date" value="2022-10-12"></td>
+        <td><input type="number" class="pay-sum" value="1500" step="any"></td>
+        <td><button class="add-row-btn" onclick="removeRow(this)">✕</button></td>
+    `;
+    tbody.appendChild(tr);
+}
+function removeRow(btn) {
+    const tr = btn.closest('tr');
+    if (document.querySelectorAll('#payment-tbody tr').length > 1) {
+        tr.remove();
+    } else {
+        alert('Должна быть хотя бы одна строка.');
+    }
+}
+function calcLimitation() {
+    const orderStr = document.getElementById('lim-order').value;
+    const cancelStr = document.getElementById('lim-cancel').value;
+    const claimStr = document.getElementById('lim-claim').value;
+    const resultDiv = document.getElementById('lim-result');
+
+    if (!orderStr || !cancelStr || !claimStr) {
+        resultDiv.className = 'result-box error';
+        resultDiv.textContent = 'Заполните все даты.';
+        return;
+    }
+    const orderDt = parseDate(orderStr);
+    const cancelDt = parseDate(cancelStr);
+    const claimDt = parseDate(claimStr);
+    if (cancelDt < orderDt) {
+        resultDiv.className = 'result-box error';
+        resultDiv.textContent = 'Дата отмены не может быть раньше даты подачи приказа.';
+        return;
+    }
+
+    const suspensionDays = daysBetween(orderDt, cancelDt);
+    const suspensionFormatted = formatPeriod(suspensionDays);
+
+    const rows = document.querySelectorAll('#payment-tbody tr');
+    const payments = [];
+    rows.forEach(tr => {
+        const dateVal = tr.querySelector('.pay-date').value;
+        const sumVal = tr.querySelector('.pay-sum').value;
+        if (dateVal && sumVal) {
+            payments.push({ date: parseDate(dateVal), sum: parseFloat(sumVal) });
+        }
+    });
+    if (payments.length === 0) {
+        resultDiv.className = 'result-box error';
+        resultDiv.textContent = 'Добавьте хотя бы один платёж.';
+        return;
+    }
+
+    let output = [];
+    let expiredEndDates = [];
+    let nonExpiredPaymentDates = [];
+
+    payments.forEach((p, idx) => {
+        const startDate = new Date(p.date);
+        startDate.setDate(startDate.getDate() + 1);
+        const endSimple = addYears(startDate, 3);
+        let status, finalEnd;
+        if (endSimple <= orderDt) {
+            status = 'Истёк до подачи приказа';
+            finalEnd = new Date(endSimple);
+        } else {
+            const daysInOrder = daysBetween(orderDt, cancelDt);
+            const endWithOrder = addDays(endSimple, daysInOrder);
+            const remaining = daysBetween(cancelDt, endWithOrder);
+            if (remaining < 180) {
+                finalEnd = addDays(cancelDt, 180);
+            } else {
+                finalEnd = new Date(endWithOrder);
+            }
+            if (finalEnd < claimDt) {
+                status = 'Истёк (с учётом приказа и удлинения)';
+            } else {
+                status = 'Не истёк';
+            }
+        }
+
+        if (status.includes('Истёк')) {
+            expiredEndDates.push(finalEnd);
+        } else {
+            nonExpiredPaymentDates.push(p.date);
+        }
+
+        output.push(
+            `Платёж ${idx+1} (дата ${formatDate(p.date)}, сумма ${p.sum.toFixed(2)}):\n` +
+            `  Начало срока: ${formatDate(startDate)}\n` +
+            `  Истечение с учётом всех правил: ${formatDate(finalEnd)}\n` +
+            `  Статус: ${status}\n`
+        );
+    });
+
+    let boundaryDate = null;
+    let boundaryMessage = '';
+
+    if (nonExpiredPaymentDates.length > 0) {
+        const minDate = nonExpiredPaymentDates.reduce((a, b) => a < b ? a : b);
+        boundaryDate = minDate;
+        boundaryMessage = `✅ Срок исковой давности не пропущен по платежам, начиная с ${formatDate(boundaryDate)}`;
+    } else {
+        const maxEndDate = expiredEndDates.reduce((a, b) => a > b ? a : b);
+        boundaryDate = maxEndDate;
+        boundaryMessage = `⚠️ Срок исковой давности пропущен по всем платежам. Истечение срока по последнему платежу: ${formatDate(boundaryDate)}`;
+    }
+
+    let expiredSinceMessage = '';
+    if (nonExpiredPaymentDates.length > 0) {
+        let lastExpired = null;
+        if (expiredEndDates.length > 0) {
+            lastExpired = expiredEndDates.reduce((a, b) => a > b ? a : b);
+            expiredSinceMessage = `Срок исковой давности пропущен по платежам до ${formatDate(lastExpired)} (включительно).`;
+        } else {
+            expiredSinceMessage = 'Срок исковой давности не пропущен ни по одному из введённых платежей.';
+        }
+    } else {
+        const maxEndDate = expiredEndDates.reduce((a, b) => a > b ? a : b);
+        expiredSinceMessage = `Срок исковой давности пропущен по платежам до ${formatDate(maxEndDate)} (включительно).`;
+    }
+
+    const summaryLines = [
+        `📅 Период приостановления течения срока: ${suspensionFormatted} (с ${formatDate(orderDt)} по ${formatDate(cancelDt)})`,
+        boundaryMessage,
+        expiredSinceMessage
+    ];
+
+    resultDiv.className = 'result-box';
+    resultDiv.innerHTML =
+        output.join('\n') +
+        '\n\n--- === ИТОГОВЫЕ ВЫВОДЫ === ---\n' +
+        summaryLines.join('\n');
+}
+
+function addYears(d, years) {
+    let newD = new Date(d);
+    newD.setFullYear(newD.getFullYear() + years);
+    if (newD.getMonth() !== d.getMonth()) {
+        newD.setDate(0);
+    }
+    return newD;
+}
+function addDays(d, days) {
+    let r = new Date(d);
+    r.setDate(r.getDate() + days);
+    return r;
+}
+</script>
+</body>
+</html>
