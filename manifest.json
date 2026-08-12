@@ -1,7 +1,7 @@
 {
   "short_name": "ЮрКальк",
   "name": "Юридический калькулятор",
-  "start_url": "Универсальный расчётчик.html",
+  "start_url": "index.html",
   "display": "standalone",
   "background_color": "#f5f7fa",
   "theme_color": "#1a237e",
