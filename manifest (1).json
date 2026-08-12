@@ -1,3 +1,23 @@
+```json
+{
+"short_name": "Legal settlement",
+"name": "Legal settlement",
+"start_url": "/Универсальный расчётчик.html",
+"display": "standalone",
+"background_color": ""#4d85c9"",
+"theme_color": "#2bba6f",
+"icons": 
+{
+"src": "icon-192x192.png",
+"sizes": "192x192",
+"type": "image/png"
+},
+{
+"src": "icon-512x512.png",
+"sizes": "512x512",
+"type": "image/png"
+}
+
 {
   "background_color": "#4d85c9",
   "description": "Legal-settlement",
