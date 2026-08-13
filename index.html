@@ -1593,13 +1593,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     value="${amountValue || ''}" min="0.01" step="0.01">
             </td>
             <td>
-                <button type="button" class="danger-btn">✕</button>
+                <button type="button" class="danger-btn" onclick="this.closest('tr').remove()">Удалить</button>
             </td>
         `;
-
-        row.querySelector('.danger-btn').addEventListener('click', function () {
-            row.remove();
-        });
 
         tbody.appendChild(row);
     }
