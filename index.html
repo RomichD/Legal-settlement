@@ -127,6 +127,17 @@ table input { width: 100%; padding: 6px 8px; border: 1px solid #cfd8dc; border-r
     margin-top: 6px;
 }
 .add-row-btn:hover { background: #1a237e; }
+.danger-btn {
+    background: #dc2626;
+    color: #fff;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-top: 6px;
+}
+.danger-btn:hover { background: #b91c1c; }
 .payment-block {
     margin-top: 15px;
     padding: 12px;
@@ -145,7 +156,6 @@ table input { width: 100%; padding: 6px 8px; border: 1px solid #cfd8dc; border-r
     background: #e8eaf6;
     z-index: 2;
 }
-/* стили для новой вкладки 395 */
 .note {
     background: #eff6ff;
     border-left: 4px solid #2563eb;
@@ -155,16 +165,11 @@ table input { width: 100%; padding: 6px 8px; border: 1px solid #cfd8dc; border-r
     border-radius: 5px;
 }
 .muted { color: #475569; font-size: 14px; }
-.danger-btn {
-    background: #dc2626;
-    color: white;
-    border: none;
-    padding: 4px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 15px;
 }
-.danger-btn:hover { background: #b91c1c; }
 </style>
 </head>
 <body>
@@ -211,9 +216,9 @@ table input { width: 100%; padding: 6px 8px; border: 1px solid #cfd8dc; border-r
                 <table id="penalty-payment-table">
                     <thead><tr><th>Дата оплаты (ДД-ММ-ГГГГ)</th><th>Сумма (руб.)</th><th></th></tr></thead>
                     <tbody id="penalty-payment-tbody">
-                        <tr><td><input type="date" class="penalty-pay-date" value="2023-10-01" placeholder="ДД-ММ-ГГГГ"></td><td><input type="number" class="penalty-pay-sum" value="5000" step="any"></td><td><button class="add-row-btn" onclick="removePenaltyRow(this)">✕</button></td></tr>
-                        <tr><td><input type="date" class="penalty-pay-date" value="2023-11-15" placeholder="ДД-ММ-ГГГГ"></td><td><input type="number" class="penalty-pay-sum" value="3000" step="any"></td><td><button class="add-row-btn" onclick="removePenaltyRow(this)">✕</button></td></tr>
-                        <tr><td><input type="date" class="penalty-pay-date" value="2024-01-10" placeholder="ДД-ММ-ГГГГ"></td><td><input type="number" class="penalty-pay-sum" value="2000" step="any"></td><td><button class="add-row-btn" onclick="removePenaltyRow(this)">✕</button></td></tr>
+                        <tr><td><input type="date" class="penalty-pay-date" value="2023-10-01" placeholder="ДД-ММ-ГГГГ"></td><td><input type="number" class="penalty-pay-sum" value="5000" step="any"></td><td><button class="danger-btn" onclick="removePenaltyRow(this)">Удалить</button></td></tr>
+                        <tr><td><input type="date" class="penalty-pay-date" value="2023-11-15" placeholder="ДД-ММ-ГГГГ"></td><td><input type="number" class="penalty-pay-sum" value="3000" step="any"></td><td><button class="danger-btn" onclick="removePenaltyRow(this)">Удалить</button></td></tr>
+                        <tr><td><input type="date" class="penalty-pay-date" value="2024-01-10" placeholder="ДД-ММ-ГГГГ"></td><td><input type="number" class="penalty-pay-sum" value="2000" step="any"></td><td><button class="danger-btn" onclick="removePenaltyRow(this)">Удалить</button></td></tr>
                     </tbody>
                 </table>
             </div>
@@ -285,8 +290,8 @@ table input { width: 100%; padding: 6px 8px; border: 1px solid #cfd8dc; border-r
                 <table id="card-extra-payment-table">
                     <thead><tr><th>Дата внесения (ДД-ММ-ГГГГ)</th><th>Сумма (руб.)</th><th></th></tr></thead>
                     <tbody id="card-extra-payment-tbody">
-                        <tr><td><input type="date" class="card-extra-date" value="2023-02-16" placeholder="ДД-ММ-ГГГГ"></td><td><input type="number" class="card-extra-sum" value="12000" step="any"></td><td><button class="add-row-btn" onclick="removeCardExtraRow(this)">✕</button></td></tr>
-                        <tr><td><input type="date" class="card-extra-date" value="2023-03-18" placeholder="ДД-ММ-ГГГГ"></td><td><input type="number" class="card-extra-sum" value="1500" step="any"></td><td><button class="add-row-btn" onclick="removeCardExtraRow(this)">✕</button></td></tr>
+                        <tr><td><input type="date" class="card-extra-date" value="2023-02-16" placeholder="ДД-ММ-ГГГГ"></td><td><input type="number" class="card-extra-sum" value="12000" step="any"></td><td><button class="danger-btn" onclick="removeCardExtraRow(this)">Удалить</button></td></tr>
+                        <tr><td><input type="date" class="card-extra-date" value="2023-03-18" placeholder="ДД-ММ-ГГГГ"></td><td><input type="number" class="card-extra-sum" value="1500" step="any"></td><td><button class="danger-btn" onclick="removeCardExtraRow(this)">Удалить</button></td></tr>
                     </tbody>
                 </table>
             </div>
@@ -309,11 +314,11 @@ table input { width: 100%; padding: 6px 8px; border: 1px solid #cfd8dc; border-r
                 <table id="payment-table">
                     <thead><tr><th>Дата платежа (ДД-ММ-ГГГГ)</th><th>Сумма (руб.)</th><th></th></tr></thead>
                     <tbody id="payment-tbody">
-                        <tr><td><input type="date" class="pay-date" value="2022-05-12" placeholder="ДД-ММ-ГГГГ"></td><td><input type="number" class="pay-sum" value="1500" step="any"></td><td><button class="add-row-btn" onclick="removeRow(this)">✕</button></td></tr>
-                        <tr><td><input type="date" class="pay-date" value="2022-06-12" placeholder="ДД-ММ-ГГГГ"></td><td><input type="number" class="pay-sum" value="1500" step="any"></td><td><button class="add-row-btn" onclick="removeRow(this)">✕</button></td></tr>
-                        <tr><td><input type="date" class="pay-date" value="2022-07-12" placeholder="ДД-ММ-ГГГГ"></td><td><input type="number" class="pay-sum" value="1500" step="any"></td><td><button class="add-row-btn" onclick="removeRow(this)">✕</button></td></tr>
-                        <tr><td><input type="date" class="pay-date" value="2022-08-12" placeholder="ДД-ММ-ГГГГ"></td><td><input type="number" class="pay-sum" value="1500" step="any"></td><td><button class="add-row-btn" onclick="removeRow(this)">✕</button></td></tr>
-                        <tr><td><input type="date" class="pay-date" value="2022-09-12" placeholder="ДД-ММ-ГГГГ"></td><td><input type="number" class="pay-sum" value="1500" step="any"></td><td><button class="add-row-btn" onclick="removeRow(this)">✕</button></td></tr>
+                        <tr><td><input type="date" class="pay-date" value="2022-05-12" placeholder="ДД-ММ-ГГГГ"></td><td><input type="number" class="pay-sum" value="1500" step="any"></td><td><button class="danger-btn" onclick="removeRow(this)">Удалить</button></td></tr>
+                        <tr><td><input type="date" class="pay-date" value="2022-06-12" placeholder="ДД-ММ-ГГГГ"></td><td><input type="number" class="pay-sum" value="1500" step="any"></td><td><button class="danger-btn" onclick="removeRow(this)">Удалить</button></td></tr>
+                        <tr><td><input type="date" class="pay-date" value="2022-07-12" placeholder="ДД-ММ-ГГГГ"></td><td><input type="number" class="pay-sum" value="1500" step="any"></td><td><button class="danger-btn" onclick="removeRow(this)">Удалить</button></td></tr>
+                        <tr><td><input type="date" class="pay-date" value="2022-08-12" placeholder="ДД-ММ-ГГГГ"></td><td><input type="number" class="pay-sum" value="1500" step="any"></td><td><button class="danger-btn" onclick="removeRow(this)">Удалить</button></td></tr>
+                        <tr><td><input type="date" class="pay-date" value="2022-09-12" placeholder="ДД-ММ-ГГГГ"></td><td><input type="number" class="pay-sum" value="1500" step="any"></td><td><button class="danger-btn" onclick="removeRow(this)">Удалить</button></td></tr>
                     </tbody>
                 </table>
             </div>
@@ -323,7 +328,7 @@ table input { width: 100%; padding: 6px 8px; border: 1px solid #cfd8dc; border-r
         <div id="lim-result" class="result-box">Результат появится здесь</div>
     </div>
 
-    <!-- ========== ВКЛАДКА 6 (НОВЫЙ КАЛЬКУЛЯТОР 395) ========== -->
+    <!-- ========== ВКЛАДКА 6 ========== -->
     <div id="tab6" class="tab-content">
         <h2>Расчёт процентов по ст. 395 ГК РФ</h2>
 
@@ -333,22 +338,19 @@ table input { width: 100%; padding: 6px 8px; border: 1px solid #cfd8dc; border-r
             с 01.08.2016 — ключевая ставка Банка России.
         </div>
 
-        <div class="grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px,1fr)); gap:15px;">
+        <div class="grid">
             <div>
                 <label for="debt">Сумма задолженности, руб.</label>
                 <input id="debt" type="number" min="0.01" step="0.01" value="250000">
             </div>
-
             <div>
                 <label for="start">Дата начала просрочки</label>
                 <input id="start" type="date" value="2023-01-01">
             </div>
-
             <div>
                 <label for="end">Дата окончания просрочки</label>
                 <input id="end" type="date" value="2024-01-01">
             </div>
-
             <div>
                 <label for="region">Федеральный округ (2015–2016)</label>
                 <select id="region">
@@ -378,7 +380,18 @@ table input { width: 100%; padding: 6px 8px; border: 1px solid #cfd8dc; border-r
                             <th>Действие</th>
                         </tr>
                     </thead>
-                    <tbody id="payments"></tbody>
+                    <tbody id="payments">
+                        <tr>
+                            <td><input class="payment-date" type="date" value="2023-06-01"></td>
+                            <td><input class="payment-sum" type="number" min="0.01" step="0.01" value="20000"></td>
+                            <td><button class="danger-btn" onclick="this.closest('tr').remove()">Удалить</button></td>
+                        </tr>
+                        <tr>
+                            <td><input class="payment-date" type="date" value="2023-09-01"></td>
+                            <td><input class="payment-sum" type="number" min="0.01" step="0.01" value="15000"></td>
+                            <td><button class="danger-btn" onclick="this.closest('tr').remove()">Удалить</button></td>
+                        </tr>
+                    </tbody>
                 </table>
             </div>
 
@@ -524,7 +537,7 @@ function addPenaltyRow() {
     tr.innerHTML = `
         <td><input type="date" class="penalty-pay-date" value="${today}" placeholder="ДД-ММ-ГГГГ"></td>
         <td><input type="number" class="penalty-pay-sum" value="1000" step="any"></td>
-        <td><button class="add-row-btn" onclick="removePenaltyRow(this)">✕</button></td>
+        <td><button class="danger-btn" onclick="removePenaltyRow(this)">Удалить</button></td>
     `;
     tbody.appendChild(tr);
 }
@@ -707,7 +720,7 @@ function addCardExtraRow() {
     tr.innerHTML = `
         <td><input type="date" class="card-extra-date" value="${today}" placeholder="ДД-ММ-ГГГГ"></td>
         <td><input type="number" class="card-extra-sum" value="1000" step="any"></td>
-        <td><button class="add-row-btn" onclick="removeCardExtraRow(this)">✕</button></td>
+        <td><button class="danger-btn" onclick="removeCardExtraRow(this)">Удалить</button></td>
     `;
     tbody.appendChild(tr);
 }
@@ -898,7 +911,7 @@ function addRow() {
     tr.innerHTML = `
         <td><input type="date" class="pay-date" value="2022-10-12" placeholder="ДД-ММ-ГГГГ"></td>
         <td><input type="number" class="pay-sum" value="1500" step="any"></td>
-        <td><button class="add-row-btn" onclick="removeRow(this)">✕</button></td>
+        <td><button class="danger-btn" onclick="removeRow(this)">Удалить</button></td>
     `;
     tbody.appendChild(tr);
 }
@@ -1178,11 +1191,8 @@ function addPaymentRow(dateValue, sumValue) {
     row.innerHTML = `
         <td><input class="payment-date" type="date" value="${dateValue || ''}"></td>
         <td><input class="payment-sum" type="number" min="0.01" step="0.01" value="${sumValue || ''}"></td>
-        <td><button type="button" class="danger-btn">Удалить</button></td>
+        <td><button class="danger-btn" onclick="this.closest('tr').remove()">Удалить</button></td>
     `;
-    row.querySelector('.danger-btn').addEventListener('click', function () {
-        row.remove();
-    });
     document.getElementById('payments').appendChild(row);
 }
 
@@ -1313,9 +1323,805 @@ document.getElementById('calculate').addEventListener('click', function () {
 
 // Добавляем пару строк с примерами платежей (для наглядности)
 document.addEventListener('DOMContentLoaded', function () {
-    addPaymentRow('2023-06-01', '20000');
-    addPaymentRow('2023-09-01', '15000');
+    // уже есть в HTML, ничего не добавляем
 });
+
+/* ===== ВКЛАДКА 7: ЗАДОЛЖЕННОСТЬ ПО КРЕДИТУ ===== */
+
+document.addEventListener('DOMContentLoaded', function () {
+    const tabs = document.getElementById('tabs');
+
+    if (tabs && !document.querySelector('[data-tab="tab7"]')) {
+        const button = document.createElement('button');
+        button.className = 'tab-btn';
+        button.dataset.tab = 'tab7';
+        button.textContent = 'Задолженность по кредиту';
+
+        button.addEventListener('click', function () {
+            document.querySelectorAll('.tab-btn').forEach(function (item) {
+                item.classList.remove('active');
+            });
+
+            document.querySelectorAll('.tab-content').forEach(function (item) {
+                item.classList.remove('active');
+            });
+
+            button.classList.add('active');
+            document.getElementById('tab7').classList.add('active');
+        });
+
+        tabs.appendChild(button);
+    }
+
+    if (!document.getElementById('tab7')) {
+        const tab = document.createElement('div');
+
+        tab.id = 'tab7';
+        tab.className = 'tab-content';
+
+        tab.innerHTML = `
+            <h2>Расчёт задолженности по кредитному договору</h2>
+
+            <div class="note">
+                Вкладка рассчитывает задолженность с учётом параметров договора, графика,
+                фактических платежей, просроченного основного долга, процентов и договорной неустойки.
+                Перед использованием проверьте условия конкретного договора: порядок погашения,
+                базу расчёта, дату начала просрочки и правила начисления пени.
+            </div>
+
+            <div class="payment-block">
+                <label><strong>Условия кредитного договора</strong></label>
+
+                <div class="inline-group">
+                    <div class="form-group">
+                        <label>Сумма кредита (руб.)</label>
+                        <input type="number" id="credit-debt-amount" value="100000" min="0.01" step="0.01">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Процентная ставка (% годовых)</label>
+                        <input type="number" id="credit-debt-rate" value="24.9" min="0" step="0.01">
+                    </div>
+                </div>
+
+                <div class="inline-group">
+                    <div class="form-group">
+                        <label>Дата выдачи кредита</label>
+                        <input type="date" id="credit-debt-start" value="2025-01-01">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Дата расчёта задолженности</label>
+                        <input type="date" id="credit-debt-calc-date" value="2026-01-01">
+                    </div>
+                </div>
+
+                <div class="inline-group">
+                    <div class="form-group">
+                        <label>Срок кредита (месяцев)</label>
+                        <input type="number" id="credit-debt-term" value="12" min="1" step="1">
+                    </div>
+
+                    <div class="form-group">
+                        <label>День ежемесячного платежа</label>
+                        <input type="number" id="credit-debt-payment-day" value="10" min="1" max="31" step="1">
+                    </div>
+                </div>
+
+                <div class="inline-group">
+                    <div class="form-group">
+                        <label>Тип платежей</label>
+                        <select id="credit-debt-type">
+                            <option value="annuity">Аннуитетные</option>
+                            <option value="differentiated">Дифференцированные</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Начисление процентов</label>
+                        <select id="credit-debt-interest-method">
+                            <option value="daily">По фактическим дням</option>
+                            <option value="monthly">Ежемесячно: ставка / 12</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>База для расчёта процентов</label>
+                    <select id="credit-debt-base">
+                        <option value="365">365 дней в году</option>
+                        <option value="366">366 дней в году</option>
+                        <option value="actual">Фактическое число дней в году</option>
+                        <option value="360">360 дней в году</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="payment-block">
+                <label><strong>Договорная неустойка</strong></label>
+
+                <div class="inline-group">
+                    <div class="form-group">
+                        <label>Пени на просроченный основной долг (% в день)</label>
+                        <input type="number" id="credit-debt-penalty-principal" value="0" min="0" step="0.001">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Пени на просроченные проценты (% в день)</label>
+                        <input type="number" id="credit-debt-penalty-interest" value="0" min="0" step="0.001">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Максимальная неустойка (руб., 0 — без ограничения)</label>
+                    <input type="number" id="credit-debt-penalty-limit" value="0" min="0" step="0.01">
+                </div>
+            </div>
+
+            <div class="payment-block">
+                <label><strong>Фактические платежи заёмщика</strong></label>
+
+                <p class="muted">
+                    Укажите все реально внесённые суммы. Не внесённые в срок платежи будут отражены
+                    как просроченные части основного долга и процентов.
+                </p>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Дата платежа</th>
+                                <th>Сумма (руб.)</th>
+                                <th>Действие</th>
+                            </tr>
+                        </thead>
+                        <tbody id="credit-debt-payment-tbody"></tbody>
+                    </table>
+                </div>
+
+                <button type="button" class="add-row-btn" id="credit-debt-add-payment">
+                    ➕ Добавить платёж
+                </button>
+
+                <button type="button" class="add-row-btn" id="credit-debt-clear-payments"
+                    style="background:#6b7280; margin-left:8px;">
+                    🗑 Очистить платежи
+                </button>
+            </div>
+
+            <button class="btn" type="button" id="credit-debt-calculate">
+                Рассчитать задолженность
+            </button>
+
+            <div id="credit-debt-summary" class="result-box">
+                Заполните условия договора и нажмите «Рассчитать задолженность».
+            </div>
+
+            <div class="scroll-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Дата</th>
+                            <th>Событие</th>
+                            <th>По графику</th>
+                            <th>Фактически</th>
+                            <th>Направлено в проценты</th>
+                            <th>Направлено в основной долг</th>
+                            <th>Просроченные проценты</th>
+                            <th>Просроченный основной долг</th>
+                            <th>Пени</th>
+                        </tr>
+                    </thead>
+                    <tbody id="credit-debt-result-tbody"></tbody>
+                </table>
+            </div>
+        `;
+
+        const scriptParent = document.querySelector('script');
+        scriptParent.parentNode.insertBefore(tab, scriptParent);
+    }
+
+    function creditDebtRound(value) {
+        return Math.round((Number(value) + Number.EPSILON) * 100) / 100;
+    }
+
+    function creditDebtFormat(value) {
+        return creditDebtRound(value).toLocaleString('ru-RU', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+
+    function creditDebtParseDate(value) {
+        if (!value) return null;
+
+        const parts = value.split('-').map(Number);
+        return new Date(parts[0], parts[1] - 1, parts[2]);
+    }
+
+    function creditDebtFormatDate(date) {
+        return date.toLocaleDateString('ru-RU');
+    }
+
+    function creditDebtDaysBetween(first, second) {
+        return Math.round((second.getTime() - first.getTime()) / 86400000);
+    }
+
+    function creditDebtIsLeapYear(year) {
+        return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+    }
+
+    function creditDebtYearBase(date, base) {
+        if (base === '360') return 360;
+        if (base === '365') return 365;
+        if (base === '366') return 366;
+
+        return creditDebtIsLeapYear(date.getFullYear()) ? 366 : 365;
+    }
+
+    function creditDebtLastDayOfMonth(year, month) {
+        return new Date(year, month + 1, 0).getDate();
+    }
+
+    function creditDebtPaymentDate(startDate, monthNumber, paymentDay) {
+        const date = new Date(
+            startDate.getFullYear(),
+            startDate.getMonth() + monthNumber,
+            1
+        );
+
+        const lastDay = creditDebtLastDayOfMonth(
+            date.getFullYear(),
+            date.getMonth()
+        );
+
+        date.setDate(Math.min(paymentDay, lastDay));
+        return date;
+    }
+
+    function creditDebtAddPaymentRow(dateValue, amountValue) {
+        const tbody = document.getElementById('credit-debt-payment-tbody');
+        const row = document.createElement('tr');
+
+        row.innerHTML = `
+            <td>
+                <input type="date" class="credit-debt-pay-date"
+                    value="${dateValue || ''}">
+            </td>
+            <td>
+                <input type="number" class="credit-debt-pay-sum"
+                    value="${amountValue || ''}" min="0.01" step="0.01">
+            </td>
+            <td>
+                <button type="button" class="danger-btn">✕</button>
+            </td>
+        `;
+
+        row.querySelector('.danger-btn').addEventListener('click', function () {
+            row.remove();
+        });
+
+        tbody.appendChild(row);
+    }
+
+    function creditDebtGetActualPayments(startDate, calculationDate) {
+        const payments = [];
+
+        document.querySelectorAll('#credit-debt-payment-tbody tr').forEach(function (row) {
+            const dateValue = row.querySelector('.credit-debt-pay-date').value;
+            const amount = Number(row.querySelector('.credit-debt-pay-sum').value);
+
+            if (!dateValue || !Number.isFinite(amount) || amount <= 0) {
+                return;
+            }
+
+            const date = creditDebtParseDate(dateValue);
+
+            if (date >= startDate && date <= calculationDate) {
+                payments.push({
+                    date: date,
+                    amount: creditDebtRound(amount)
+                });
+            }
+        });
+
+        payments.sort(function (a, b) {
+            return a.date - b.date;
+        });
+
+        return payments;
+    }
+
+    function creditDebtCreateSchedule(data) {
+        const schedule = [];
+        const monthlyRate = data.rate / 100 / 12;
+        let remainingPrincipal = data.amount;
+        let annuityPayment = 0;
+
+        if (data.type === 'annuity') {
+            if (monthlyRate === 0) {
+                annuityPayment = data.amount / data.term;
+            } else {
+                annuityPayment =
+                    data.amount *
+                    (monthlyRate * Math.pow(1 + monthlyRate, data.term)) /
+                    (Math.pow(1 + monthlyRate, data.term) - 1);
+            }
+
+            annuityPayment = creditDebtRound(annuityPayment);
+        }
+
+        for (let number = 1; number <= data.term; number++) {
+            const dueDate = creditDebtPaymentDate(
+                data.startDate,
+                number,
+                data.paymentDay
+            );
+
+            const previousDate = number === 1
+                ? data.startDate
+                : creditDebtPaymentDate(
+                    data.startDate,
+                    number - 1,
+                    data.paymentDay
+                );
+
+            let interest = 0;
+
+            if (data.interestMethod === 'monthly') {
+                interest = creditDebtRound(remainingPrincipal * monthlyRate);
+            } else {
+                const days = creditDebtDaysBetween(previousDate, dueDate);
+                const base = creditDebtYearBase(previousDate, data.base);
+
+                interest = creditDebtRound(
+                    remainingPrincipal * data.rate / 100 * days / base
+                );
+            }
+
+            let principal;
+            let payment;
+
+            if (data.type === 'annuity') {
+                payment = number === data.term
+                    ? creditDebtRound(remainingPrincipal + interest)
+                    : annuityPayment;
+
+                principal = creditDebtRound(payment - interest);
+
+                if (principal >= remainingPrincipal || number === data.term) {
+                    principal = creditDebtRound(remainingPrincipal);
+                    payment = creditDebtRound(principal + interest);
+                }
+            } else {
+                principal = number === data.term
+                    ? creditDebtRound(remainingPrincipal)
+                    : creditDebtRound(data.amount / data.term);
+
+                payment = creditDebtRound(principal + interest);
+            }
+
+            remainingPrincipal = creditDebtRound(
+                Math.max(0, remainingPrincipal - principal)
+            );
+
+            schedule.push({
+                number: number,
+                date: dueDate,
+                payment: payment,
+                principal: principal,
+                interest: interest
+            });
+        }
+
+        return schedule;
+    }
+
+    document.getElementById('credit-debt-add-payment').addEventListener(
+        'click',
+        function () {
+            creditDebtAddPaymentRow('', '');
+        }
+    );
+
+    document.getElementById('credit-debt-clear-payments').addEventListener(
+        'click',
+        function () {
+            document.getElementById('credit-debt-payment-tbody').innerHTML = '';
+        }
+    );
+
+    document.getElementById('credit-debt-calculate').addEventListener(
+        'click',
+        function () {
+            const summary = document.getElementById('credit-debt-summary');
+            const resultBody = document.getElementById('credit-debt-result-tbody');
+
+            const data = {
+                amount: Number(document.getElementById('credit-debt-amount').value),
+                rate: Number(document.getElementById('credit-debt-rate').value),
+                startDate: creditDebtParseDate(
+                    document.getElementById('credit-debt-start').value
+                ),
+                calculationDate: creditDebtParseDate(
+                    document.getElementById('credit-debt-calc-date').value
+                ),
+                term: Number(document.getElementById('credit-debt-term').value),
+                paymentDay: Number(
+                    document.getElementById('credit-debt-payment-day').value
+                ),
+                type: document.getElementById('credit-debt-type').value,
+                base: document.getElementById('credit-debt-base').value,
+                interestMethod: document.getElementById(
+                    'credit-debt-interest-method'
+                ).value,
+                penaltyPrincipal: Number(
+                    document.getElementById(
+                        'credit-debt-penalty-principal'
+                    ).value
+                ) || 0,
+                penaltyInterest: Number(
+                    document.getElementById(
+                        'credit-debt-penalty-interest'
+                    ).value
+                ) || 0,
+                penaltyLimit: Number(
+                    document.getElementById(
+                        'credit-debt-penalty-limit'
+                    ).value
+                ) || 0
+            };
+
+            if (
+                !Number.isFinite(data.amount) ||
+                data.amount <= 0 ||
+                !Number.isFinite(data.rate) ||
+                data.rate < 0 ||
+                !data.startDate ||
+                !data.calculationDate ||
+                !Number.isInteger(data.term) ||
+                data.term < 1 ||
+                !Number.isInteger(data.paymentDay) ||
+                data.paymentDay < 1 ||
+                data.paymentDay > 31
+            ) {
+                summary.className = 'result-box error';
+                summary.textContent =
+                    'Проверьте сумму кредита, ставку, даты, срок и день платежа.';
+                resultBody.innerHTML = '';
+                return;
+            }
+
+            if (data.calculationDate < data.startDate) {
+                summary.className = 'result-box error';
+                summary.textContent =
+                    'Дата расчёта не может быть раньше даты выдачи кредита.';
+                resultBody.innerHTML = '';
+                return;
+            }
+
+            const schedule = creditDebtCreateSchedule(data);
+            const actualPayments = creditDebtGetActualPayments(
+                data.startDate,
+                data.calculationDate
+            );
+
+            const events = [];
+
+            schedule.forEach(function (item) {
+                if (item.date <= data.calculationDate) {
+                    events.push({
+                        type: 'due',
+                        date: item.date,
+                        schedule: item
+                    });
+                }
+            });
+
+            actualPayments.forEach(function (payment) {
+                events.push({
+                    type: 'payment',
+                    date: payment.date,
+                    payment: payment
+                });
+            });
+
+            events.push({
+                type: 'calculation',
+                date: data.calculationDate
+            });
+
+            const priority = {
+                due: 1,
+                payment: 2,
+                calculation: 3
+            };
+
+            events.sort(function (a, b) {
+                if (a.date.getTime() !== b.date.getTime()) {
+                    return a.date - b.date;
+                }
+
+                return priority[a.type] - priority[b.type];
+            });
+
+            let currentDate = new Date(data.startDate);
+            let currentPrincipal = creditDebtRound(data.amount);
+            let currentInterest = 0;
+            let overduePrincipal = 0;
+            let overdueInterest = 0;
+            let penalty = 0;
+
+            let totalPaid = 0;
+            let totalPrincipalPaid = 0;
+            let totalInterestPaid = 0;
+            let totalPenaltyPaid = 0;
+            let totalInterestAccrued = 0;
+            let totalPenaltyAccrued = 0;
+
+            const resultRows = [];
+
+            function accrueUntil(targetDate) {
+                const days = creditDebtDaysBetween(currentDate, targetDate);
+
+                if (days <= 0) return;
+
+                let addedInterest = 0;
+
+                if (data.interestMethod === 'daily') {
+                    let cursor = new Date(currentDate);
+
+                    while (cursor < targetDate) {
+                        const nextYear = new Date(
+                            cursor.getFullYear() + 1,
+                            0,
+                            1
+                        );
+
+                        const partEnd = nextYear < targetDate
+                            ? nextYear
+                            : targetDate;
+
+                        const partDays = creditDebtDaysBetween(
+                            cursor,
+                            partEnd
+                        );
+
+                        const base = creditDebtYearBase(cursor, data.base);
+
+                        addedInterest +=
+                            currentPrincipal *
+                            data.rate / 100 *
+                            partDays / base;
+
+                        cursor = partEnd;
+                    }
+                }
+
+                currentInterest = creditDebtRound(
+                    currentInterest + addedInterest
+                );
+
+                totalInterestAccrued = creditDebtRound(
+                    totalInterestAccrued + addedInterest
+                );
+
+                let addedPenalty =
+                    overduePrincipal * data.penaltyPrincipal / 100 * days +
+                    overdueInterest * data.penaltyInterest / 100 * days;
+
+                if (data.penaltyLimit > 0) {
+                    addedPenalty = Math.min(
+                        addedPenalty,
+                        Math.max(0, data.penaltyLimit - penalty)
+                    );
+                }
+
+                penalty = creditDebtRound(penalty + addedPenalty);
+
+                totalPenaltyAccrued = creditDebtRound(
+                    totalPenaltyAccrued + addedPenalty
+                );
+
+                currentDate = new Date(targetDate);
+            }
+
+            function allocatePayment(paymentAmount) {
+                let rest = creditDebtRound(paymentAmount);
+
+                const allocated = {
+                    penalty: 0,
+                    overdueInterest: 0,
+                    overduePrincipal: 0,
+                    currentInterest: 0,
+                    currentPrincipal: 0
+                };
+
+                let amount = Math.min(rest, penalty);
+                penalty = creditDebtRound(penalty - amount);
+                rest = creditDebtRound(rest - amount);
+                allocated.penalty = amount;
+                totalPenaltyPaid = creditDebtRound(totalPenaltyPaid + amount);
+
+                amount = Math.min(rest, overdueInterest);
+                overdueInterest = creditDebtRound(overdueInterest - amount);
+                rest = creditDebtRound(rest - amount);
+                allocated.overdueInterest = amount;
+                totalInterestPaid = creditDebtRound(
+                    totalInterestPaid + amount
+                );
+
+                amount = Math.min(rest, overduePrincipal);
+                overduePrincipal = creditDebtRound(overduePrincipal - amount);
+                rest = creditDebtRound(rest - amount);
+                allocated.overduePrincipal = amount;
+                totalPrincipalPaid = creditDebtRound(
+                    totalPrincipalPaid + amount
+                );
+
+                amount = Math.min(rest, currentInterest);
+                currentInterest = creditDebtRound(currentInterest - amount);
+                rest = creditDebtRound(rest - amount);
+                allocated.currentInterest = amount;
+                totalInterestPaid = creditDebtRound(
+                    totalInterestPaid + amount
+                );
+
+                amount = Math.min(rest, currentPrincipal);
+                currentPrincipal = creditDebtRound(currentPrincipal - amount);
+                rest = creditDebtRound(rest - amount);
+                allocated.currentPrincipal = amount;
+                totalPrincipalPaid = creditDebtRound(
+                    totalPrincipalPaid + amount
+                );
+
+                return allocated;
+            }
+
+            events.forEach(function (event) {
+                accrueUntil(event.date);
+
+                if (event.type === 'due') {
+                    const planned = event.schedule;
+
+                    const interestToOverdue = Math.min(
+                        currentInterest,
+                        planned.interest
+                    );
+
+                    currentInterest = creditDebtRound(
+                        currentInterest - interestToOverdue
+                    );
+
+                    overdueInterest = creditDebtRound(
+                        overdueInterest + interestToOverdue
+                    );
+
+                    const principalToOverdue = Math.min(
+                        currentPrincipal,
+                        planned.principal
+                    );
+
+                    currentPrincipal = creditDebtRound(
+                        currentPrincipal - principalToOverdue
+                    );
+
+                    overduePrincipal = creditDebtRound(
+                        overduePrincipal + principalToOverdue
+                    );
+
+                    resultRows.push({
+                        date: event.date,
+                        event: `Платёж по графику № ${planned.number}`,
+                        scheduled: planned.payment,
+                        actual: 0,
+                        interestPaid: 0,
+                        principalPaid: 0,
+                        overdueInterest: overdueInterest,
+                        overduePrincipal: overduePrincipal,
+                        penalty: penalty
+                    });
+                }
+
+                if (event.type === 'payment') {
+                    const allocated = allocatePayment(event.payment.amount);
+
+                    totalPaid = creditDebtRound(
+                        totalPaid + event.payment.amount
+                    );
+
+                    resultRows.push({
+                        date: event.date,
+                        event: 'Фактический платёж',
+                        scheduled: 0,
+                        actual: event.payment.amount,
+                        interestPaid: creditDebtRound(
+                            allocated.overdueInterest +
+                            allocated.currentInterest
+                        ),
+                        principalPaid: creditDebtRound(
+                            allocated.overduePrincipal +
+                            allocated.currentPrincipal
+                        ),
+                        overdueInterest: overdueInterest,
+                        overduePrincipal: overduePrincipal,
+                        penalty: penalty
+                    });
+                }
+            });
+
+            const totalPrincipalDebt = creditDebtRound(
+                currentPrincipal + overduePrincipal
+            );
+
+            const totalDebt = creditDebtRound(
+                totalPrincipalDebt +
+                currentInterest +
+                overdueInterest +
+                penalty
+            );
+
+            resultBody.innerHTML = resultRows.map(function (row) {
+                return `
+                    <tr>
+                        <td>${creditDebtFormatDate(row.date)}</td>
+                        <td>${row.event}</td>
+                        <td>${row.scheduled ? creditDebtFormat(row.scheduled) : '—'}</td>
+                        <td>${row.actual ? creditDebtFormat(row.actual) : '—'}</td>
+                        <td>${row.interestPaid ? creditDebtFormat(row.interestPaid) : '—'}</td>
+                        <td>${row.principalPaid ? creditDebtFormat(row.principalPaid) : '—'}</td>
+                        <td>${creditDebtFormat(row.overdueInterest)}</td>
+                        <td>${creditDebtFormat(row.overduePrincipal)}</td>
+                        <td>${creditDebtFormat(row.penalty)}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            summary.className = 'result-box';
+
+            summary.textContent =
+                `Дата расчёта: ${creditDebtFormatDate(data.calculationDate)}
+` +
+                `Схема платежей: ${data.type === 'annuity' ? 'аннуитетная' : 'дифференцированная'}
+` +
+                `
+ОСНОВНОЙ ДОЛГ
+` +
+                `Текущий основной долг: ${creditDebtFormat(currentPrincipal)} руб.
+` +
+                `Просроченный основной долг: ${creditDebtFormat(overduePrincipal)} руб.
+` +
+                `
+ПРОЦЕНТЫ И НЕУСТОЙКА
+` +
+                `Текущие начисленные проценты: ${creditDebtFormat(currentInterest)} руб.
+` +
+                `Просроченные проценты: ${creditDebtFormat(overdueInterest)} руб.
+` +
+                `Неустойка: ${creditDebtFormat(penalty)} руб.
+` +
+                `
+ИТОГО ЗАДОЛЖЕННОСТЬ: ${creditDebtFormat(totalDebt)} руб.
+` +
+                `
+СПРАВОЧНО
+` +
+                `Всего внесено: ${creditDebtFormat(totalPaid)} руб.
+` +
+                `Погашено основного долга: ${creditDebtFormat(totalPrincipalPaid)} руб.
+` +
+                `Погашено процентов: ${creditDebtFormat(totalInterestPaid)} руб.
+` +
+                `Погашено неустойки: ${creditDebtFormat(totalPenaltyPaid)} руб.
+` +
+                `Всего начислено процентов: ${creditDebtFormat(totalInterestAccrued)} руб.
+` +
+                `Всего начислено неустойки: ${creditDebtFormat(totalPenaltyAccrued)} руб.`;
+        }
+    );
+
+    creditDebtAddPaymentRow('', '');
+});    
 </script>
 </body>
 </html>
