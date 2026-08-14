@@ -202,7 +202,7 @@ table input { width: 100%; padding: 6px 8px; border: 1px solid #cfd8dc; border-r
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 15px;
-} 
+}
 /* ==========================================================
    АДАПТИВНЫЙ ИНТЕРФЕЙС ДЛЯ ANDROID И МОБИЛЬНЫХ УСТРОЙСТВ
     ========================================================== */
@@ -534,36 +534,256 @@ pre {
         </div>
     </div>
 
-    <!-- ========== ВКЛАДКА 5 (СРОК ИСКОВОЙ ДАВНОСТИ) ========== -->
+    <!-- ========== ВКЛАДКА 5 (НОВЫЙ СРОК ИСКОВОЙ ДАВНОСТИ) ========== -->
     <div id="tab5" class="tab-content">
         <h2>Срок исковой давности</h2>
-        <div class="form-group"><label>Дата подачи заявления о судебном приказе (ДД-ММ-ГГГГ)</label><input type="date" id="lim-order" value="2023-11-10"></div>
-        <div class="form-group"><label>Дата отмены судебного приказа (ДД-ММ-ГГГГ)</label><input type="date" id="lim-cancel" value="2024-12-19"></div>
-        <div class="form-group"><label>Дата подачи искового заявления (ДД-ММ-ГГГГ)</label><input type="date" id="lim-claim" value="2025-11-12"></div>
-        <div style="margin-top:10px;">
-            <label><strong>Периодические платежи (дата и сумма)</strong></label>
+
+        <div class="note">
+            Калькулятор рассчитывает срок исковой давности отдельно по каждому
+            обязательному платежу. Дата начала — день, следующий за датой, когда
+            платёж должен был быть внесён. Результат носит справочный характер:
+            признание долга, требования о досрочном возврате и судебные акты
+            должны подтверждаться документами.
+        </div>
+
+        <div class="payment-block">
+            <label><strong>Дата обращения в суд</strong></label>
+
+            <div class="form-group">
+                <label>Дата подачи искового заявления</label>
+                <input type="date" id="lim-claim" value="2025-11-12">
+            </div>
+
+            <p class="muted">
+                Срок сравнивается именно с датой подачи иска в суд, а не с датой
+                принятия иска, вынесения решения или выдачи исполнительного листа.
+            </p>
+        </div>
+
+        <div class="payment-block">
+            <label><strong>Судебный приказ</strong></label>
+
+            <div class="form-group">
+                <label>
+                    Было ли ранее обращение за судебным приказом по тем же требованиям?
+                </label>
+
+                <select
+                    id="lim-order-used"
+                    onchange="toggleLimitationOrderFields()"
+                >
+                    <option value="no">Нет</option>
+                    <option value="yes">Да</option>
+                </select>
+            </div>
+
+            <div id="lim-order-fields" style="display: none;">
+                <div class="inline-group">
+                    <div class="form-group">
+                        <label>Дата подачи заявления о судебном приказе</label>
+                        <input type="date" id="lim-order">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Дата отмены судебного приказа</label>
+                        <input type="date" id="lim-cancel">
+                    </div>
+                </div>
+
+                <p class="muted">
+                    Период со дня обращения за судебным приказом до дня отмены
+                    учитывается как период приостановления течения срока.
+                    Если после отмены оставалось менее шести месяцев, срок
+                    продлевается до шести месяцев.
+                </p>
+            </div>
+        </div>
+
+        <div class="payment-block">
+            <label><strong>Претензионный порядок</strong></label>
+
+            <div class="form-group">
+                <label>
+                    Был ли обязательный досудебный порядок урегулирования спора?
+                </label>
+
+                <select
+                    id="lim-claim-procedure-used"
+                    onchange="toggleLimitationClaimProcedureFields()"
+                >
+                    <option value="no">Нет</option>
+                    <option value="yes">Да</option>
+                </select>
+            </div>
+
+            <div id="lim-claim-procedure-fields" style="display: none;">
+                <div class="inline-group">
+                    <div class="form-group">
+                        <label>Дата направления претензии</label>
+                        <input type="date" id="lim-claim-procedure-start">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Дата окончания срока ответа / урегулирования</label>
+                        <input type="date" id="lim-claim-procedure-end">
+                    </div>
+                </div>
+
+                <p class="muted">
+                    Указывайте эти даты, только если претензионный порядок был
+                    обязательным по закону или договору.
+                </p>
+            </div>
+        </div>
+
+        <div class="payment-block">
+            <label><strong>Признание долга</strong></label>
+
+            <div class="form-group">
+                <label>
+                    Было ли документально подтверждённое признание долга?
+                </label>
+
+                <select
+                    id="lim-acknowledgment-used"
+                    onchange="toggleLimitationAcknowledgmentFields()"
+                >
+                    <option value="no">Нет</option>
+                    <option value="yes">Да</option>
+                </select>
+            </div>
+
+            <div id="lim-acknowledgment-fields" style="display: none;">
+                <div class="form-group">
+                    <label>Дата признания долга</label>
+                    <input type="date" id="lim-acknowledgment-date">
+                </div>
+
+                <p class="muted">
+                    Указывайте дату только при наличии юридически значимого
+                    действия: письменного признания, заявления о реструктуризации,
+                    соглашения, частичной оплаты именно конкретного долга и т. п.
+                </p>
+            </div>
+        </div>
+
+        <div class="payment-block">
+            <label><strong>График обязательных платежей</strong></label>
+
+            <p class="muted">
+                Вносите не даты фактических оплат, а даты, когда платежи должны
+                были быть внесены по договору или графику. Для кредита указывайте
+                каждый ежемесячный обязательный платёж отдельно.
+            </p>
+
             <div class="table-wrapper">
-                <table id="payment-table">
-                    <thead><tr><th>Дата платежа (ДД-ММ-ГГГГ)</th><th>Сумма (руб.)</th><th></th></tr></thead>
+                <table id="limitation-payment-table">
+                    <thead>
+                        <tr>
+                            <th>Дата платежа по графику</th>
+                            <th>Сумма, руб.</th>
+                            <th>Оплачен?</th>
+                            <th>Действие</th>
+                        </tr>
+                    </thead>
+
                     <tbody id="payment-tbody">
-                        <tr><td><input type="date" class="pay-date" value="2022-05-12"></td><td><input type="number" class="pay-sum" value="1500" step="any"></td><td><button class="danger-btn" onclick="removeRow(this)">Удалить</button></td></tr>
-                        <tr><td><input type="date" class="pay-date" value="2022-06-12"></td><td><input type="number" class="pay-sum" value="1500" step="any"></td><td><button class="danger-btn" onclick="removeRow(this)">Удалить</button></td></tr>
-                        <tr><td><input type="date" class="pay-date" value="2022-07-12"></td><td><input type="number" class="pay-sum" value="1500" step="any"></td><td><button class="danger-btn" onclick="removeRow(this)">Удалить</button></td></tr>
-                        <tr><td><input type="date" class="pay-date" value="2022-08-12"></td><td><input type="number" class="pay-sum" value="1500" step="any"></td><td><button class="danger-btn" onclick="removeRow(this)">Удалить</button></td></tr>
-                        <tr><td><input type="date" class="pay-date" value="2022-09-12"></td><td><input type="number" class="pay-sum" value="1500" step="any"></td><td><button class="danger-btn" onclick="removeRow(this)">Удалить</button></td></tr>
+                        <tr>
+                            <td>
+                                <input
+                                    type="date"
+                                    class="lim-pay-due-date"
+                                    value="2022-05-12"
+                                >
+                            </td>
+
+                            <td>
+                                <input
+                                    type="number"
+                                    class="lim-pay-sum"
+                                    value="1500"
+                                    min="0.01"
+                                    step="0.01"
+                                >
+                            </td>
+
+                            <td>
+                                <select class="lim-pay-status">
+                                    <option value="unpaid">Не оплачен</option>
+                                    <option value="paid">Оплачен</option>
+                                </select>
+                            </td>
+
+                            <td>
+                                <button
+                                    type="button"
+                                    class="danger-btn"
+                                    onclick="removeLimitationRow(this)"
+                                >
+                                    Удалить
+                                </button>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
-            <button class="add-row-btn" onclick="addRow()">➕ Добавить платёж</button>
+
+            <button
+                type="button"
+                class="add-row-btn"
+                onclick="addLimitationRow()"
+            >
+                ➕ Добавить обязательный платёж
+            </button>
+
+            <button
+                type="button"
+                class="add-row-btn"
+                style="background: #6b7280; margin-left: 8px;"
+                onclick="clearLimitationRows()"
+            >
+                🗑 Очистить таблицу
+            </button>
         </div>
-        <button class="btn" onclick="calcLimitation()" style="margin-top:18px;">Проверить сроки</button>
+
+        <button
+            class="btn"
+            type="button"
+            onclick="calcLimitation()"
+            style="margin-top: 18px;"
+        >
+            Рассчитать срок исковой давности
+        </button>
+
         <div class="result-wrapper">
-            <div id="lim-result" class="result-box">Результат появится здесь</div>
-            <button class="copy-btn" onclick="copyResult('lim-result')">📋 Копировать результат</button>
+            <div id="lim-result" class="result-box">
+                Заполните даты и график обязательных платежей.
+            </div>
+
+            <button class="copy-btn" onclick="copyResult('lim-result')">
+                📋 Копировать результат
+            </button>
+        </div>
+
+        <div class="scroll-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>№</th>
+                        <th>Дата по графику</th>
+                        <th>Сумма</th>
+                        <th>Начало срока</th>
+                        <th>Окончание срока</th>
+                        <th>Статус на дату иска</th>
+                    </tr>
+                </thead>
+
+                <tbody id="lim-result-tbody"></tbody>
+            </table>
         </div>
     </div>
 
-    <!-- ========== ВКЛАДКА 6 (НОВАЯ СТ. 395 ГК РФ) ========== -->
+    <!-- ========== ВКЛАДКА 6 (СТ. 395 ГК РФ) ========== -->
     <div id="tab6" class="tab-content">
         <h2>Расчёт процентов по ст. 395 ГК РФ</h2>
 
@@ -1365,136 +1585,470 @@ function calcCreditCard() {
 }
 
 // ============================================================
-// 5. Срок исковой давности (исправлено: обе даты включены)
+// 5. СРОК ИСКОВОЙ ДАВНОСТИ (НОВАЯ ВЕРСИЯ)
 // ============================================================
-function addRow() {
-    const tbody = document.getElementById('payment-tbody');
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-        <td><input type="date" class="pay-date" value="2022-10-12"></td>
-        <td><input type="number" class="pay-sum" value="1500" step="any"></td>
-        <td><button class="danger-btn" onclick="removeRow(this)">Удалить</button></td>
+
+function limitationAddDays(date, days) {
+    const result = new Date(date);
+    result.setDate(result.getDate() + days);
+    return result;
+}
+
+function limitationAddMonths(date, months) {
+    const result = new Date(date);
+    result.setMonth(result.getMonth() + months);
+    return result;
+}
+
+function limitationAddYears(date, years) {
+    const result = new Date(date);
+    result.setFullYear(result.getFullYear() + years);
+    /*
+       Корректировка для 29 февраля при переходе в невисокосный год.
+    */
+    if (result.getMonth() !== date.getMonth()) {
+        result.setDate(0);
+    }
+    return result;
+}
+
+function limitationDateText(date) {
+    return formatDate(date);
+}
+
+function limitationMoney(value) {
+    return Number(value).toLocaleString('ru-RU', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+}
+
+function limitationRowHtml(date = '', sum = '') {
+    return `
+        <tr>
+            <td>
+                <input
+                    type="date"
+                    class="lim-pay-due-date"
+                    value="${date}"
+                >
+            </td>
+
+            <td>
+                <input
+                    type="number"
+                    class="lim-pay-sum"
+                    value="${sum}"
+                    min="0.01"
+                    step="0.01"
+                >
+            </td>
+
+            <td>
+                <select class="lim-pay-status">
+                    <option value="unpaid">Не оплачен</option>
+                    <option value="paid">Оплачен</option>
+                </select>
+            </td>
+
+            <td>
+                <button
+                    type="button"
+                    class="danger-btn"
+                    onclick="removeLimitationRow(this)"
+                >
+                    Удалить
+                </button>
+            </td>
+        </tr>
     `;
-    tbody.appendChild(tr);
 }
-function removeRow(btn) {
-    const tr = btn.closest('tr');
-    if (document.querySelectorAll('#payment-tbody tr').length > 1) {
-        tr.remove();
-    } else {
-        alert('Должна быть хотя бы одна строка.');
-    }
+
+function addLimitationRow() {
+    const tbody = document.getElementById('payment-tbody');
+    tbody.insertAdjacentHTML(
+        'beforeend',
+        limitationRowHtml()
+    );
 }
-function calcLimitation() {
-    const orderStr = document.getElementById('lim-order').value;
-    const cancelStr = document.getElementById('lim-cancel').value;
-    const claimStr = document.getElementById('lim-claim').value;
-    const resultDiv = document.getElementById('lim-result');
-    if (!orderStr || !cancelStr || !claimStr) {
-        resultDiv.className = 'result-box error';
-        resultDiv.textContent = 'Заполните все даты.';
+
+function removeLimitationRow(button) {
+    const tbody = document.getElementById('payment-tbody');
+    const row = button.closest('tr');
+    if (tbody.rows.length > 1) {
+        row.remove();
         return;
     }
-    const orderDt = parseDate(orderStr);
-    const cancelDt = parseDate(cancelStr);
-    const claimDt = parseDate(claimStr);
-    if (cancelDt < orderDt) {
-        resultDiv.className = 'result-box error';
-        resultDiv.textContent = 'Дата отмены не может быть раньше даты подачи приказа.';
-        return;
-    }
-    const suspensionDays = daysBothInclusive(orderDt, cancelDt);
-    const suspensionFormatted = formatPeriod(suspensionDays);
-    const rows = document.querySelectorAll('#payment-tbody tr');
+    row.querySelector('.lim-pay-due-date').value = '';
+    row.querySelector('.lim-pay-sum').value = '';
+    row.querySelector('.lim-pay-status').value = 'unpaid';
+}
+
+function clearLimitationRows() {
+    const tbody = document.getElementById('payment-tbody');
+    tbody.innerHTML = limitationRowHtml();
+}
+
+function toggleLimitationOrderFields() {
+    const used = document.getElementById('lim-order-used').value;
+    document.getElementById('lim-order-fields').style.display =
+        used === 'yes' ? 'block' : 'none';
+}
+
+function toggleLimitationClaimProcedureFields() {
+    const used = document.getElementById(
+        'lim-claim-procedure-used'
+    ).value;
+    document.getElementById(
+        'lim-claim-procedure-fields'
+    ).style.display = used === 'yes' ? 'block' : 'none';
+}
+
+function toggleLimitationAcknowledgmentFields() {
+    const used = document.getElementById(
+        'lim-acknowledgment-used'
+    ).value;
+    document.getElementById(
+        'lim-acknowledgment-fields'
+    ).style.display = used === 'yes' ? 'block' : 'none';
+}
+
+function limitationGetPayments() {
     const payments = [];
-    rows.forEach(tr => {
-        const dateVal = tr.querySelector('.pay-date').value;
-        const sumVal = tr.querySelector('.pay-sum').value;
-        if (dateVal && sumVal) {
-            payments.push({ date: parseDate(dateVal), sum: parseFloat(sumVal) });
+    document.querySelectorAll('#payment-tbody tr').forEach((row, index) => {
+        const dueDateValue = row.querySelector(
+            '.lim-pay-due-date'
+        ).value;
+        const sum = parseFloat(
+            row.querySelector('.lim-pay-sum').value
+        );
+        const status = row.querySelector(
+            '.lim-pay-status'
+        ).value;
+        if (
+            !dueDateValue ||
+            !Number.isFinite(sum) ||
+            sum <= 0
+        ) {
+            return;
+        }
+        payments.push({
+            number: index + 1,
+            dueDate: parseDate(dueDateValue),
+            sum,
+            status
+        });
+    });
+    return payments.sort((first, second) => {
+        return first.dueDate - second.dueDate;
+    });
+}
+
+function limitationGetSuspensionPeriods() {
+    const periods = [];
+    const orderUsed = document.getElementById(
+        'lim-order-used'
+    ).value === 'yes';
+    const claimProcedureUsed = document.getElementById(
+        'lim-claim-procedure-used'
+    ).value === 'yes';
+
+    if (orderUsed) {
+        const orderValue = document.getElementById('lim-order').value;
+        const cancelValue = document.getElementById('lim-cancel').value;
+        if (!orderValue || !cancelValue) {
+            throw new Error(
+                'Для судебного приказа укажите дату обращения и дату отмены.'
+            );
+        }
+        const orderDate = parseDate(orderValue);
+        const cancelDate = parseDate(cancelValue);
+        if (cancelDate < orderDate) {
+            throw new Error(
+                'Дата отмены судебного приказа не может быть раньше даты обращения.'
+            );
+        }
+        periods.push({
+            type: 'Судебный приказ',
+            start: orderDate,
+            end: cancelDate
+        });
+    }
+
+    if (claimProcedureUsed) {
+        const startValue = document.getElementById(
+            'lim-claim-procedure-start'
+        ).value;
+        const endValue = document.getElementById(
+            'lim-claim-procedure-end'
+        ).value;
+        if (!startValue || !endValue) {
+            throw new Error(
+                'Для претензионного порядка укажите даты начала и окончания.'
+            );
+        }
+        const startDate = parseDate(startValue);
+        const endDate = parseDate(endValue);
+        if (endDate < startDate) {
+            throw new Error(
+                'Дата окончания претензионного порядка не может быть раньше даты направления претензии.'
+            );
+        }
+        periods.push({
+            type: 'Претензионный порядок',
+            start: startDate,
+            end: endDate
+        });
+    }
+
+    return periods;
+}
+
+function limitationGetAcknowledgmentDate() {
+    const used = document.getElementById(
+        'lim-acknowledgment-used'
+    ).value === 'yes';
+    if (!used) {
+        return null;
+    }
+    const value = document.getElementById(
+        'lim-acknowledgment-date'
+    ).value;
+    if (!value) {
+        throw new Error(
+            'Укажите дату признания долга.'
+        );
+    }
+    return parseDate(value);
+}
+
+function limitationApplySuspension(
+    limitationStart,
+    limitationEnd,
+    periods
+) {
+    let finalEnd = new Date(limitationEnd);
+    const sortedPeriods = [...periods].sort((first, second) => {
+        return first.start - second.start;
+    });
+
+    sortedPeriods.forEach(period => {
+        /*
+           Приостановление имеет значение только если началось
+           до исходного окончания срока.
+        */
+        if (period.start > finalEnd) {
+            return;
+        }
+        /*
+           Если событие началось раньше начала срока, учитываем только часть
+           периода, попавшую в течение срока исковой давности.
+        */
+        const actualStart = period.start < limitationStart
+            ? limitationStart
+            : period.start;
+        const actualEnd = period.end > finalEnd
+            ? finalEnd
+            : period.end;
+        if (actualEnd < actualStart) {
+            return;
+        }
+        const days = Math.floor(
+            (actualEnd - actualStart) / 86400000
+        ) + 1;
+        finalEnd = limitationAddDays(finalEnd, days);
+        /*
+           Если к окончанию приостановления оставалось менее шести месяцев,
+           срок продлевается до шести месяцев.
+        */
+        const remainingDays = Math.floor(
+            (finalEnd - period.end) / 86400000
+        );
+        if (remainingDays < 180) {
+            finalEnd = limitationAddMonths(period.end, 6);
         }
     });
+
+    return finalEnd;
+}
+
+function limitationGetDeadline(
+    dueDate,
+    acknowledgmentDate,
+    suspensionPeriods
+) {
+    /*
+       Срок начинается на следующий день после дня,
+       когда обязательство должно было быть исполнено.
+    */
+    let startDate = limitationAddDays(dueDate, 1);
+    /*
+       Общий срок — три года.
+    */
+    let endDate = limitationAddYears(startDate, 3);
+    /*
+       Признание долга до истечения срока прерывает срок:
+       новый трёхлетний период начинается заново со следующего дня.
+    */
+    if (
+        acknowledgmentDate &&
+        acknowledgmentDate >= startDate &&
+        acknowledgmentDate <= endDate
+    ) {
+        startDate = limitationAddDays(acknowledgmentDate, 1);
+        endDate = limitationAddYears(startDate, 3);
+    }
+    const finalEndDate = limitationApplySuspension(
+        startDate,
+        endDate,
+        suspensionPeriods
+    );
+    return {
+        startDate,
+        endDate: finalEndDate
+    };
+}
+
+function calcLimitation() {
+    const resultDiv = document.getElementById('lim-result');
+    const resultBody = document.getElementById('lim-result-tbody');
+
+    const claimValue = document.getElementById('lim-claim').value;
+    if (!claimValue) {
+        resultDiv.className = 'result-box error';
+        resultDiv.textContent =
+            'Укажите дату подачи искового заявления.';
+        resultBody.innerHTML = '';
+        return;
+    }
+
+    const claimDate = parseDate(claimValue);
+    const payments = limitationGetPayments();
     if (payments.length === 0) {
         resultDiv.className = 'result-box error';
-        resultDiv.textContent = 'Добавьте хотя бы один платёж.';
+        resultDiv.textContent =
+            'Добавьте хотя бы один обязательный платёж по графику.';
+        resultBody.innerHTML = '';
         return;
     }
-    let output = [];
-    let expiredEndDates = [];
-    let nonExpiredPaymentDates = [];
-    payments.forEach((p, idx) => {
-        const startDate = new Date(p.date);
-        const endSimple = addYears(startDate, 3);
-        let status, finalEnd;
-        if (endSimple <= orderDt) {
-            status = 'Истёк до подачи приказа';
-            finalEnd = new Date(endSimple);
-        } else {
-            const daysInOrder = daysBothInclusive(orderDt, cancelDt);
-            const endWithOrder = addDays(endSimple, daysInOrder);
-            const remaining = daysBothInclusive(cancelDt, endWithOrder);
-            if (remaining < 180) {
-                finalEnd = addDays(cancelDt, 180);
-            } else {
-                finalEnd = new Date(endWithOrder);
-            }
-            if (finalEnd < claimDt) {
-                status = 'Истёк (с учётом приказа и удлинения)';
-            } else {
-                status = 'Не истёк';
-            }
+
+    let suspensionPeriods;
+    let acknowledgmentDate;
+    try {
+        suspensionPeriods = limitationGetSuspensionPeriods();
+        acknowledgmentDate = limitationGetAcknowledgmentDate();
+    } catch (error) {
+        resultDiv.className = 'result-box error';
+        resultDiv.textContent = error.message;
+        resultBody.innerHTML = '';
+        return;
+    }
+
+    let expiredCount = 0;
+    let activeCount = 0;
+    let paidCount = 0;
+    let expiredSum = 0;
+    let activeSum = 0;
+
+    const rows = payments.map(payment => {
+        if (payment.status === 'paid') {
+            paidCount += 1;
+            return {
+                ...payment,
+                limitationStart: null,
+                limitationEnd: null,
+                statusText: 'Оплачен — расчёт не требуется',
+                statusClass: 'paid'
+            };
         }
-        if (status.includes('Истёк')) {
-            expiredEndDates.push(finalEnd);
-        } else {
-            nonExpiredPaymentDates.push(p.date);
-        }
-        output.push(
-            `Платёж ${idx+1} (дата ${formatDate(p.date)}, сумма ${p.sum.toFixed(2)}):\n` +
-            `  Начало срока: ${formatDate(startDate)}\n` +
-            `  Истечение с учётом всех правил: ${formatDate(finalEnd)}\n` +
-            `  Статус: ${status}\n`
+
+        const deadline = limitationGetDeadline(
+            payment.dueDate,
+            acknowledgmentDate,
+            suspensionPeriods
         );
-    });
-    let boundaryDate = null;
-    let boundaryMessage = '';
-    if (nonExpiredPaymentDates.length > 0) {
-        const minDate = nonExpiredPaymentDates.reduce((a, b) => a < b ? a : b);
-        boundaryDate = minDate;
-        boundaryMessage = `✅ Срок исковой давности не пропущен по платежам, начиная с ${formatDate(boundaryDate)}`;
-    } else {
-        const maxEndDate = expiredEndDates.reduce((a, b) => a > b ? a : b);
-        boundaryDate = maxEndDate;
-        boundaryMessage = `⚠️ Срок исковой давности пропущен по всем платежам. Истечение срока по последнему платежу: ${formatDate(boundaryDate)}`;
-    }
-    let expiredSinceMessage = '';
-    if (nonExpiredPaymentDates.length > 0) {
-        let lastExpired = null;
-        if (expiredEndDates.length > 0) {
-            lastExpired = expiredEndDates.reduce((a, b) => a > b ? a : b);
-            expiredSinceMessage = `Срок исковой давности пропущен по платежам до ${formatDate(lastExpired)} (включительно).`;
+        const isExpired = claimDate > deadline.endDate;
+        if (isExpired) {
+            expiredCount += 1;
+            expiredSum += payment.sum;
         } else {
-            expiredSinceMessage = 'Срок исковой давности не пропущен ни по одному из введённых платежей.';
+            activeCount += 1;
+            activeSum += payment.sum;
         }
-    } else {
-        const maxEndDate = expiredEndDates.reduce((a, b) => a > b ? a : b);
-        expiredSinceMessage = `Срок исковой давности пропущен по платежам до ${formatDate(maxEndDate)} (включительно).`;
-    }
-    const summaryLines = [
-        `📅 Период приостановления течения срока: ${suspensionFormatted} (с ${formatDate(orderDt)} по ${formatDate(cancelDt)})`,
-        boundaryMessage,
-        expiredSinceMessage
-    ];
+        return {
+            ...payment,
+            limitationStart: deadline.startDate,
+            limitationEnd: deadline.endDate,
+            statusText: isExpired
+                ? 'Срок истёк'
+                : 'Срок не истёк',
+            statusClass: isExpired ? 'expired' : 'active'
+        };
+    });
+
+    resultBody.innerHTML = rows.map((row, index) => {
+        const statusStyle = row.statusClass === 'expired'
+            ? 'color: #b71c1c; font-weight: 700;'
+            : row.statusClass === 'active'
+                ? 'color: #1b5e20; font-weight: 700;'
+                : 'color: #546e7a;';
+        return `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${limitationDateText(row.dueDate)}</td>
+                <td>${limitationMoney(row.sum)}</td>
+                <td>${
+                    row.limitationStart
+                        ? limitationDateText(row.limitationStart)
+                        : '—'
+                }</td>
+                <td>${
+                    row.limitationEnd
+                        ? limitationDateText(row.limitationEnd)
+                        : '—'
+                }</td>
+                <td style="${statusStyle}">
+                    ${row.statusText}
+                </td>
+            </tr>
+        `;
+    }).join('');
+
+    const suspensionText = suspensionPeriods.length
+        ? suspensionPeriods.map(period => {
+            return `${period.type}: ${limitationDateText(period.start)} — ` +
+                `${limitationDateText(period.end)}`;
+        }).join('; ')
+        : 'Не применялись';
+
+    const acknowledgmentText = acknowledgmentDate
+        ? limitationDateText(acknowledgmentDate)
+        : 'Не указано';
+
     resultDiv.className = 'result-box';
-    resultDiv.innerHTML = output.join('\n') + '\n\n--- === ИТОГОВЫЕ ВЫВОДЫ === ---\n' + summaryLines.join('\n');
-}
-function addYears(d, years) {
-    let newD = new Date(d);
-    newD.setFullYear(newD.getFullYear() + years);
-    if (newD.getMonth() !== d.getMonth()) {
-        newD.setDate(0);
-    }
-    return newD;
+    resultDiv.textContent =
+        `РАСЧЁТ СРОКА ИСКОВОЙ ДАВНОСТИ\n\n` +
+        `Дата подачи иска: ${limitationDateText(claimDate)}\n` +
+        `Обязательных платежей в таблице: ${payments.length}\n` +
+        `Оплаченных платежей: ${paidCount}\n\n` +
+
+        `ТРЕБОВАНИЯ С ИСТЁКШИМ СРОКОМ\n` +
+        `Количество платежей: ${expiredCount}\n` +
+        `Сумма платежей: ${limitationMoney(expiredSum)} руб.\n\n` +
+
+        `ТРЕБОВАНИЯ С НЕИСТЁКШИМ СРОКОМ\n` +
+        `Количество платежей: ${activeCount}\n` +
+        `Сумма платежей: ${limitationMoney(activeSum)} руб.\n\n` +
+
+        `УЧТЁННЫЕ ОБСТОЯТЕЛЬСТВА\n` +
+        `Судебный приказ / претензионный порядок: ${suspensionText}\n` +
+        `Дата признания долга: ${acknowledgmentText}\n\n` +
+
+        `Важно: истечение срока исковой давности применяется судом ` +
+        `только по заявлению стороны в споре. Расчёт не заменяет правовую ` +
+        `оценку документов, в том числе требования о досрочном возврате ` +
+        `кредита, даты получения претензии и юридической силы действий ` +
+        `по признанию долга.`;
 }
 
 // ============================================================
@@ -2183,8 +2737,8 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>
 
             <p class="muted">
-                Неустойка начисляется начиная со дня, следующего за датой,
-                когда соответствующий платёж по графику должен был быть внесён.
+                Неустойка начисляется начиная со дня, следующего за датой, когда
+                соответствующий платёж по графику должен был быть внесён.
             </p>
         </div>
 
