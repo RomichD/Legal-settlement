@@ -2726,41 +2726,45 @@ document.addEventListener('DOMContentLoaded', function () {
     creditDebtAddPaymentRow('', '');
 });
 /* ==========================================================
-   ВКЛАДКА: ГОСПОШЛИНА И СУДЕБНЫЕ ИЗДЕРЖКИ
-   Суды общей юрисдикции и мировые судьи.
+   ВКЛАДКА 8: ГОСУДАРСТВЕННАЯ ПОШЛИНА И СУДЕБНЫЕ ИЗДЕРЖКИ
+   Суды общей юрисдикции, мировые судьи, арбитражные суды.
    ========================================================== */
 
 document.addEventListener('DOMContentLoaded', function () {
     const tabsContainer = document.getElementById('tabs');
 
+    /* ---------- Кнопка вкладки ---------- */
     if (tabsContainer && !document.querySelector('[data-tab="tab8"]')) {
-        const button = document.createElement('button');
+        const tabButton = document.createElement('button');
 
-        button.className = 'tab-btn';
-        button.dataset.tab = 'tab8';
-        button.textContent = 'Госпошлина и издержки';
+        tabButton.className = 'tab-btn';
+        tabButton.dataset.tab = 'tab8';
+        tabButton.textContent = 'Госпошлина и издержки';
 
-        button.addEventListener('click', function () {
-            document.querySelectorAll('.tab-btn').forEach(function (item) {
-                item.classList.remove('active');
+        tabButton.addEventListener('click', function () {
+            document.querySelectorAll('.tab-btn').forEach(function (button) {
+                button.classList.remove('active');
             });
 
-            document.querySelectorAll('.tab-content').forEach(function (item) {
-                item.classList.remove('active');
+            document.querySelectorAll('.tab-content').forEach(function (content) {
+                content.classList.remove('active');
             });
 
-            button.classList.add('active');
+            tabButton.classList.add('active');
 
-            const content = document.getElementById('tab8');
-            if (content) content.classList.add('active');
+            const tab = document.getElementById('tab8');
+            if (tab) tab.classList.add('active');
         });
 
-        tabsContainer.appendChild(button);
+        tabsContainer.appendChild(tabButton);
     }
 
+    /* Не создаём дубль, если вкладка уже есть */
     if (document.getElementById('tab8')) return;
 
+    /* ---------- HTML вкладки ---------- */
     const tab = document.createElement('div');
+
     tab.id = 'tab8';
     tab.className = 'tab-content';
 
@@ -2768,18 +2772,28 @@ document.addEventListener('DOMContentLoaded', function () {
         <h2>Калькулятор государственной пошлины и издержек</h2>
 
         <div class="note">
-            Калькулятор предназначен для обращений к мировому судье и в суды общей
-            юрисдикции. Он определяет пошлину при обращении в суд и ориентировочно
-            распределяет госпошлину и издержки при итоговом разрешении спора.
-            Для неимущественных требований, требований о защите личных неимущественных
-            прав и отдельных категорий дел вопрос распределения издержек может решаться
-            судом с учётом особенностей конкретного спора.
+            Калькулятор определяет госпошлину при обращении в суд и ориентировочно
+            распределяет госпошлину и подтверждённые судебные издержки между сторонами.
+            Для имущественных требований используется цена иска и удовлетворённая судом сумма.
+            Для смешанных требований расчёт доли расходов можно скорректировать вручную.
         </div>
 
         <div class="payment-block">
-            <label><strong>Вид обращения</strong></label>
+            <label><strong>Вид судопроизводства и обращение</strong></label>
 
             <div class="inline-group">
+                <div class="form-group">
+                    <label>Вид судопроизводства</label>
+                    <select id="fee-jurisdiction">
+                        <option value="general">
+                            Суды общей юрисдикции / мировой судья
+                        </option>
+                        <option value="arbitration">
+                            Арбитражный суд
+                        </option>
+                    </select>
+                </div>
+
                 <div class="form-group">
                     <label>Суд</label>
                     <select id="fee-court">
@@ -2787,9 +2801,11 @@ document.addEventListener('DOMContentLoaded', function () {
                         <option value="district">Районный (городской) суд</option>
                     </select>
                 </div>
+            </div>
 
+            <div class="inline-group">
                 <div class="form-group">
-                    <label>Стадия / документ</label>
+                    <label>Документ, подаваемый в суд</label>
                     <select id="fee-stage">
                         <option value="claim">Исковое заявление</option>
                         <option value="order">Заявление о вынесении судебного приказа</option>
@@ -2798,40 +2814,56 @@ document.addEventListener('DOMContentLoaded', function () {
                         <option value="supervisory">Надзорная жалоба</option>
                     </select>
                 </div>
-            </div>
-
-            <div class="inline-group">
-                <div class="form-group">
-                    <label>Характер требований</label>
-                    <select id="fee-claim-type">
-                        <option value="property">Имущественные, подлежащие оценке</option>
-                        <option value="nonproperty">Неимущественные / имущественные без оценки</option>
-                        <option value="mixed">Смешанные: имущественные и неимущественные</option>
-                    </select>
-                </div>
 
                 <div class="form-group">
-                    <label>Кто подаёт обращение</label>
+                    <label>Заявитель / истец</label>
                     <select id="fee-applicant-status">
                         <option value="individual">Физическое лицо</option>
-                        <option value="organization">Организация</option>
+                        <option value="organization">Юридическое лицо / организация</option>
                     </select>
                 </div>
             </div>
         </div>
 
         <div class="payment-block">
-            <label><strong>Исковые требования и результат</strong></label>
+            <label><strong>Требования и результат рассмотрения</strong></label>
+
+            <div class="form-group">
+                <label>Характер заявленных требований</label>
+                <select id="fee-claim-type">
+                    <option value="property">
+                        Имущественные требования, подлежащие оценке
+                    </option>
+                    <option value="nonproperty">
+                        Неимущественные требования / имущественные без оценки
+                    </option>
+                    <option value="mixed">
+                        Смешанные: имущественные и неимущественные требования
+                    </option>
+                </select>
+            </div>
 
             <div class="inline-group">
                 <div class="form-group">
                     <label>Цена имущественного иска (руб.)</label>
-                    <input type="number" id="fee-claim-price" value="100000" min="0" step="0.01">
+                    <input
+                        type="number"
+                        id="fee-claim-price"
+                        value="100000"
+                        min="0"
+                        step="0.01"
+                    >
                 </div>
 
                 <div class="form-group">
                     <label>Удовлетворено имущественных требований (руб.)</label>
-                    <input type="number" id="fee-awarded-price" value="50000" min="0" step="0.01">
+                    <input
+                        type="number"
+                        id="fee-awarded-price"
+                        value="50000"
+                        min="0"
+                        step="0.01"
+                    >
                 </div>
             </div>
 
@@ -2854,26 +2886,32 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>
 
             <p class="muted">
-                Для имущественного требования укажите цену иска и присужденную сумму.
-                Для чисто неимущественного иска оставьте цену иска равной нулю.
+                Для неимущественного иска цена иска не требуется. Для жалоб поля
+                требований отключаются, поскольку пошлина устанавливается фиксированно.
             </p>
         </div>
 
         <div class="payment-block">
-            <label><strong>Льготы и фактическая уплата</strong></label>
+            <label><strong>Уплата госпошлины и льготы</strong></label>
 
             <div class="inline-group">
                 <div class="form-group">
-                    <label>Статус истца / заявителя по госпошлине</label>
+                    <label>Положение истца / заявителя</label>
                     <select id="fee-plaintiff-benefit">
-                        <option value="none">Льгот нет, пошлина уплачена</option>
-                        <option value="full">Полностью освобождён от уплаты</option>
-                        <option value="defer">Отсрочка / рассрочка / уменьшение судом</option>
+                        <option value="none">
+                            Госпошлина уплачивается в общем порядке
+                        </option>
+                        <option value="full">
+                            Полностью освобождён от уплаты госпошлины
+                        </option>
+                        <option value="defer">
+                            Отсрочка, рассрочка или уменьшение пошлины судом
+                        </option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label>Ответчик освобождён от пошлины</label>
+                    <label>Ответчик освобождён от госпошлины</label>
                     <select id="fee-defendant-benefit">
                         <option value="no">Нет</option>
                         <option value="yes">Да</option>
@@ -2890,20 +2928,26 @@ document.addEventListener('DOMContentLoaded', function () {
                         value=""
                         min="0"
                         step="0.01"
-                        placeholder="Пусто — использовать расчётную сумму"
+                        placeholder="Пусто — расчётная сумма"
                     >
                 </div>
 
                 <div class="form-group">
                     <label>Фактически уплачено ответчиком (руб.)</label>
-                    <input type="number" id="fee-defendant-paid" value="0" min="0" step="0.01">
+                    <input
+                        type="number"
+                        id="fee-defendant-paid"
+                        value="0"
+                        min="0"
+                        step="0.01"
+                    >
                 </div>
             </div>
 
             <p class="muted">
-                Если истец освобождён от уплаты пошлины, при удовлетворении иска пошлина
-                может быть взыскана с неосвобождённого ответчика в доход бюджета
-                пропорционально удовлетворённым требованиям.
+                Если истец освобождён от уплаты пошлины и иск удовлетворён,
+                госпошлина может быть взыскана с неосвобождённого ответчика
+                в доход бюджета пропорционально удовлетворённой части требований.
             </p>
         </div>
 
@@ -2912,49 +2956,92 @@ document.addEventListener('DOMContentLoaded', function () {
 
             <div class="inline-group">
                 <div class="form-group">
-                    <label>Издержки истца (представитель, экспертиза, почта и др.), руб.</label>
-                    <input type="number" id="fee-plaintiff-costs" value="0" min="0" step="0.01">
+                    <label>Издержки истца (представитель, эксперт, почта и др.), руб.</label>
+                    <input
+                        type="number"
+                        id="fee-plaintiff-costs"
+                        value="0"
+                        min="0"
+                        step="0.01"
+                    >
                 </div>
 
                 <div class="form-group">
-                    <label>Издержки ответчика (представитель, экспертиза и др.), руб.</label>
-                    <input type="number" id="fee-defendant-costs" value="0" min="0" step="0.01">
+                    <label>Издержки ответчика (представитель, эксперт и др.), руб.</label>
+                    <input
+                        type="number"
+                        id="fee-defendant-costs"
+                        value="0"
+                        min="0"
+                        step="0.01"
+                    >
                 </div>
             </div>
 
             <div class="form-group">
-                <label>Режим распределения издержек</label>
+                <label>Способ распределения издержек</label>
                 <select id="fee-costs-mode">
-                    <option value="proportional">Пропорционально удовлетворённым требованиям</option>
-                    <option value="full-plaintiff">Полностью в пользу истца</option>
-                    <option value="full-defendant">Полностью в пользу ответчика</option>
-                    <option value="manual">Указать долю вручную</option>
+                    <option value="proportional">
+                        Пропорционально удовлетворённым требованиям
+                    </option>
+                    <option value="full-plaintiff">
+                        Полностью в пользу истца
+                    </option>
+                    <option value="full-defendant">
+                        Полностью в пользу ответчика
+                    </option>
+                    <option value="manual">
+                        Указать долю удовлетворения вручную
+                    </option>
                 </select>
             </div>
 
-            <div class="form-group" id="fee-manual-ratio-group" style="display:none;">
+            <div
+                class="form-group"
+                id="fee-manual-ratio-group"
+                style="display:none;"
+            >
                 <label>Доля удовлетворения для распределения расходов (%)</label>
-                <input type="number" id="fee-manual-ratio" value="50" min="0" max="100" step="0.01">
+                <input
+                    type="number"
+                    id="fee-manual-ratio"
+                    value="50"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                >
             </div>
 
             <p class="muted">
-                Вводите только документально подтверждённые расходы, которые суд может
-                признать необходимыми и разумными. Размер расходов на представителя
-                суд вправе уменьшить.
+                Вводите подтверждённые расходы. Суд самостоятельно проверяет их
+                необходимость и разумность, в том числе может уменьшить расходы
+                на представителя.
             </p>
         </div>
 
-        <button class="btn" type="button" id="fee-calculate">
+        <button type="button" class="btn" id="fee-calculate">
             Рассчитать госпошлину и распределение расходов
         </button>
 
-        <div id="fee-result" class="result-box">
-            Заполните параметры дела и нажмите «Рассчитать госпошлину и распределение расходов».
+        <div class="result-wrapper">
+            <div id="fee-result" class="result-box">
+                Заполните параметры дела и нажмите «Рассчитать госпошлину и распределение расходов».
+            </div>
+
+            <button
+                type="button"
+                class="copy-btn"
+                onclick="copyResult('fee-result')"
+            >
+                📋 Копировать результат
+            </button>
         </div>
     `;
 
     const scriptElement = document.querySelector('script');
     scriptElement.parentNode.insertBefore(tab, scriptElement);
+
+    /* ---------- Вспомогательные функции ---------- */
 
     function feeRound(value) {
         return Math.round((Number(value) + Number.EPSILON) * 100) / 100;
@@ -2968,112 +3055,170 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function feeInputNumber(id, defaultValue) {
-        const element = document.getElementById(id);
-        const rawValue = element.value.trim();
+        const rawValue = document.getElementById(id).value.trim();
 
         if (rawValue === '') return defaultValue;
 
-        const number = Number(rawValue);
-        return Number.isFinite(number) ? number : NaN;
+        const value = Number(rawValue);
+        return Number.isFinite(value) ? value : NaN;
     }
 
-    /*
-      Подп. 1 п. 1 ст. 333.19 НК РФ:
-      имущественные иски в суды общей юрисдикции и мировым судьям.
+    /* ======================================================
+       СУДЫ ОБЩЕЙ ЮРИСДИКЦИИ И МИРОВОЙ СУДЬЯ
+       Ст. 333.19 НК РФ.
+       ====================================================== */
 
-      До 100 000 руб. — 4%, минимум 4 000 руб.;
-      100 001–300 000 — 4 000 + 3% с суммы свыше 100 000;
-      300 001–500 000 — 10 000 + 2,5% с суммы свыше 300 000;
-      500 001–1 000 000 — 15 000 + 2% с суммы свыше 500 000;
-      свыше 1 000 000 — 25 000 + 1% с суммы свыше 1 000 000,
-      но не более 900 000 руб.
-    */
-    function feePropertyClaim(claimPrice) {
+    function feeGeneralPropertyClaim(claimPrice) {
         if (claimPrice <= 0) return 0;
 
-        let duty;
+        let duty = 0;
 
         if (claimPrice <= 100000) {
-            duty = Math.max(claimPrice * 0.04, 4000);
+            duty = 4000;
         } else if (claimPrice <= 300000) {
             duty = 4000 + (claimPrice - 100000) * 0.03;
         } else if (claimPrice <= 500000) {
             duty = 10000 + (claimPrice - 300000) * 0.025;
         } else if (claimPrice <= 1000000) {
             duty = 15000 + (claimPrice - 500000) * 0.02;
-        } else {
+        } else if (claimPrice <= 3000000) {
             duty = 25000 + (claimPrice - 1000000) * 0.01;
+        } else if (claimPrice <= 8000000) {
+            duty = 45000 + (claimPrice - 3000000) * 0.007;
+        } else if (claimPrice <= 24000000) {
+            duty = 80000 + (claimPrice - 8000000) * 0.0035;
+        } else if (claimPrice <= 50000000) {
+            duty = 136000 + (claimPrice - 24000000) * 0.0022;
+        } else if (claimPrice <= 100000000) {
+            duty = 214000 + (claimPrice - 50000000) * 0.002;
+        } else {
+            duty = 314000 + (claimPrice - 100000000) * 0.0015;
             duty = Math.min(duty, 900000);
         }
 
         return feeRound(duty);
     }
 
-    /*
-      Подп. 3 п. 1 ст. 333.19 НК РФ:
-      неимущественный иск / имущественный иск, не подлежащий оценке.
-
-      Физическое лицо — 3 000 руб.
-      Организация — 20 000 руб.
-    */
-    function feeNonPropertyClaim(status) {
-        return status === 'organization' ? 20000 : 3000;
+    function feeGeneralNonPropertyClaim(applicantStatus) {
+        return applicantStatus === 'organization' ? 20000 : 3000;
     }
 
-    /*
-      Апелляция и кассация:
-      физлицо — 3 000 руб.;
-      организация — 15 000 руб.
+    function feeGeneralComplaint(stage, applicantStatus) {
+        if (stage === 'appeal') {
+            return applicantStatus === 'organization' ? 15000 : 3000;
+        }
 
-      Надзорная жалоба:
-      физлицо — 7 000 руб.;
-      организация — 25 000 руб.
-    */
-    function feeForAppeal(stage, status) {
-        if (stage === 'appeal' || stage === 'cassation') {
-            return status === 'organization' ? 15000 : 3000;
+        if (stage === 'cassation') {
+            return applicantStatus === 'organization' ? 20000 : 5000;
         }
 
         if (stage === 'supervisory') {
-            return status === 'organization' ? 25000 : 7000;
+            return applicantStatus === 'organization' ? 30000 : 7000;
         }
 
         return 0;
     }
 
-    function getBaseStateFee(data) {
-        if (
-            data.stage === 'appeal' ||
-            data.stage === 'cassation' ||
-            data.stage === 'supervisory'
-        ) {
-            return feeForAppeal(data.stage, data.applicantStatus);
+    /* ======================================================
+       АРБИТРАЖНЫЙ СУД
+       Ст. 333.21 НК РФ.
+       ====================================================== */
+
+    function feeArbitrationPropertyClaim(claimPrice) {
+        if (claimPrice <= 0) return 0;
+
+        let duty = 0;
+
+        if (claimPrice <= 100000) {
+            duty = Math.max(claimPrice * 0.04, 10000);
+        } else if (claimPrice <= 200000) {
+            duty = 10000 + (claimPrice - 100000) * 0.03;
+        } else if (claimPrice <= 1000000) {
+            duty = 13000 + (claimPrice - 200000) * 0.02;
+        } else if (claimPrice <= 2000000) {
+            duty = 29000 + (claimPrice - 1000000) * 0.01;
+        } else if (claimPrice <= 10000000) {
+            duty = 39000 + (claimPrice - 2000000) * 0.005;
+        } else if (claimPrice <= 50000000) {
+            duty = 79000 + (claimPrice - 10000000) * 0.003;
+        } else {
+            duty = 199000 + (claimPrice - 50000000) * 0.001;
+            duty = Math.min(duty, 10000000);
         }
 
-        let result = 0;
+        return feeRound(duty);
+    }
+
+    function feeArbitrationNonPropertyClaim(applicantStatus) {
+        return applicantStatus === 'organization' ? 50000 : 15000;
+    }
+
+    function feeArbitrationComplaint(stage, applicantStatus) {
+        if (stage === 'appeal' || stage === 'cassation') {
+            return applicantStatus === 'organization' ? 30000 : 10000;
+        }
+
+        if (stage === 'supervisory') {
+            return applicantStatus === 'organization' ? 80000 : 30000;
+        }
+
+        return 0;
+    }
+
+    /* ---------- Определение базовой госпошлины ---------- */
+
+    function getBaseStateFee(data) {
+        const isComplaint =
+            data.stage === 'appeal' ||
+            data.stage === 'cassation' ||
+            data.stage === 'supervisory';
+
+        const isArbitration = data.jurisdiction === 'arbitration';
+
+        if (isComplaint) {
+            return isArbitration
+                ? feeArbitrationComplaint(data.stage, data.applicantStatus)
+                : feeGeneralComplaint(data.stage, data.applicantStatus);
+        }
+
+        const propertyDuty = isArbitration
+            ? feeArbitrationPropertyClaim(data.claimPrice)
+            : feeGeneralPropertyClaim(data.claimPrice);
+
+        const nonPropertyDuty = isArbitration
+            ? feeArbitrationNonPropertyClaim(data.applicantStatus)
+            : feeGeneralNonPropertyClaim(data.applicantStatus);
+
+        let totalDuty = 0;
 
         if (
             data.claimType === 'property' ||
             data.claimType === 'mixed'
         ) {
-            result += feePropertyClaim(data.claimPrice);
+            totalDuty += propertyDuty;
         }
 
         if (
             data.claimType === 'nonproperty' ||
             data.claimType === 'mixed'
         ) {
-            result += feeNonPropertyClaim(data.applicantStatus);
+            totalDuty += nonPropertyDuty;
         }
 
+        /*
+          Для судебного приказа пошлина равна 50% от пошлины
+          по имущественному иску, но не менее 2 000 руб.
+        */
         if (data.stage === 'order') {
-            result = result * 0.5;
+            totalDuty = Math.max(propertyDuty * 0.5, 2000);
         }
 
-        return feeRound(result);
+        return feeRound(totalDuty);
     }
 
-    function getFeeDistributionRatio(data) {
+    /* ---------- Доля для распределения расходов ---------- */
+
+    function getDistributionRatio(data) {
         if (data.costsMode === 'full-plaintiff') return 1;
         if (data.costsMode === 'full-defendant') return 0;
 
@@ -3081,8 +3226,12 @@ document.addEventListener('DOMContentLoaded', function () {
             return data.manualRatio / 100;
         }
 
-        if (data.claimType === 'nonproperty') {
-            return data.nonpropertyAwarded === 'yes' ? 1 : 0;
+        if (
+            data.stage === 'appeal' ||
+            data.stage === 'cassation' ||
+            data.stage === 'supervisory'
+        ) {
+            return 1;
         }
 
         if (data.claimType === 'property') {
@@ -3091,23 +3240,38 @@ document.addEventListener('DOMContentLoaded', function () {
                 : 0;
         }
 
+        if (data.claimType === 'nonproperty') {
+            return data.nonPropertyAwarded === 'yes' ? 1 : 0;
+        }
+
         /*
-          Для смешанного иска:
-          имущественная часть и неимущественная часть имеют равный вес
-          только для ориентировочного расчёта. При необходимости пользователь
-          может выбрать ручной режим и установить требуемую долю.
+          Смешанный иск: базово — среднее между долей удовлетворения
+          имущественных и неимущественных требований. Для иной методики
+          выберите ручной режим распределения.
         */
         const propertyRatio = data.claimPrice > 0
             ? data.awardedPrice / data.claimPrice
             : 0;
 
-        const nonPropertyRatio = data.nonpropertyAwarded === 'yes' ? 1 : 0;
+        const nonPropertyRatio = data.nonPropertyAwarded === 'yes'
+            ? 1
+            : 0;
 
         return (propertyRatio + nonPropertyRatio) / 2;
     }
 
-    function feeStageName(stage) {
-        const names = {
+    function getCourtName(data) {
+        if (data.jurisdiction === 'arbitration') {
+            return 'арбитражный суд';
+        }
+
+        return data.court === 'magistrate'
+            ? 'мировой судья'
+            : 'районный (городской) суд';
+    }
+
+    function getStageName(stage) {
+        const stages = {
             claim: 'исковое заявление',
             order: 'заявление о вынесении судебного приказа',
             appeal: 'апелляционная жалоба',
@@ -3115,29 +3279,24 @@ document.addEventListener('DOMContentLoaded', function () {
             supervisory: 'надзорная жалоба'
         };
 
-        return names[stage] || 'обращение';
+        return stages[stage] || 'обращение в суд';
     }
 
+    /* ---------- Адаптация полей вкладки ---------- */
+
     function updateFeeInterface() {
+        const jurisdiction = document.getElementById(
+            'fee-jurisdiction'
+        ).value;
+
         const stage = document.getElementById('fee-stage').value;
         const claimType = document.getElementById('fee-claim-type').value;
         const costsMode = document.getElementById('fee-costs-mode').value;
 
-        const claimBlock = document.getElementById('fee-claim-price')
-            .closest('.payment-block');
-
-        const manualBlock = document.getElementById(
-            'fee-manual-ratio-group'
+        const courtSelect = document.getElementById('fee-court');
+        const orderOption = document.querySelector(
+            '#fee-stage option[value="order"]'
         );
-
-        manualBlock.style.display = costsMode === 'manual'
-            ? 'block'
-            : 'none';
-
-        const isComplaint =
-            stage === 'appeal' ||
-            stage === 'cassation' ||
-            stage === 'supervisory';
 
         const priceInput = document.getElementById('fee-claim-price');
         const awardedInput = document.getElementById('fee-awarded-price');
@@ -3148,17 +3307,51 @@ document.addEventListener('DOMContentLoaded', function () {
             'fee-nonproperty-awarded'
         );
 
+        const manualRatioGroup = document.getElementById(
+            'fee-manual-ratio-group'
+        );
+
+        const isComplaint =
+            stage === 'appeal' ||
+            stage === 'cassation' ||
+            stage === 'supervisory';
+
+        if (jurisdiction === 'arbitration') {
+            courtSelect.value = 'district';
+            courtSelect.disabled = true;
+
+            if (orderOption) {
+                orderOption.disabled = true;
+
+                if (stage === 'order') {
+                    document.getElementById('fee-stage').value = 'claim';
+                }
+            }
+        } else {
+            courtSelect.disabled = false;
+
+            if (orderOption) {
+                orderOption.disabled = false;
+            }
+        }
+
+        manualRatioGroup.style.display = costsMode === 'manual'
+            ? 'block'
+            : 'none';
+
         if (isComplaint) {
             priceInput.disabled = true;
             awardedInput.disabled = true;
             nonPropertyRequested.disabled = true;
             nonPropertyAwarded.disabled = true;
-        } else {
-            priceInput.disabled = claimType === 'nonproperty';
-            awardedInput.disabled = claimType === 'nonproperty';
-            nonPropertyRequested.disabled = claimType === 'property';
-            nonPropertyAwarded.disabled = claimType === 'property';
+            return;
         }
+
+        priceInput.disabled = claimType === 'nonproperty';
+        awardedInput.disabled = claimType === 'nonproperty';
+
+        nonPropertyRequested.disabled = claimType === 'property';
+        nonPropertyAwarded.disabled = claimType === 'property';
 
         if (claimType === 'property') {
             nonPropertyRequested.value = 'no';
@@ -3170,11 +3363,10 @@ document.addEventListener('DOMContentLoaded', function () {
             awardedInput.value = '0';
             nonPropertyRequested.value = 'yes';
         }
-
-        if (!claimBlock) return;
     }
 
     [
+        'fee-jurisdiction',
         'fee-stage',
         'fee-claim-type',
         'fee-costs-mode'
@@ -3187,24 +3379,29 @@ document.addEventListener('DOMContentLoaded', function () {
 
     updateFeeInterface();
 
+    /* ---------- Основной расчёт ---------- */
+
     document.getElementById('fee-calculate').addEventListener(
         'click',
         function () {
             const result = document.getElementById('fee-result');
 
             const data = {
+                jurisdiction: document.getElementById(
+                    'fee-jurisdiction'
+                ).value,
                 court: document.getElementById('fee-court').value,
                 stage: document.getElementById('fee-stage').value,
-                claimType: document.getElementById('fee-claim-type').value,
                 applicantStatus: document.getElementById(
                     'fee-applicant-status'
                 ).value,
+                claimType: document.getElementById('fee-claim-type').value,
                 claimPrice: feeInputNumber('fee-claim-price', 0),
                 awardedPrice: feeInputNumber('fee-awarded-price', 0),
-                nonpropertyRequested: document.getElementById(
+                nonPropertyRequested: document.getElementById(
                     'fee-nonproperty-requested'
                 ).value,
-                nonpropertyAwarded: document.getElementById(
+                nonPropertyAwarded: document.getElementById(
                     'fee-nonproperty-awarded'
                 ).value,
                 plaintiffBenefit: document.getElementById(
@@ -3243,7 +3440,7 @@ document.addEventListener('DOMContentLoaded', function () {
             ) {
                 result.className = 'result-box error';
                 result.textContent =
-                    'Проверьте введённые суммы расходов и долю распределения.';
+                    'Проверьте введённые суммы и процент распределения расходов.';
                 return;
             }
 
@@ -3257,7 +3454,7 @@ document.addEventListener('DOMContentLoaded', function () {
             ) {
                 result.className = 'result-box error';
                 result.textContent =
-                    'Присужденная сумма не может превышать цену имущественного иска.';
+                    'Сумма удовлетворённых имущественных требований не может превышать цену иска.';
                 return;
             }
 
@@ -3281,36 +3478,34 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            let satisfactionRatio = getFeeDistributionRatio(data);
+            let satisfactionRatio = getDistributionRatio(data);
 
-            satisfactionRatio = Math.max(
-                0,
-                Math.min(1, satisfactionRatio)
+            satisfactionRatio = Math.min(
+                1,
+                Math.max(0, satisfactionRatio)
             );
 
             const refusalRatio = 1 - satisfactionRatio;
 
             /*
-              Если истец уплатил пошлину сам:
-              ответчик возмещает уплаченную пошлину пропорционально
-              удовлетворённой части требований.
+              Если истец оплатил госпошлину, она возмещается ему
+              пропорционально удовлетворённой части требований.
             */
-            const feeRecoveredByPlaintiff = feeRound(
+            const dutyRecoveredByPlaintiff = feeRound(
                 plaintiffPaidDuty * satisfactionRatio
             );
 
             /*
-              При законном освобождении истца от госпошлины:
-              неосвобождённый ответчик уплачивает госпошлину в бюджет
-              пропорционально удовлетворённым требованиям.
+              При освобождении истца пошлина взыскивается с
+              неосвобождённого ответчика в доход бюджета.
             */
-            let feeToBudgetFromDefendant = 0;
+            let dutyToBudgetFromDefendant = 0;
 
             if (
                 data.plaintiffBenefit === 'full' &&
                 data.defendantBenefit === 'no'
             ) {
-                feeToBudgetFromDefendant = feeRound(
+                dutyToBudgetFromDefendant = feeRound(
                     calculatedDuty * satisfactionRatio
                 );
             }
@@ -3323,47 +3518,46 @@ document.addEventListener('DOMContentLoaded', function () {
                 data.defendantCosts * refusalRatio
             );
 
-            const defendantFeeRecovered = feeRound(
+            const defendantDutyRecovered = feeRound(
                 data.defendantPaid * refusalRatio
             );
 
             const totalToPlaintiff = feeRound(
-                feeRecoveredByPlaintiff + plaintiffCostsRecovered
+                dutyRecoveredByPlaintiff +
+                plaintiffCostsRecovered
             );
 
             const totalToDefendant = feeRound(
-                defendantCostsRecovered + defendantFeeRecovered
+                defendantCostsRecovered +
+                defendantDutyRecovered
             );
 
             const netBetweenParties = feeRound(
                 totalToPlaintiff - totalToDefendant
             );
 
-            const courtName = data.court === 'magistrate'
-                ? 'мировой судья'
-                : 'районный (городской) суд';
-
-            const applicantName = data.applicantStatus === 'individual'
-                ? 'физическое лицо'
-                : 'организация';
+            const applicantName = data.applicantStatus === 'organization'
+                ? 'юридическое лицо / организация'
+                : 'физическое лицо';
 
             const benefitName = {
-                none: 'льгота отсутствует',
-                full: 'полное освобождение от уплаты',
-                defer: 'отсрочка, рассрочка либо уменьшение пошлины судом'
+                none: 'госпошлина уплачивается в общем порядке',
+                full: 'полное освобождение от уплаты госпошлины',
+                defer: 'отсрочка, рассрочка или уменьшение пошлины судом'
             }[data.plaintiffBenefit];
 
-            let propertyText = '';
+            let claimsText = '';
 
             if (!isComplaint) {
-                propertyText =
+                claimsText =
                     `Цена имущественного иска: ${feeFormat(data.claimPrice)} руб.
 ` +
-                    `Удовлетворено имущественных требований: ${feeFormat(data.awardedPrice)} руб.
+                    `Удовлетворено имущественных требований: ` +
+                    `${feeFormat(data.awardedPrice)} руб.
 `;
             }
 
-            let netText;
+            let netText = '';
 
             if (netBetweenParties > 0) {
                 netText =
@@ -3375,18 +3569,18 @@ document.addEventListener('DOMContentLoaded', function () {
                     `${feeFormat(Math.abs(netBetweenParties))} руб.`;
             } else {
                 netText =
-                    'После взаимного зачёта взаимные выплаты между сторонами отсутствуют.';
+                    'После взаимного зачёта денежных обязательств между сторонами не возникает.';
             }
 
             let budgetText = '';
 
-            if (feeToBudgetFromDefendant > 0) {
+            if (dutyToBudgetFromDefendant > 0) {
                 budgetText =
                     `
-В ДОХОД БЮДЖЕТА
+ВЗЫСКАНИЕ В ДОХОД БЮДЖЕТА
 ` +
-                    `С ответчика подлежит взысканию госпошлина в доход бюджета: ` +
-                    `${feeFormat(feeToBudgetFromDefendant)} руб.
+                    `С ответчика в доход бюджета: ` +
+                    `${feeFormat(dutyToBudgetFromDefendant)} руб.
 `;
             }
 
@@ -3394,16 +3588,22 @@ document.addEventListener('DOMContentLoaded', function () {
             result.textContent =
                 `ОБРАЩЕНИЕ В СУД
 ` +
-                `Суд: ${courtName}.
+                `Вид судопроизводства: ${
+                    data.jurisdiction === 'arbitration'
+                        ? 'арбитражное'
+                        : 'гражданское / административное в СОЮ'
+                }.
 ` +
-                `Документ: ${feeStageName(data.stage)}.
+                `Суд: ${getCourtName(data)}.
+` +
+                `Документ: ${getStageName(data)}.
 ` +
                 `Заявитель: ${applicantName}.
 ` +
                 `Статус по госпошлине: ${benefitName}.
 ` +
-                `${propertyText}` +
-                `Доля, принимаемая для распределения расходов: ` +
+                `${claimsText}` +
+                `Доля для распределения судебных расходов: ` +
                 `${(satisfactionRatio * 100).toFixed(2)}%.
 ` +
                 `Доля отказа: ${(refusalRatio * 100).toFixed(2)}%.
@@ -3411,45 +3611,49 @@ document.addEventListener('DOMContentLoaded', function () {
                 `
 ГОСУДАРСТВЕННАЯ ПОШЛИНА
 ` +
-                `Расчётный размер пошлины: ${feeFormat(calculatedDuty)} руб.
+                `Расчётный размер: ${feeFormat(calculatedDuty)} руб.
 ` +
-                `Фактически уплачено истцом / заявителем: ${feeFormat(plaintiffPaidDuty)} руб.
+                `Фактически уплачено истцом / заявителем: ` +
+                `${feeFormat(plaintiffPaidDuty)} руб.
 ` +
-                `Возмещается истцу с ответчика: ${feeFormat(feeRecoveredByPlaintiff)} руб.
+                `Возмещается истцу с ответчика: ` +
+                `${feeFormat(dutyRecoveredByPlaintiff)} руб.
 ` +
                 `
 СУДЕБНЫЕ ИЗДЕРЖКИ ИСТЦА
 ` +
-                `Заявленные издержки истца: ${feeFormat(data.plaintiffCosts)} руб.
+                `Издержки истца: ${feeFormat(data.plaintiffCosts)} руб.
 ` +
-                `Подлежит взысканию с ответчика в пользу истца: ` +
+                `Подлежит взысканию с ответчика: ` +
                 `${feeFormat(plaintiffCostsRecovered)} руб.
 ` +
                 `
 СУДЕБНЫЕ ИЗДЕРЖКИ ОТВЕТЧИКА
 ` +
-                `Заявленные издержки ответчика: ${feeFormat(data.defendantCosts)} руб.
+                `Издержки ответчика: ${feeFormat(data.defendantCosts)} руб.
 ` +
-                `Подлежит взысканию с истца в пользу ответчика: ` +
+                `Подлежит взысканию с истца: ` +
                 `${feeFormat(defendantCostsRecovered)} руб.
 ` +
                 `
 ИТОГОВОЕ РАСПРЕДЕЛЕНИЕ МЕЖДУ СТОРОНАМИ
 ` +
-                `Всего с ответчика в пользу истца: ${feeFormat(totalToPlaintiff)} руб.
+                `Всего с ответчика в пользу истца: ` +
+                `${feeFormat(totalToPlaintiff)} руб.
 ` +
-                `Всего с истца в пользу ответчика: ${feeFormat(totalToDefendant)} руб.
+                `Всего с истца в пользу ответчика: ` +
+                `${feeFormat(totalToDefendant)} руб.
 ` +
                 `${netText}
 ` +
                 `${budgetText}` +
                 `
-Примечание: результат носит расчётный характер. Суд проверяет ` +
-                `документальное подтверждение и разумность издержек, а также применимость ` +
-                `конкретной льготы по госпошлине.`;
+Примечание: расчёт является ориентировочным. Суд проверяет ` +
+                `документальное подтверждение, необходимость и разумность издержек, ` +
+                `а также наличие предусмотренных законом льгот.`;
         }
     );
-});
+});            
 </script>
 </body>
 </html>
