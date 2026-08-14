@@ -210,20 +210,17 @@ html {
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
 }
-
 body {
     min-width: 320px;
     overflow-x: hidden;
     -webkit-tap-highlight-color: transparent;
 }
-
 button,
 input,
 select,
 textarea {
     font: inherit;
 }
-
 button,
 .tab-btn,
 .btn,
@@ -232,8 +229,6 @@ button,
 .copy-btn {
     touch-action: manipulation;
 }
-
-/* Удобное горизонтальное переключение между многочисленными вкладками */
 .tabs {
     flex-wrap: nowrap;
     overflow-x: auto;
@@ -242,23 +237,18 @@ button,
     scrollbar-width: thin;
     scroll-snap-type: x proximity;
 }
-
 .tabs::-webkit-scrollbar {
     height: 5px;
 }
-
 .tabs::-webkit-scrollbar-thumb {
     background: #9fa8da;
     border-radius: 10px;
 }
-
 .tab-btn {
     flex: 0 0 auto;
     min-height: 48px;
     scroll-snap-align: start;
 }
-
-/* Предотвращает обрезание широких таблиц и графиков */
 .table-wrapper,
 .scroll-table {
     width: 100%;
@@ -266,19 +256,14 @@ button,
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-x: contain;
 }
-
 .table-wrapper table,
 .scroll-table table {
     min-width: 640px;
 }
-
-/* Не ломает колонки во вкладке с госпошлиной и в прочих сетках */
 .grid,
 .inline-group {
     width: 100%;
 }
-
-/* Безопасная ширина результата и длинных строк */
 .result-box,
 .note,
 .muted,
@@ -286,340 +271,81 @@ pre {
     overflow-wrap: anywhere;
     word-break: break-word;
 }
-
-/* Кнопки на телефоне не должны быть слишком маленькими */
 .add-row-btn,
 .danger-btn,
 .copy-btn {
     min-height: 42px;
 }
-
 .copy-toast {
     max-width: calc(100vw - 32px);
     text-align: center;
 }
-
-/* Планшеты и небольшие ноутбуки */
 @media (max-width: 900px) {
-    body {
-        padding: 12px;
-    }
-
-    .container {
-        max-width: 100%;
-    }
-
-    .tab-content {
-        padding: 20px;
-    }
-
-    .inline-group .form-group {
-        min-width: 220px;
-    }
-
-    .grid {
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    }
+    body { padding: 12px; }
+    .container { max-width: 100%; }
+    .tab-content { padding: 20px; }
+    .inline-group .form-group { min-width: 220px; }
+    .grid { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
 }
-
-/* Android-смартфоны */
 @media (max-width: 600px) {
-    body {
-        padding: 0;
-        background: #ffffff;
-        font-size: 16px;
-    }
-
-    .container {
-        width: 100%;
-        min-height: 100vh;
-        border-radius: 0;
-        box-shadow: none;
-    }
-
-    h1 {
-        padding: 16px;
-        font-size: 21px;
-        line-height: 1.3;
-    }
-
-    h2 {
-        font-size: 19px;
-        line-height: 1.35;
-        margin-bottom: 16px;
-    }
-
-    .tabs {
-        position: sticky;
-        top: 0;
-        z-index: 50;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-    }
-
-    .tab-btn {
-        min-width: max-content;
-        padding: 12px 14px;
-        font-size: 14px;
-        border-bottom-width: 3px;
-    }
-
-    .tab-content {
-        padding: 16px 14px 28px;
-    }
-
-    .form-group {
-        margin-bottom: 15px;
-    }
-
-    .inline-group {
-        display: block;
-    }
-
-    .inline-group .form-group {
-        width: 100%;
-        min-width: 0;
-    }
-
-    .grid {
-        grid-template-columns: 1fr;
-        gap: 12px;
-    }
-
-    label {
-        font-size: 14px;
-        line-height: 1.35;
-    }
-
-    input,
-    select {
-        min-height: 48px;
-        padding: 11px 12px;
-        font-size: 16px;
-        border-radius: 8px;
-    }
-
-    input[type="date"] {
-        min-width: 0;
-    }
-
-    .radio-group {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-    }
-
-    .radio-group label {
-        min-height: 44px;
-        padding: 8px 10px;
-        background: #f3f4f6;
-        border-radius: 7px;
-    }
-
-    .payment-block {
-        padding: 14px;
-        margin-top: 14px;
-        border-radius: 8px;
-    }
-
-    .note {
-        padding: 12px;
-        margin: 12px 0 16px;
-        font-size: 14px;
-    }
-
-    .muted {
-        font-size: 13px;
-        line-height: 1.45;
-    }
-
-    .btn {
-        min-height: 50px;
-        padding: 13px 16px;
-        font-size: 16px;
-        border-radius: 8px;
-    }
-
-    .add-row-btn,
-    .danger-btn,
-    .copy-btn {
-        min-height: 44px;
-        padding: 9px 12px;
-        font-size: 14px;
-        border-radius: 7px;
-    }
-
-    .copy-btn {
-        width: 100%;
-        margin-top: 10px;
-    }
-
-    .result-wrapper,
-    .result-box {
-        margin-top: 16px;
-    }
-
-    .result-box {
-        max-height: none;
-        padding: 14px;
-        border-left-width: 4px;
-        font-size: 14px;
-        line-height: 1.55;
-        white-space: pre-wrap;
-    }
-
-    .table-wrapper,
-    .scroll-table {
-        margin: 12px 0;
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
-        background: #ffffff;
-    }
-
-    .table-wrapper table,
-    .scroll-table table {
-        min-width: 580px;
-        font-size: 13px;
-    }
-
-    table th {
-        padding: 10px 8px;
-        white-space: nowrap;
-    }
-
-    table td {
-        padding: 8px 6px;
-    }
-
-    table input {
-        min-width: 126px;
-        min-height: 40px;
-        padding: 7px 8px;
-        font-size: 16px;
-    }
-
-    .scroll-table {
-        max-height: 65vh;
-    }
-
-    .scroll-table table th {
-        top: 0;
-    }
-
-    .copy-toast {
-        bottom: calc(18px + env(safe-area-inset-bottom));
-        font-size: 14px;
-        padding: 11px 16px;
-    }
+    body { padding: 0; background: #ffffff; font-size: 16px; }
+    .container { width: 100%; min-height: 100vh; border-radius: 0; box-shadow: none; }
+    h1 { padding: 16px; font-size: 21px; line-height: 1.3; }
+    h2 { font-size: 19px; line-height: 1.35; margin-bottom: 16px; }
+    .tabs { position: sticky; top: 0; z-index: 50; box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
+    .tab-btn { min-width: max-content; padding: 12px 14px; font-size: 14px; border-bottom-width: 3px; }
+    .tab-content { padding: 16px 14px 28px; }
+    .form-group { margin-bottom: 15px; }
+    .inline-group { display: block; }
+    .inline-group .form-group { width: 100%; min-width: 0; }
+    .grid { grid-template-columns: 1fr; gap: 12px; }
+    label { font-size: 14px; line-height: 1.35; }
+    input, select { min-height: 48px; padding: 11px 12px; font-size: 16px; border-radius: 8px; }
+    input[type="date"] { min-width: 0; }
+    .radio-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .radio-group label { min-height: 44px; padding: 8px 10px; background: #f3f4f6; border-radius: 7px; }
+    .payment-block { padding: 14px; margin-top: 14px; border-radius: 8px; }
+    .note { padding: 12px; margin: 12px 0 16px; font-size: 14px; }
+    .muted { font-size: 13px; line-height: 1.45; }
+    .btn { min-height: 50px; padding: 13px 16px; font-size: 16px; border-radius: 8px; }
+    .add-row-btn, .danger-btn, .copy-btn { min-height: 44px; padding: 9px 12px; font-size: 14px; border-radius: 7px; }
+    .copy-btn { width: 100%; margin-top: 10px; }
+    .result-wrapper, .result-box { margin-top: 16px; }
+    .result-box { max-height: none; padding: 14px; border-left-width: 4px; font-size: 14px; line-height: 1.55; white-space: pre-wrap; }
+    .table-wrapper, .scroll-table { margin: 12px 0; border: 1px solid #e0e0e0; border-radius: 8px; background: #ffffff; }
+    .table-wrapper table, .scroll-table table { min-width: 580px; font-size: 13px; }
+    table th { padding: 10px 8px; white-space: nowrap; }
+    table td { padding: 8px 6px; }
+    table input { min-width: 126px; min-height: 40px; padding: 7px 8px; font-size: 16px; }
+    .scroll-table { max-height: 65vh; }
+    .scroll-table table th { top: 0; }
+    .copy-toast { bottom: calc(18px + env(safe-area-inset-bottom)); font-size: 14px; padding: 11px 16px; }
 }
-
-/* Компактные Android-устройства: 320–390 px */
 @media (max-width: 390px) {
-    h1 {
-        font-size: 19px;
-    }
-
-    h2 {
-        font-size: 18px;
-    }
-
-    .tab-content {
-        padding-left: 12px;
-        padding-right: 12px;
-    }
-
-    .payment-block {
-        padding: 12px;
-    }
-
-    .radio-group {
-        grid-template-columns: 1fr;
-    }
-
-    .tab-btn {
-        font-size: 13px;
-        padding: 11px 12px;
-    }
-
-    .result-box {
-        font-size: 13px;
-    }
+    h1 { font-size: 19px; }
+    h2 { font-size: 18px; }
+    .tab-content { padding-left: 12px; padding-right: 12px; }
+    .payment-block { padding: 12px; }
+    .radio-group { grid-template-columns: 1fr; }
+    .tab-btn { font-size: 13px; padding: 11px 12px; }
+    .result-box { font-size: 13px; }
 }
-
-/* Тёмная тема Android: сохраняет читаемость, если система её включила */
 @media (prefers-color-scheme: dark) {
-    body {
-        background: #121212;
-        color: #e5e7eb;
-    }
-
-    .container {
-        background: #1e1e1e;
-    }
-
-    .tabs,
-    .tab-btn.active {
-        background: #252b42;
-    }
-
-    .tab-btn {
-        color: #bfc8ff;
-    }
-
-    .tab-btn.active {
-        color: #ffffff;
-        border-bottom-color: #9fa8ff;
-    }
-
-    input,
-    select,
-    table input {
-        background: #262626;
-        color: #f3f4f6;
-        border-color: #4b5563;
-    }
-
-    label {
-        color: #e5e7eb;
-    }
-
-    .payment-block {
-        background: #282828;
-    }
-
-    .note {
-        background: #172554;
-        color: #dbeafe;
-    }
-
-    .muted {
-        color: #cbd5e1;
-    }
-
-    table th,
-    .scroll-table table th {
-        background: #2d334d;
-        color: #f3f4f6;
-    }
-
-    table td {
-        border-bottom-color: #3f3f46;
-    }
-
-    .table-wrapper,
-    .scroll-table {
-        background: #1e1e1e;
-        border-color: #444;
-    }
-
-    .result-box {
-        background: #153d28;
-        color: #dcfce7;
-    }
-
-    .result-box.error {
-        background: #4a1d1d;
-        color: #fecaca;
-    }
+    body { background: #121212; color: #e5e7eb; }
+    .container { background: #1e1e1e; }
+    .tabs, .tab-btn.active { background: #252b42; }
+    .tab-btn { color: #bfc8ff; }
+    .tab-btn.active { color: #ffffff; border-bottom-color: #9fa8ff; }
+    input, select, table input { background: #262626; color: #f3f4f6; border-color: #4b5563; }
+    label { color: #e5e7eb; }
+    .payment-block { background: #282828; }
+    .note { background: #172554; color: #dbeafe; }
+    .muted { color: #cbd5e1; }
+    table th, .scroll-table table th { background: #2d334d; color: #f3f4f6; }
+    table td { border-bottom-color: #3f3f46; }
+    .table-wrapper, .scroll-table { background: #1e1e1e; border-color: #444; }
+    .result-box { background: #153d28; color: #dcfce7; }
+    .result-box.error { background: #4a1d1d; color: #fecaca; }
 }
 </style>
 </head>
@@ -636,10 +362,34 @@ pre {
         <button class="tab-btn" data-tab="tab6">Ст. 395 ГК РФ</button>
     </div>
 
-    <!-- ========== ВКЛАДКА 1 ========== -->
+    <!-- ========== ВКЛАДКА 1 (ПРОЦЕНТЫ ПО ЗАЙМУ) ========== -->
     <div id="tab1" class="tab-content active">
-        <h2>Расчёт процентов по займу (помесячно)</h2>
-        <div class="form-group"><label>Сумма займа (руб.)</label><input type="number" id="loan-amount" value="100000" step="any"></div>
+        <h2>Расчёт процентов по займу</h2>
+
+        <div class="note">
+            В режиме с платежами расчёт использует очередность по ст. 319 ГК РФ:
+            издержки кредитора → проценты за пользование займом → основной долг.
+        </div>
+
+        <div class="form-group">
+            <label>Режим расчёта</label>
+            <div class="radio-group">
+                <label>
+                    <input type="radio" name="loan-calc-mode" value="simple" checked onchange="toggleLoanPayments()">
+                    Без частичных платежей
+                </label>
+                <label>
+                    <input type="radio" name="loan-calc-mode" value="payments" onchange="toggleLoanPayments()">
+                    С платежами по ст. 319 ГК РФ
+                </label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Сумма займа, руб.</label>
+            <input type="number" id="loan-amount" value="100000" step="0.01" min="0.01">
+        </div>
+
         <div class="form-group">
             <label>Тип ставки</label>
             <div class="radio-group">
@@ -647,23 +397,61 @@ pre {
                 <label><input type="radio" name="loan-rate-type" value="daily"> Дневная (% в день)</label>
             </div>
         </div>
-        <div class="form-group"><label>Значение ставки (если годовая – % годовых, если дневная – % в день)</label><input type="number" id="loan-rate" value="15" step="0.01"></div>
-        <div class="form-group"><label>Дата выдачи (ДД-ММ-ГГГГ)</label><input type="date" id="loan-start" value="2025-01-01" placeholder="ДД-ММ-ГГГГ"></div>
-        <div class="form-group"><label>Дата расчёта (ДД-ММ-ГГГГ)</label><input type="date" id="loan-end" value="2026-06-01" placeholder="ДД-ММ-ГГГГ"></div>
+
+        <div class="form-group">
+            <label>Значение ставки</label>
+            <input type="number" id="loan-rate" value="15" step="0.001" min="0">
+        </div>
+
+        <div class="inline-group">
+            <div class="form-group">
+                <label>Дата выдачи займа</label>
+                <input type="date" id="loan-start" value="2025-01-01">
+            </div>
+            <div class="form-group">
+                <label>Дата расчёта</label>
+                <input type="date" id="loan-end" value="2026-06-01">
+            </div>
+        </div>
+
+        <div id="loan-expenses-group" class="form-group" style="display: none;">
+            <label>Издержки кредитора по получению исполнения, руб.</label>
+            <input type="number" id="loan-expenses" value="0" step="0.01" min="0">
+            <div class="muted">Не включайте сюда неустойку, штрафы или проценты по ст. 395 ГК РФ.</div>
+        </div>
+
+        <div id="loan-payments-block" class="payment-block" style="display: none;">
+            <label><strong>Фактические платежи заёмщика</strong></label>
+            <p class="muted">Каждый платёж уменьшает задолженность в дату его поступления. Очерёдность зачёта: издержки, проценты, основной долг.</p>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>Дата платежа</th><th>Сумма, руб.</th><th>Действие</th></tr></thead>
+                    <tbody id="loan-payment-tbody">
+                        <tr>
+                            <td><input type="date" class="loan-pay-date"></td>
+                            <td><input type="number" class="loan-pay-sum" step="0.01" min="0"></td>
+                            <td><button type="button" class="danger-btn" onclick="removeLoanPaymentRow(this)">Удалить</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <button type="button" class="add-row-btn" onclick="addLoanPaymentRow()">➕ Добавить платёж</button>
+        </div>
+
         <button class="btn" onclick="calcLoanInterest()">Рассчитать проценты</button>
 
         <div class="result-wrapper">
-            <div id="loan-result" class="result-box">Результат появится здесь</div>
+            <div id="loan-result" class="result-box">Результат появится здесь.</div>
             <button class="copy-btn" onclick="copyResult('loan-result')">📋 Копировать результат</button>
         </div>
     </div>
 
-    <!-- ========== ВКЛАДКА 2 ========== -->
+    <!-- ========== ВКЛАДКА 2 (НЕУСТОЙКА) ========== -->
     <div id="tab2" class="tab-content">
         <h2>Расчёт неустойки (с частичными погашениями)</h2>
         <div class="form-group"><label>Сумма задолженности (руб.)</label><input type="number" id="penalty-debt" value="45000" step="any"></div>
-        <div class="form-group"><label>Дата начала просрочки (ДД-ММ-ГГГГ)</label><input type="date" id="penalty-start" value="2023-09-14" placeholder="ДД-ММ-ГГГГ"></div>
-        <div class="form-group"><label>Дата окончания просрочки (ДД-ММ-ГГГГ)</label><input type="date" id="penalty-end" value="2024-03-06" placeholder="ДД-ММ-ГГГГ"></div>
+        <div class="form-group"><label>Дата начала просрочки (ДД-ММ-ГГГГ)</label><input type="date" id="penalty-start" value="2023-09-14"></div>
+        <div class="form-group"><label>Дата окончания просрочки (ДД-ММ-ГГГГ)</label><input type="date" id="penalty-end" value="2024-03-06"></div>
         <div class="form-group"><label>Тип процентной ставки</label>
             <div class="radio-group">
                 <label><input type="radio" name="percent-type" value="daily" checked> Дневной процент</label>
@@ -678,23 +466,22 @@ pre {
                 <table id="penalty-payment-table">
                     <thead><tr><th>Дата оплаты (ДД-ММ-ГГГГ)</th><th>Сумма (руб.)</th><th></th></tr></thead>
                     <tbody id="penalty-payment-tbody">
-                        <tr><td><input type="date" class="penalty-pay-date" value="2023-10-01" placeholder="ДД-ММ-ГГГГ"></td><td><input type="number" class="penalty-pay-sum" value="5000" step="any"></td><td><button class="danger-btn" onclick="removePenaltyRow(this)">Удалить</button></td></tr>
-                        <tr><td><input type="date" class="penalty-pay-date" value="2023-11-15" placeholder="ДД-ММ-ГГГГ"></td><td><input type="number" class="penalty-pay-sum" value="3000" step="any"></td><td><button class="danger-btn" onclick="removePenaltyRow(this)">Удалить</button></td></tr>
-                        <tr><td><input type="date" class="penalty-pay-date" value="2024-01-10" placeholder="ДД-ММ-ГГГГ"></td><td><input type="number" class="penalty-pay-sum" value="2000" step="any"></td><td><button class="danger-btn" onclick="removePenaltyRow(this)">Удалить</button></td></tr>
+                        <tr><td><input type="date" class="penalty-pay-date" value="2023-10-01"></td><td><input type="number" class="penalty-pay-sum" value="5000" step="any"></td><td><button class="danger-btn" onclick="removePenaltyRow(this)">Удалить</button></td></tr>
+                        <tr><td><input type="date" class="penalty-pay-date" value="2023-11-15"></td><td><input type="number" class="penalty-pay-sum" value="3000" step="any"></td><td><button class="danger-btn" onclick="removePenaltyRow(this)">Удалить</button></td></tr>
+                        <tr><td><input type="date" class="penalty-pay-date" value="2024-01-10"></td><td><input type="number" class="penalty-pay-sum" value="2000" step="any"></td><td><button class="danger-btn" onclick="removePenaltyRow(this)">Удалить</button></td></tr>
                     </tbody>
                 </table>
             </div>
             <button class="add-row-btn" onclick="addPenaltyRow()">➕ Добавить частичное погашение</button>
         </div>
         <button class="btn" onclick="calcPenalty()" style="margin-top:15px;">Рассчитать неустойку</button>
-
         <div class="result-wrapper">
             <div id="penalty-result" class="result-box">Результат появится здесь</div>
             <button class="copy-btn" onclick="copyResult('penalty-result')">📋 Копировать результат</button>
         </div>
     </div>
 
-    <!-- ========== ВКЛАДКА 3 ========== -->
+    <!-- ========== ВКЛАДКА 3 (ПРОСТЫЕ ДРОБИ) ========== -->
     <div id="tab3" class="tab-content">
         <h2>Арифметика простых дробей</h2>
         <div class="inline-group">
@@ -709,128 +496,86 @@ pre {
             <select id="frac-op"><option value="+">+</option><option value="-">-</option><option value="*">*</option><option value="/">/</option></select>
         </div>
         <button class="btn" onclick="calcFraction()">Вычислить</button>
-
         <div class="result-wrapper">
             <div id="frac-result" class="result-box">Результат появится здесь</div>
             <button class="copy-btn" onclick="copyResult('frac-result')">📋 Копировать результат</button>
         </div>
     </div>
 
-    <!-- ========== ВКЛАДКА 4 ========== -->
+    <!-- ========== ВКЛАДКА 4 (КРЕДИТНАЯ КАРТА) ========== -->
     <div id="tab4" class="tab-content">
         <h2>Кредитная карта (расчёт с минимальными платежами)</h2>
-
-        <div class="form-group">
-            <label>Лимит кредитования (руб.)</label>
-            <input type="number" id="card-limit" value="100000" step="any">
-        </div>
-        <div class="form-group">
-            <label>Полученная сумма (руб.)</label>
-            <input type="number" id="card-amount" value="30000" step="any">
-        </div>
-        <div class="form-group">
-            <label>Дата получения (ДД-ММ-ГГГГ)</label>
-            <input type="date" id="card-date" value="2023-01-18" placeholder="ДД-ММ-ГГГГ">
-        </div>
-        <div class="form-group">
-            <label>Годовая ставка (% годовых, например 25)</label>
-            <input type="number" id="card-rate-percent" value="25" step="0.01">
-        </div>
-
+        <div class="form-group"><label>Лимит кредитования (руб.)</label><input type="number" id="card-limit" value="100000" step="any"></div>
+        <div class="form-group"><label>Полученная сумма (руб.)</label><input type="number" id="card-amount" value="30000" step="any"></div>
+        <div class="form-group"><label>Дата получения (ДД-ММ-ГГГГ)</label><input type="date" id="card-date" value="2023-01-18"></div>
+        <div class="form-group"><label>Годовая ставка (% годовых, например 25)</label><input type="number" id="card-rate-percent" value="25" step="0.01"></div>
         <div class="inline-group">
-            <div class="form-group">
-                <label>Минимальный платёж (% от баланса, например 5)</label>
-                <input type="number" id="card-min-percent" value="5" step="0.1">
-            </div>
-            <div class="form-group">
-                <label>Фиксированный минимум (руб.)</label>
-                <input type="number" id="card-min-fixed" value="500" step="any">
-            </div>
+            <div class="form-group"><label>Минимальный платёж (% от баланса, например 5)</label><input type="number" id="card-min-percent" value="5" step="0.1"></div>
+            <div class="form-group"><label>Фиксированный минимум (руб.)</label><input type="number" id="card-min-fixed" value="500" step="any"></div>
         </div>
-
-        <div class="form-group">
-            <label>Фиксированный платёж (опционально, если указан – заменяет расчётный минимум)</label>
-            <input type="number" id="card-fixed-payment" value="" step="any" placeholder="Например, 3000">
-        </div>
-
-        <!-- Таблица внесённых сумм -->
+        <div class="form-group"><label>Фиксированный платёж (опционально, если указан – заменяет расчётный минимум)</label><input type="number" id="card-fixed-payment" value="" step="any" placeholder="Например, 3000"></div>
         <div class="payment-block">
             <label><strong>Внесённые суммы в счёт погашения (фактические платежи)</strong></label>
             <div class="table-wrapper">
                 <table id="card-extra-payment-table">
                     <thead><tr><th>Дата внесения (ДД-ММ-ГГГГ)</th><th>Сумма (руб.)</th><th></th></tr></thead>
                     <tbody id="card-extra-payment-tbody">
-                        <tr><td><input type="date" class="card-extra-date" value="2023-02-16" placeholder="ДД-ММ-ГГГГ"></td><td><input type="number" class="card-extra-sum" value="12000" step="any"></td><td><button class="danger-btn" onclick="removeCardExtraRow(this)">Удалить</button></td></tr>
-                        <tr><td><input type="date" class="card-extra-date" value="2023-03-18" placeholder="ДД-ММ-ГГГГ"></td><td><input type="number" class="card-extra-sum" value="1500" step="any"></td><td><button class="danger-btn" onclick="removeCardExtraRow(this)">Удалить</button></td></tr>
+                        <tr><td><input type="date" class="card-extra-date" value="2023-02-16"></td><td><input type="number" class="card-extra-sum" value="12000" step="any"></td><td><button class="danger-btn" onclick="removeCardExtraRow(this)">Удалить</button></td></tr>
+                        <tr><td><input type="date" class="card-extra-date" value="2023-03-18"></td><td><input type="number" class="card-extra-sum" value="1500" step="any"></td><td><button class="danger-btn" onclick="removeCardExtraRow(this)">Удалить</button></td></tr>
                     </tbody>
                 </table>
             </div>
             <button class="add-row-btn" onclick="addCardExtraRow()">➕ Добавить внесённую сумму</button>
         </div>
-
         <button class="btn" onclick="calcCreditCard()">Рассчитать график платежей</button>
-
         <div class="result-wrapper">
             <div id="card-result" class="result-box">Результат появится здесь</div>
             <button class="copy-btn" onclick="copyResult('card-result')">📋 Копировать результат</button>
         </div>
     </div>
 
-    <!-- ========== ВКЛАДКА 5 ========== -->
+    <!-- ========== ВКЛАДКА 5 (СРОК ИСКОВОЙ ДАВНОСТИ) ========== -->
     <div id="tab5" class="tab-content">
         <h2>Срок исковой давности</h2>
-        <div class="form-group"><label>Дата подачи заявления о судебном приказе (ДД-ММ-ГГГГ)</label><input type="date" id="lim-order" value="2023-11-10" placeholder="ДД-ММ-ГГГГ"></div>
-        <div class="form-group"><label>Дата отмены судебного приказа (ДД-ММ-ГГГГ)</label><input type="date" id="lim-cancel" value="2024-12-19" placeholder="ДД-ММ-ГГГГ"></div>
-        <div class="form-group"><label>Дата подачи искового заявления (ДД-ММ-ГГГГ)</label><input type="date" id="lim-claim" value="2025-11-12" placeholder="ДД-ММ-ГГГГ"></div>
+        <div class="form-group"><label>Дата подачи заявления о судебном приказе (ДД-ММ-ГГГГ)</label><input type="date" id="lim-order" value="2023-11-10"></div>
+        <div class="form-group"><label>Дата отмены судебного приказа (ДД-ММ-ГГГГ)</label><input type="date" id="lim-cancel" value="2024-12-19"></div>
+        <div class="form-group"><label>Дата подачи искового заявления (ДД-ММ-ГГГГ)</label><input type="date" id="lim-claim" value="2025-11-12"></div>
         <div style="margin-top:10px;">
             <label><strong>Периодические платежи (дата и сумма)</strong></label>
             <div class="table-wrapper">
                 <table id="payment-table">
                     <thead><tr><th>Дата платежа (ДД-ММ-ГГГГ)</th><th>Сумма (руб.)</th><th></th></tr></thead>
                     <tbody id="payment-tbody">
-                        <tr><td><input type="date" class="pay-date" value="2022-05-12" placeholder="ДД-ММ-ГГГГ"></td><td><input type="number" class="pay-sum" value="1500" step="any"></td><td><button class="danger-btn" onclick="removeRow(this)">Удалить</button></td></tr>
-                        <tr><td><input type="date" class="pay-date" value="2022-06-12" placeholder="ДД-ММ-ГГГГ"></td><td><input type="number" class="pay-sum" value="1500" step="any"></td><td><button class="danger-btn" onclick="removeRow(this)">Удалить</button></td></tr>
-                        <tr><td><input type="date" class="pay-date" value="2022-07-12" placeholder="ДД-ММ-ГГГГ"></td><td><input type="number" class="pay-sum" value="1500" step="any"></td><td><button class="danger-btn" onclick="removeRow(this)">Удалить</button></td></tr>
-                        <tr><td><input type="date" class="pay-date" value="2022-08-12" placeholder="ДД-ММ-ГГГГ"></td><td><input type="number" class="pay-sum" value="1500" step="any"></td><td><button class="danger-btn" onclick="removeRow(this)">Удалить</button></td></tr>
-                        <tr><td><input type="date" class="pay-date" value="2022-09-12" placeholder="ДД-ММ-ГГГГ"></td><td><input type="number" class="pay-sum" value="1500" step="any"></td><td><button class="danger-btn" onclick="removeRow(this)">Удалить</button></td></tr>
+                        <tr><td><input type="date" class="pay-date" value="2022-05-12"></td><td><input type="number" class="pay-sum" value="1500" step="any"></td><td><button class="danger-btn" onclick="removeRow(this)">Удалить</button></td></tr>
+                        <tr><td><input type="date" class="pay-date" value="2022-06-12"></td><td><input type="number" class="pay-sum" value="1500" step="any"></td><td><button class="danger-btn" onclick="removeRow(this)">Удалить</button></td></tr>
+                        <tr><td><input type="date" class="pay-date" value="2022-07-12"></td><td><input type="number" class="pay-sum" value="1500" step="any"></td><td><button class="danger-btn" onclick="removeRow(this)">Удалить</button></td></tr>
+                        <tr><td><input type="date" class="pay-date" value="2022-08-12"></td><td><input type="number" class="pay-sum" value="1500" step="any"></td><td><button class="danger-btn" onclick="removeRow(this)">Удалить</button></td></tr>
+                        <tr><td><input type="date" class="pay-date" value="2022-09-12"></td><td><input type="number" class="pay-sum" value="1500" step="any"></td><td><button class="danger-btn" onclick="removeRow(this)">Удалить</button></td></tr>
                     </tbody>
                 </table>
             </div>
             <button class="add-row-btn" onclick="addRow()">➕ Добавить платёж</button>
         </div>
         <button class="btn" onclick="calcLimitation()" style="margin-top:18px;">Проверить сроки</button>
-
         <div class="result-wrapper">
             <div id="lim-result" class="result-box">Результат появится здесь</div>
             <button class="copy-btn" onclick="copyResult('lim-result')">📋 Копировать результат</button>
         </div>
     </div>
 
-    <!-- ========== ВКЛАДКА 6 ========== -->
+    <!-- ========== ВКЛАДКА 6 (СТ. 395 ГК РФ) ========== -->
     <div id="tab6" class="tab-content">
         <h2>Расчёт процентов по ст. 395 ГК РФ</h2>
-
         <div class="note">
             Расчёт включает обе даты периода. До 01.06.2015 используется ставка рефинансирования,
             с 01.06.2015 по 31.07.2016 — средние ставки банковского процента по федеральным округам,
             с 01.08.2016 — ключевая ставка Банка России.
         </div>
-
         <div class="grid">
-            <div>
-                <label for="debt">Сумма задолженности, руб.</label>
-                <input id="debt" type="number" min="0.01" step="0.01" value="250000">
-            </div>
-            <div>
-                <label for="start">Дата начала просрочки</label>
-                <input id="start" type="date" value="2023-01-01">
-            </div>
-            <div>
-                <label for="end">Дата окончания просрочки</label>
-                <input id="end" type="date" value="2024-01-01">
-            </div>
-            <div>
-                <label for="region">Федеральный округ (2015–2016)</label>
+            <div><label for="debt">Сумма задолженности, руб.</label><input id="debt" type="number" min="0.01" step="0.01" value="250000"></div>
+            <div><label for="start">Дата начала просрочки</label><input id="start" type="date" value="2023-01-01"></div>
+            <div><label for="end">Дата окончания просрочки</label><input id="end" type="date" value="2024-01-01"></div>
+            <div><label for="region">Федеральный округ (2015–2016)</label>
                 <select id="region">
                     <option value="central">Центральный</option>
                     <option value="northwest">Северо-Западный</option>
@@ -844,41 +589,22 @@ pre {
                 </select>
             </div>
         </div>
-
         <section class="payment-block" style="margin-top:15px;">
             <strong>Частичные платежи</strong>
             <p class="muted">Платёж уменьшает долг с даты его внесения. При отсутствии платежей оставьте таблицу пустой.</p>
-
             <div class="table-wrapper">
                 <table>
-                    <thead>
-                        <tr>
-                            <th>Дата платежа</th>
-                            <th>Сумма, руб.</th>
-                            <th>Действие</th>
-                        </tr>
-                    </thead>
+                    <thead><tr><th>Дата платежа</th><th>Сумма, руб.</th><th>Действие</th></tr></thead>
                     <tbody id="payments">
-                        <tr>
-                            <td><input class="payment-date" type="date" value="2023-06-01"></td>
-                            <td><input class="payment-sum" type="number" min="0.01" step="0.01" value="20000"></td>
-                            <td><button class="danger-btn" onclick="this.closest('tr').remove()">Удалить</button></td>
-                        </tr>
-                        <tr>
-                            <td><input class="payment-date" type="date" value="2023-09-01"></td>
-                            <td><input class="payment-sum" type="number" min="0.01" step="0.01" value="15000"></td>
-                            <td><button class="danger-btn" onclick="this.closest('tr').remove()">Удалить</button></td>
-                        </tr>
+                        <tr><td><input class="payment-date" type="date" value="2023-06-01"></td><td><input class="payment-sum" type="number" min="0.01" step="0.01" value="20000"></td><td><button class="danger-btn" onclick="this.closest('tr').remove()">Удалить</button></td></tr>
+                        <tr><td><input class="payment-date" type="date" value="2023-09-01"></td><td><input class="payment-sum" type="number" min="0.01" step="0.01" value="15000"></td><td><button class="danger-btn" onclick="this.closest('tr').remove()">Удалить</button></td></tr>
                     </tbody>
                 </table>
             </div>
-
             <button class="add-row-btn" type="button" id="addPayment">➕ Добавить платёж</button>
             <button class="add-row-btn" type="button" id="clearPayments" style="background:#6b7280; margin-left:8px;">🗑 Очистить платежи</button>
         </section>
-
         <button class="btn" type="button" id="calculate" style="margin-top:15px;">Рассчитать проценты</button>
-
         <div class="result-wrapper">
             <div id="result" class="result-box">Введите данные и нажмите «Рассчитать проценты».</div>
             <button class="copy-btn" onclick="copyResult('result')">📋 Копировать результат</button>
@@ -964,7 +690,7 @@ function formatDate(d) {
     const day = String(d.getDate()).padStart(2,'0');
     return `${day}-${m}-${y}`;
 }
-// Единая функция для подсчёта дней: первый день ВКЛЮЧАЕТСЯ, последний тоже
+// Единая функция для подсчёта дней: первый и последний дни ВКЛЮЧАЮТСЯ
 function daysBothInclusive(d1, d2) {
     const ms = Math.abs(d2 - d1);
     return Math.floor(ms / (1000*60*60*24)) + 1;
@@ -1013,97 +739,195 @@ function getDayWord(n) {
 }
 
 // ============================================================
-// 1. Проценты по займу (исправлено)
+// 1. Проценты по займу (с платежами и ст.319)
 // ============================================================
-function calcLoanInterest() {
-    const principal = parseFloat(document.getElementById('loan-amount').value);
-    const rateType = document.querySelector('input[name="loan-rate-type"]:checked').value;
-    const rateVal = parseFloat(document.getElementById('loan-rate').value);
-    const startStr = document.getElementById('loan-start').value;
-    const endStr = document.getElementById('loan-end').value;
-    const resultDiv = document.getElementById('loan-result');
-
-    if (!principal || !rateVal || !startStr || !endStr) {
-        resultDiv.className = 'result-box error';
-        resultDiv.textContent = 'Заполните все поля.';
-        return;
-    }
-    const start = parseDate(startStr);
-    const end = parseDate(endStr);
-    if (end < start) {
-        resultDiv.className = 'result-box error';
-        resultDiv.textContent = 'Дата расчёта должна быть позже даты выдачи.';
-        return;
-    }
-
-    const rate = rateVal / 100;
-    const totalDays = daysBothInclusive(start, end);
-    let totalInterest = 0;
-    let monthlyDetails = [];
-
-    function calcPeriodInterest(amount, fromDate, toDate) {
-        if (fromDate > toDate) return 0;
-        const days = daysBothInclusive(fromDate, toDate);
-        if (days === 0) return 0;
-        if (rateType === 'daily') {
-            return amount * rate * days;
-        } else {
-            let current = new Date(fromDate);
-            let total = 0;
-            while (current <= toDate) {
-                const year = current.getFullYear();
-                const dInYear = daysInYear(year);
-                const nextYear = new Date(year + 1, 0, 1);
-                const segmentEnd = nextYear <= toDate ? new Date(nextYear.getTime() - 1) : toDate;
-                if (current > segmentEnd) break;
-                const segDays = daysBothInclusive(current, segmentEnd);
-                if (segDays === 0) break;
-                total += amount * rate * segDays / dInYear;
-                current = new Date(year + 1, 0, 1);
-            }
-            return total;
+function toggleLoanPayments() {
+    const mode = document.querySelector('input[name="loan-calc-mode"]:checked').value;
+    const isPaymentsMode = mode === 'payments';
+    document.getElementById('loan-payments-block').style.display = isPaymentsMode ? 'block' : 'none';
+    document.getElementById('loan-expenses-group').style.display = isPaymentsMode ? 'block' : 'none';
+}
+function addLoanPaymentRow() {
+    const tbody = document.getElementById('loan-payment-tbody');
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td><input type="date" class="loan-pay-date"></td>
+        <td><input type="number" class="loan-pay-sum" step="0.01" min="0"></td>
+        <td><button type="button" class="danger-btn" onclick="removeLoanPaymentRow(this)">Удалить</button></td>
+    `;
+    tbody.appendChild(row);
+}
+function removeLoanPaymentRow(button) {
+    const tbody = document.getElementById('loan-payment-tbody');
+    const row = button.closest('tr');
+    if (tbody.rows.length > 1) { row.remove(); return; }
+    row.querySelector('.loan-pay-date').value = '';
+    row.querySelector('.loan-pay-sum').value = '';
+}
+function loanRound(value) {
+    return Math.round((Number(value) + Number.EPSILON) * 100) / 100;
+}
+function loanMoney(value) {
+    return loanRound(value).toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function loanDaysBetween(date1, date2) {
+    return Math.round((date2.getTime() - date1.getTime()) / (24*60*60*1000)) + 1; // включаем обе даты
+}
+function loanGetPayments(startDate, endDate) {
+    const payments = [];
+    document.querySelectorAll('#loan-payment-tbody tr').forEach(row => {
+        const dateValue = row.querySelector('.loan-pay-date').value;
+        const amount = parseFloat(row.querySelector('.loan-pay-sum').value);
+        if (!dateValue || !Number.isFinite(amount) || amount <= 0) return;
+        const date = parseDate(dateValue);
+        if (date >= startDate && date <= endDate) {
+            payments.push({ date, amount: loanRound(amount) });
         }
+    });
+    return payments.sort((a, b) => a.date - b.date);
+}
+function loanPeriodInterest(principal, rateType, rateValue, periodStart, periodEnd) {
+    const days = loanDaysBetween(periodStart, periodEnd);
+    if (principal <= 0 || rateValue <= 0 || days <= 0) return 0;
+    if (rateType === 'daily') {
+        return principal * (rateValue / 100) * days;
+    }
+    let result = 0;
+    let currentDate = new Date(periodStart);
+    while (currentDate < periodEnd) {
+        const nextYear = new Date(currentDate.getFullYear() + 1, 0, 1);
+        const segmentEnd = nextYear < periodEnd ? nextYear : periodEnd;
+        const segmentDays = loanDaysBetween(currentDate, segmentEnd);
+        result += principal * (rateValue / 100) * segmentDays / daysInYear(currentDate.getFullYear());
+        currentDate = segmentEnd;
+    }
+    return result;
+}
+function calcLoanInterest() {
+    const resultDiv = document.getElementById('loan-result');
+    const loanAmount = parseFloat(document.getElementById('loan-amount').value);
+    const rateType = document.querySelector('input[name="loan-rate-type"]:checked').value;
+    const rateValue = parseFloat(document.getElementById('loan-rate').value);
+    const startValue = document.getElementById('loan-start').value;
+    const endValue = document.getElementById('loan-end').value;
+    const calculationMode = document.querySelector('input[name="loan-calc-mode"]:checked').value;
+    const creditorExpenses = parseFloat(document.getElementById('loan-expenses').value) || 0;
+
+    if (!Number.isFinite(loanAmount) || loanAmount <= 0 || !Number.isFinite(rateValue) || rateValue < 0 || !startValue || !endValue) {
+        resultDiv.className = 'result-box error';
+        resultDiv.textContent = 'Проверьте сумму займа, ставку и даты расчёта.';
+        return;
+    }
+    const startDate = parseDate(startValue);
+    const endDate = parseDate(endValue);
+    if (endDate < startDate) {
+        resultDiv.className = 'result-box error';
+        resultDiv.textContent = 'Дата расчёта не может быть раньше даты выдачи займа.';
+        return;
     }
 
-    let current = new Date(start);
-    while (current <= end) {
-        const monthStart = new Date(current);
-        const lastDay = new Date(current.getFullYear(), current.getMonth() + 1, 0);
-        const monthEnd = lastDay < end ? lastDay : new Date(end);
-        const daysInMonth = daysBothInclusive(monthStart, monthEnd);
-        if (daysInMonth === 0) break;
-
-        const monthInterest = calcPeriodInterest(principal, monthStart, monthEnd);
-        totalInterest += monthInterest;
-        monthlyDetails.push(
-            `${monthStart.toLocaleString('ru', {month:'long', year:'numeric'})}: ${daysInMonth} дн. → ${monthInterest.toFixed(2)} руб.`
-        );
-
-        current = new Date(current.getFullYear(), current.getMonth() + 1, 1);
-        if (current > end) break;
+    if (calculationMode === 'simple') {
+        const interest = loanPeriodInterest(loanAmount, rateType, rateValue, startDate, endDate);
+        resultDiv.className = 'result-box';
+        resultDiv.textContent =
+            'РАСЧЁТ ПРОЦЕНТОВ ПО ЗАЙМУ\n\n' +
+            `Сумма займа: ${loanMoney(loanAmount)} руб.\n` +
+            `Ставка: ${rateValue}% ${rateType === 'daily' ? 'в день' : 'годовых'}\n` +
+            `Период: ${formatDate(startDate)} — ${formatDate(endDate)}\n` +
+            `Количество дней: ${loanDaysBetween(startDate, endDate)}\n\n` +
+            `Начисленные проценты: ${loanMoney(interest)} руб.\n` +
+            `Итого долг: ${loanMoney(loanAmount + interest)} руб.`;
+        return;
     }
 
-    const rateLabel = rateType === 'daily' ? 'дневная' : 'годовая';
-    const output =
-        `Сумма займа: ${principal} руб.\n` +
-        `Тип ставки: ${rateLabel} (${rateVal}%)\n` +
-        `Период: с ${formatDate(start)} по ${formatDate(end)} (${totalDays} дней, обе даты включены)\n` +
-        `Всего процентов: ${totalInterest.toFixed(2)} руб.\n\n` +
-        `Помесячный расчёт:\n${monthlyDetails.join('\n')}`;
+    // Режим с платежами
+    const payments = loanGetPayments(startDate, endDate);
+    let principalDebt = loanRound(loanAmount);
+    let interestDebt = 0;
+    let expensesDebt = loanRound(creditorExpenses);
+    let totalInterestAccrued = 0;
+    let totalPaid = 0;
+    let totalExpensesPaid = 0;
+    let totalInterestPaid = 0;
+    let totalPrincipalPaid = 0;
+    let currentDate = new Date(startDate);
+    const lines = [];
+    lines.push('РАСЧЁТ С УЧЁТОМ СТ. 319 ГК РФ');
+    lines.push('');
+    lines.push(`Сумма займа: ${loanMoney(loanAmount)} руб.`);
+    lines.push(`Ставка: ${rateValue}% ${rateType === 'daily' ? 'в день' : 'годовых'}`);
+    lines.push(`Период: ${formatDate(startDate)} — ${formatDate(endDate)}`);
+    lines.push(`Издержки кредитора: ${loanMoney(creditorExpenses)} руб.`);
+    lines.push('');
+    lines.push('ДЕТАЛИЗАЦИЯ РАСЧЁТА');
+    lines.push('');
+
+    function accrueInterestUntil(targetDate) {
+        if (targetDate <= currentDate || principalDebt <= 0) { currentDate = new Date(targetDate); return; }
+        const days = loanDaysBetween(currentDate, targetDate);
+        const interest = loanPeriodInterest(principalDebt, rateType, rateValue, currentDate, targetDate);
+        interestDebt = loanRound(interestDebt + interest);
+        totalInterestAccrued = loanRound(totalInterestAccrued + interest);
+        lines.push(`${formatDate(currentDate)} — ${formatDate(targetDate)}: ${days} дн.; остаток основного долга ${loanMoney(principalDebt)} руб.; начислено процентов ${loanMoney(interest)} руб.`);
+        currentDate = new Date(targetDate);
+    }
+
+    payments.forEach((payment, index) => {
+        accrueInterestUntil(payment.date);
+        let remainingPayment = loanRound(payment.amount);
+        const paidExpenses = loanRound(Math.min(remainingPayment, expensesDebt));
+        expensesDebt = loanRound(expensesDebt - paidExpenses);
+        remainingPayment = loanRound(remainingPayment - paidExpenses);
+        totalExpensesPaid = loanRound(totalExpensesPaid + paidExpenses);
+        const paidInterest = loanRound(Math.min(remainingPayment, interestDebt));
+        interestDebt = loanRound(interestDebt - paidInterest);
+        remainingPayment = loanRound(remainingPayment - paidInterest);
+        totalInterestPaid = loanRound(totalInterestPaid + paidInterest);
+        const paidPrincipal = loanRound(Math.min(remainingPayment, principalDebt));
+        principalDebt = loanRound(principalDebt - paidPrincipal);
+        remainingPayment = loanRound(remainingPayment - paidPrincipal);
+        totalPrincipalPaid = loanRound(totalPrincipalPaid + paidPrincipal);
+        totalPaid = loanRound(totalPaid + payment.amount);
+        lines.push(`Платёж №${index+1} от ${formatDate(payment.date)}: ${loanMoney(payment.amount)} руб.`);
+        lines.push(`  Направлено в издержки: ${loanMoney(paidExpenses)} руб.; в проценты: ${loanMoney(paidInterest)} руб.; в основной долг: ${loanMoney(paidPrincipal)} руб.`);
+        if (remainingPayment > 0) lines.push(`  Переплата: ${loanMoney(remainingPayment)} руб.`);
+        lines.push(`  Остаток: основной долг ${loanMoney(principalDebt)} руб.; проценты ${loanMoney(interestDebt)} руб.; издержки ${loanMoney(expensesDebt)} руб.`);
+        lines.push('');
+    });
+
+    accrueInterestUntil(endDate);
+    const totalDebt = loanRound(principalDebt + interestDebt + expensesDebt);
+    lines.push('');
+    lines.push('ИТОГ НА ДАТУ РАСЧЁТА');
+    lines.push('');
+    lines.push(`Остаток основного долга: ${loanMoney(principalDebt)} руб.`);
+    lines.push(`Непогашенные проценты: ${loanMoney(interestDebt)} руб.`);
+    lines.push(`Непогашенные издержки: ${loanMoney(expensesDebt)} руб.`);
+    lines.push(`ИТОГО ЗАДОЛЖЕННОСТЬ: ${loanMoney(totalDebt)} руб.`);
+    lines.push('');
+    lines.push('СПРАВОЧНО');
+    lines.push(`Всего начислено процентов: ${loanMoney(totalInterestAccrued)} руб.`);
+    lines.push(`Всего внесено платежей: ${loanMoney(totalPaid)} руб.`);
+    lines.push(`Погашено издержек: ${loanMoney(totalExpensesPaid)} руб.`);
+    lines.push(`Погашено процентов: ${loanMoney(totalInterestPaid)} руб.`);
+    lines.push(`Погашено основного долга: ${loanMoney(totalPrincipalPaid)} руб.`);
+    lines.push('');
+    lines.push('Очередность погашения: издержки кредитора → проценты за пользование займом → основной долг.');
+    lines.push('Неустойка и проценты по ст. 395 ГК РФ в этот расчёт не включаются.');
 
     resultDiv.className = 'result-box';
-    resultDiv.textContent = output;
+    resultDiv.textContent = lines.join('\n');
 }
 
 // ============================================================
-// 2. Неустойка (исправлено)
+// 2. Неустойка (исправлено: обе даты включены)
 // ============================================================
 function addPenaltyRow() {
     const tbody = document.getElementById('penalty-payment-tbody');
     const tr = document.createElement('tr');
     const today = new Date().toISOString().slice(0,10);
     tr.innerHTML = `
-        <td><input type="date" class="penalty-pay-date" value="${today}" placeholder="ДД-ММ-ГГГГ"></td>
+        <td><input type="date" class="penalty-pay-date" value="${today}"></td>
         <td><input type="number" class="penalty-pay-sum" value="1000" step="any"></td>
         <td><button class="danger-btn" onclick="removePenaltyRow(this)">Удалить</button></td>
     `;
@@ -1204,10 +1028,7 @@ function calcPenalty() {
             const periodPenalty = calcPeriodPenalty(currentDebt, lastDate, nextDate);
             totalPenalty += periodPenalty;
             if (periodPenalty > 0) {
-                details.push(
-                    `Период с ${formatDate(lastDate)} по ${formatDate(nextDate)}: ` +
-                    `долг ${currentDebt.toFixed(2)} руб. → ${periodPenalty.toFixed(2)} руб.`
-                );
+                details.push(`Период с ${formatDate(lastDate)} по ${formatDate(nextDate)}: долг ${currentDebt.toFixed(2)} руб. → ${periodPenalty.toFixed(2)} руб.`);
             }
         }
         if (i < payments.length) {
@@ -1288,7 +1109,7 @@ function addCardExtraRow() {
     const tr = document.createElement('tr');
     const today = new Date().toISOString().slice(0,10);
     tr.innerHTML = `
-        <td><input type="date" class="card-extra-date" value="${today}" placeholder="ДД-ММ-ГГГГ"></td>
+        <td><input type="date" class="card-extra-date" value="${today}"></td>
         <td><input type="number" class="card-extra-sum" value="1000" step="any"></td>
         <td><button class="danger-btn" onclick="removeCardExtraRow(this)">Удалить</button></td>
     `;
@@ -1302,7 +1123,6 @@ function removeCardExtraRow(btn) {
         alert('Должна быть хотя бы одна строка.');
     }
 }
-
 function calcCreditCard() {
     const limit = parseFloat(document.getElementById('card-limit').value) || 0;
     const amount = parseFloat(document.getElementById('card-amount').value);
@@ -1312,9 +1132,7 @@ function calcCreditCard() {
     const minPercent = minPercentInput / 100;
     const minFixed = parseFloat(document.getElementById('card-min-fixed').value) || 0;
     const fixedPayment = parseFloat(document.getElementById('card-fixed-payment').value) || null;
-
     const resultDiv = document.getElementById('card-result');
-
     if (isNaN(amount) || amount <= 0) {
         resultDiv.className = 'result-box error';
         resultDiv.textContent = 'Введите корректную полученную сумму.';
@@ -1340,10 +1158,8 @@ function calcCreditCard() {
         resultDiv.textContent = 'Фиксированный платёж не может быть отрицательным.';
         return;
     }
-
     const startDate = parseDate(dateStr);
     const monthlyRate = ratePercent / 100 / 12;
-
     const extraRows = document.querySelectorAll('#card-extra-payment-tbody tr');
     let extraPayments = [];
     extraRows.forEach(tr => {
@@ -1357,31 +1173,26 @@ function calcCreditCard() {
         }
     });
     extraPayments.sort((a, b) => a.date - b.date);
-
     let extraByMonth = {};
     extraPayments.forEach(p => {
         const key = formatDate(new Date(p.date.getFullYear(), p.date.getMonth(), 1));
         if (!extraByMonth[key]) extraByMonth[key] = 0;
         extraByMonth[key] += p.sum;
     });
-
     let balance = amount;
     let monthIndex = 1;
     let schedule = [];
     let totalInterest = 0;
     let totalPaid = 0;
     const MAX_MONTHS = 600;
-
     while (monthIndex <= MAX_MONTHS) {
         const currentDate = addMonths(startDate, monthIndex);
         let paymentDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), startDate.getDate());
         if (paymentDate.getMonth() !== currentDate.getMonth()) {
             paymentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
         }
-
         const interest = balance * monthlyRate;
         totalInterest += interest;
-
         let requiredPayment;
         if (fixedPayment !== null) {
             requiredPayment = Math.min(fixedPayment, balance + interest);
@@ -1389,7 +1200,6 @@ function calcCreditCard() {
             let minPayment = Math.max(balance * minPercent, minFixed);
             requiredPayment = Math.min(minPayment, balance + interest);
         }
-
         const monthKey = formatDate(new Date(paymentDate.getFullYear(), paymentDate.getMonth(), 1));
         let actualPayment = 0;
         let extraPayment = 0;
@@ -1404,11 +1214,9 @@ function calcCreditCard() {
             actualPayment = 0;
             extraPayment = 0;
         }
-
         const principalPaid = actualPayment - interest;
         const newBalance = balance - principalPaid;
         balance = Math.max(0, newBalance);
-
         schedule.push({
             month: monthIndex,
             date: formatDate(paymentDate),
@@ -1419,44 +1227,19 @@ function calcCreditCard() {
             principal: principalPaid,
             balance: balance
         });
-
         totalPaid += actualPayment;
         monthIndex++;
-
         if (balance < 0.01) break;
     }
-
     const isRepaid = balance < 0.01;
     const totalMonths = schedule.length;
     const finalPaymentDate = isRepaid ? schedule[schedule.length-1].date : '— (не погашен)';
     const totalPaidFormatted = totalPaid.toFixed(2);
-
-    let tableHtml = `<table>
-        <thead><tr>
-            <th>№</th>
-            <th>Дата платежа</th>
-            <th>Обязательный платёж (расчётный)</th>
-            <th>Внесённая сумма</th>
-            <th>Итого платёж</th>
-            <th>Проценты</th>
-            <th>Погашение ОД</th>
-            <th>Остаток долга</th>
-        </tr></thead><tbody>`;
-
+    let tableHtml = `<table><thead><tr><th>№</th><th>Дата платежа</th><th>Обязательный платёж (расчётный)</th><th>Внесённая сумма</th><th>Итого платёж</th><th>Проценты</th><th>Погашение ОД</th><th>Остаток долга</th></tr></thead><tbody>`;
     schedule.forEach(row => {
-        tableHtml += `<tr>
-            <td>${row.month}</td>
-            <td>${row.date}</td>
-            <td>${row.requiredPayment.toFixed(2)}</td>
-            <td>${row.extraPayment.toFixed(2)}</td>
-            <td>${row.totalPayment.toFixed(2)}</td>
-            <td>${row.interest.toFixed(2)}</td>
-            <td>${row.principal.toFixed(2)}</td>
-            <td>${row.balance.toFixed(2)}</td>
-        </tr>`;
+        tableHtml += `<tr><td>${row.month}</td><td>${row.date}</td><td>${row.requiredPayment.toFixed(2)}</td><td>${row.extraPayment.toFixed(2)}</td><td>${row.totalPayment.toFixed(2)}</td><td>${row.interest.toFixed(2)}</td><td>${row.principal.toFixed(2)}</td><td>${row.balance.toFixed(2)}</td></tr>`;
     });
     tableHtml += `</tbody></table>`;
-
     const summary =
         `Лимит: ${limit.toFixed(2)} руб. | Получено: ${amount.toFixed(2)} руб.\n` +
         `Дата получения: ${formatDate(startDate)}\n` +
@@ -1467,19 +1250,18 @@ function calcCreditCard() {
         `\nСтатус погашения: ${isRepaid ? 'Погашен' : 'Не погашен (превышен лимит месяцев)'}` +
         `\nДата полного погашения: ${finalPaymentDate}` +
         `\nВсего выплачено: ${totalPaidFormatted} руб.`;
-
     resultDiv.className = 'result-box';
     resultDiv.innerHTML = `<pre>${summary}</pre>\n<div class="scroll-table">${tableHtml}</div>`;
 }
 
 // ============================================================
-// 5. Срок исковой давности (исправлено)
+// 5. Срок исковой давности (исправлено: обе даты включены)
 // ============================================================
 function addRow() {
     const tbody = document.getElementById('payment-tbody');
     const tr = document.createElement('tr');
     tr.innerHTML = `
-        <td><input type="date" class="pay-date" value="2022-10-12" placeholder="ДД-ММ-ГГГГ"></td>
+        <td><input type="date" class="pay-date" value="2022-10-12"></td>
         <td><input type="number" class="pay-sum" value="1500" step="any"></td>
         <td><button class="danger-btn" onclick="removeRow(this)">Удалить</button></td>
     `;
@@ -1498,7 +1280,6 @@ function calcLimitation() {
     const cancelStr = document.getElementById('lim-cancel').value;
     const claimStr = document.getElementById('lim-claim').value;
     const resultDiv = document.getElementById('lim-result');
-
     if (!orderStr || !cancelStr || !claimStr) {
         resultDiv.className = 'result-box error';
         resultDiv.textContent = 'Заполните все даты.';
@@ -1512,10 +1293,8 @@ function calcLimitation() {
         resultDiv.textContent = 'Дата отмены не может быть раньше даты подачи приказа.';
         return;
     }
-
     const suspensionDays = daysBothInclusive(orderDt, cancelDt);
     const suspensionFormatted = formatPeriod(suspensionDays);
-
     const rows = document.querySelectorAll('#payment-tbody tr');
     const payments = [];
     rows.forEach(tr => {
@@ -1530,11 +1309,9 @@ function calcLimitation() {
         resultDiv.textContent = 'Добавьте хотя бы один платёж.';
         return;
     }
-
     let output = [];
     let expiredEndDates = [];
     let nonExpiredPaymentDates = [];
-
     payments.forEach((p, idx) => {
         const startDate = new Date(p.date);
         const endSimple = addYears(startDate, 3);
@@ -1557,13 +1334,11 @@ function calcLimitation() {
                 status = 'Не истёк';
             }
         }
-
         if (status.includes('Истёк')) {
             expiredEndDates.push(finalEnd);
         } else {
             nonExpiredPaymentDates.push(p.date);
         }
-
         output.push(
             `Платёж ${idx+1} (дата ${formatDate(p.date)}, сумма ${p.sum.toFixed(2)}):\n` +
             `  Начало срока: ${formatDate(startDate)}\n` +
@@ -1571,10 +1346,8 @@ function calcLimitation() {
             `  Статус: ${status}\n`
         );
     });
-
     let boundaryDate = null;
     let boundaryMessage = '';
-
     if (nonExpiredPaymentDates.length > 0) {
         const minDate = nonExpiredPaymentDates.reduce((a, b) => a < b ? a : b);
         boundaryDate = minDate;
@@ -1584,7 +1357,6 @@ function calcLimitation() {
         boundaryDate = maxEndDate;
         boundaryMessage = `⚠️ Срок исковой давности пропущен по всем платежам. Истечение срока по последнему платежу: ${formatDate(boundaryDate)}`;
     }
-
     let expiredSinceMessage = '';
     if (nonExpiredPaymentDates.length > 0) {
         let lastExpired = null;
@@ -1598,20 +1370,14 @@ function calcLimitation() {
         const maxEndDate = expiredEndDates.reduce((a, b) => a > b ? a : b);
         expiredSinceMessage = `Срок исковой давности пропущен по платежам до ${formatDate(maxEndDate)} (включительно).`;
     }
-
     const summaryLines = [
         `📅 Период приостановления течения срока: ${suspensionFormatted} (с ${formatDate(orderDt)} по ${formatDate(cancelDt)})`,
         boundaryMessage,
         expiredSinceMessage
     ];
-
     resultDiv.className = 'result-box';
-    resultDiv.innerHTML =
-        output.join('\n') +
-        '\n\n--- === ИТОГОВЫЕ ВЫВОДЫ === ---\n' +
-        summaryLines.join('\n');
+    resultDiv.innerHTML = output.join('\n') + '\n\n--- === ИТОГОВЫЕ ВЫВОДЫ === ---\n' + summaryLines.join('\n');
 }
-
 function addYears(d, years) {
     let newD = new Date(d);
     newD.setFullYear(newD.getFullYear() + years);
@@ -1622,7 +1388,7 @@ function addYears(d, years) {
 }
 
 // ============================================================
-// 6. Калькулятор по ст. 395 ГК РФ (исправлен)
+// 6. Калькулятор по ст. 395 ГК РФ (исправлен: обе даты включены)
 // ============================================================
 function parseDate395(str) {
     const parts = str.split('-');
@@ -1638,7 +1404,6 @@ function addDays395(date, days) {
     result.setDate(result.getDate() + days);
     return result;
 }
-
 const REFINANCING_RATES = [
     ['1992-01-01', 20], ['1992-04-10', 50], ['1992-05-23', 80],
     ['1992-05-30', 100], ['1992-06-10', 150], ['1992-06-22', 170],
@@ -1668,7 +1433,6 @@ const REFINANCING_RATES = [
     ['2010-03-29', 8.25], ['2011-02-28', 8], ['2011-05-03', 8.25],
     ['2011-12-26', 8], ['2012-09-14', 8.25]
 ];
-
 const KEY_RATES = [
     ['2016-08-01', 10.5], ['2016-09-19', 10],
     ['2017-03-27', 9.75], ['2017-05-02', 9.25],
@@ -1697,73 +1461,17 @@ const KEY_RATES = [
     ['2026-02-16', 15.5], ['2026-04-27', 15],
     ['2026-06-15', 14.5], ['2026-07-27', 14]
 ];
-
 const DEPOSIT_RATES_BY_REGION = {
-  central: [
-    ['2015-06-01', 11.80], ['2015-06-15', 11.70], ['2015-07-15', 10.74],
-    ['2015-08-17', 10.51], ['2015-09-15', 9.91], ['2015-10-15', 9.49],
-    ['2015-11-17', 9.39], ['2015-12-15', 7.32], ['2016-01-25', 7.94],
-    ['2016-02-19', 8.96], ['2016-03-17', 8.64], ['2016-04-15', 8.14],
-    ['2016-05-19', 7.90], ['2016-06-16', 8.24], ['2016-07-15', 7.52]
-  ],
-  northwest: [
-    ['2015-06-01', 11.44], ['2015-06-15', 11.37], ['2015-07-15', 10.36],
-    ['2015-08-17', 10.11], ['2015-09-15', 9.55], ['2015-10-15', 9.29],
-    ['2015-11-17', 9.25], ['2015-12-15', 7.08], ['2016-01-25', 7.72],
-    ['2016-02-19', 8.72], ['2016-03-17', 8.41], ['2016-04-15', 7.85],
-    ['2016-05-19', 7.58], ['2016-06-16', 7.86], ['2016-07-15', 7.11]
-  ],
-  south: [
-    ['2015-06-01', 11.24], ['2015-06-15', 11.19], ['2015-07-15', 10.25],
-    ['2015-08-17', 10.14], ['2015-09-15', 9.52], ['2015-10-15', 9.17],
-    ['2015-11-17', 9.11], ['2015-12-15', 6.93], ['2016-01-25', 7.53],
-    ['2016-02-19', 8.73], ['2016-03-17', 8.45], ['2016-04-15', 7.77],
-    ['2016-05-19', 7.45], ['2016-06-16', 7.81], ['2016-07-15', 7.01]
-  ],
-  'north-caucasus': [
-    ['2015-06-01', 10.46], ['2015-06-15', 10.70], ['2015-07-15', 9.64],
-    ['2015-08-17', 9.49], ['2015-09-15', 9.00], ['2015-10-15', 8.72],
-    ['2015-11-17', 8.73], ['2015-12-15', 6.34], ['2016-01-25', 7.01],
-    ['2016-02-19', 8.23], ['2016-03-17', 7.98], ['2016-04-15', 7.32],
-    ['2016-05-19', 7.05], ['2016-06-16', 7.40], ['2016-07-15', 6.66]
-  ],
-  volga: [
-    ['2015-06-01', 11.15], ['2015-06-15', 11.16], ['2015-07-15', 10.14],
-    ['2015-08-17', 10.12], ['2015-09-15', 9.59], ['2015-10-15', 9.24],
-    ['2015-11-17', 9.15], ['2015-12-15', 7.07], ['2016-01-25', 7.57],
-    ['2016-02-19', 8.69], ['2016-03-17', 8.29], ['2016-04-15', 7.76],
-    ['2016-05-19', 7.53], ['2016-06-16', 7.82], ['2016-07-15', 7.10]
-  ],
-  ural: [
-    ['2015-06-01', 11.27], ['2015-06-15', 11.14], ['2015-07-15', 10.12],
-    ['2015-08-17', 9.96], ['2015-09-15', 9.50], ['2015-10-15', 9.09],
-    ['2015-11-17', 9.20], ['2015-12-15', 7.44], ['2016-01-25', 7.89],
-    ['2016-02-19', 8.57], ['2016-03-17', 8.44], ['2016-04-15', 7.92],
-    ['2016-05-19', 7.74], ['2016-06-16', 7.89], ['2016-07-15', 7.15]
-  ],
-  siberia: [
-    ['2015-06-01', 10.89], ['2015-06-15', 10.81], ['2015-07-15', 9.89],
-    ['2015-08-17', 9.75], ['2015-09-15', 9.21], ['2015-10-15', 9.02],
-    ['2015-11-17', 9.00], ['2015-12-15', 7.18], ['2016-01-25', 7.81],
-    ['2016-02-19', 9.00], ['2016-03-17', 8.81], ['2016-04-15', 8.01],
-    ['2016-05-19', 7.71], ['2016-06-16', 7.93], ['2016-07-15', 7.22]
-  ],
-  'far-east': [
-    ['2015-06-01', 11.20], ['2015-06-15', 11.18], ['2015-07-15', 10.40],
-    ['2015-08-17', 10.00], ['2015-09-15', 9.71], ['2015-10-15', 9.46],
-    ['2015-11-17', 9.26], ['2015-12-15', 7.64], ['2016-01-25', 8.06],
-    ['2016-02-19', 8.69], ['2016-03-17', 8.60], ['2016-04-15', 8.01],
-    ['2016-05-19', 7.62], ['2016-06-16', 7.99], ['2016-07-15', 7.43]
-  ],
-  crimea: [
-    ['2015-06-01', 14.18], ['2015-06-15', 13.31], ['2015-07-15', 9.89],
-    ['2015-08-17', 9.07], ['2015-09-15', 8.53], ['2015-10-15', 8.17],
-    ['2015-11-17', 7.75], ['2015-12-15', 8.09], ['2016-01-25', 7.55],
-    ['2016-02-19', 8.60], ['2016-03-17', 8.52], ['2016-04-15', 7.62],
-    ['2016-05-19', 7.24], ['2016-06-16', 7.55], ['2016-07-15', 6.69]
-  ]
+  central: [ ['2015-06-01',11.80],['2015-06-15',11.70],['2015-07-15',10.74],['2015-08-17',10.51],['2015-09-15',9.91],['2015-10-15',9.49],['2015-11-17',9.39],['2015-12-15',7.32],['2016-01-25',7.94],['2016-02-19',8.96],['2016-03-17',8.64],['2016-04-15',8.14],['2016-05-19',7.90],['2016-06-16',8.24],['2016-07-15',7.52] ],
+  northwest: [ ['2015-06-01',11.44],['2015-06-15',11.37],['2015-07-15',10.36],['2015-08-17',10.11],['2015-09-15',9.55],['2015-10-15',9.29],['2015-11-17',9.25],['2015-12-15',7.08],['2016-01-25',7.72],['2016-02-19',8.72],['2016-03-17',8.41],['2016-04-15',7.85],['2016-05-19',7.58],['2016-06-16',7.86],['2016-07-15',7.11] ],
+  south: [ ['2015-06-01',11.24],['2015-06-15',11.19],['2015-07-15',10.25],['2015-08-17',10.14],['2015-09-15',9.52],['2015-10-15',9.17],['2015-11-17',9.11],['2015-12-15',6.93],['2016-01-25',7.53],['2016-02-19',8.73],['2016-03-17',8.45],['2016-04-15',7.77],['2016-05-19',7.45],['2016-06-16',7.81],['2016-07-15',7.01] ],
+  'north-caucasus': [ ['2015-06-01',10.46],['2015-06-15',10.70],['2015-07-15',9.64],['2015-08-17',9.49],['2015-09-15',9.00],['2015-10-15',8.72],['2015-11-17',8.73],['2015-12-15',6.34],['2016-01-25',7.01],['2016-02-19',8.23],['2016-03-17',7.98],['2016-04-15',7.32],['2016-05-19',7.05],['2016-06-16',7.40],['2016-07-15',6.66] ],
+  volga: [ ['2015-06-01',11.15],['2015-06-15',11.16],['2015-07-15',10.14],['2015-08-17',10.12],['2015-09-15',9.59],['2015-10-15',9.24],['2015-11-17',9.15],['2015-12-15',7.07],['2016-01-25',7.57],['2016-02-19',8.69],['2016-03-17',8.29],['2016-04-15',7.76],['2016-05-19',7.53],['2016-06-16',7.82],['2016-07-15',7.10] ],
+  ural: [ ['2015-06-01',11.27],['2015-06-15',11.14],['2015-07-15',10.12],['2015-08-17',9.96],['2015-09-15',9.50],['2015-10-15',9.09],['2015-11-17',9.20],['2015-12-15',7.44],['2016-01-25',7.89],['2016-02-19',8.57],['2016-03-17',8.44],['2016-04-15',7.92],['2016-05-19',7.74],['2016-06-16',7.89],['2016-07-15',7.15] ],
+  siberia: [ ['2015-06-01',10.89],['2015-06-15',10.81],['2015-07-15',9.89],['2015-08-17',9.75],['2015-09-15',9.21],['2015-10-15',9.02],['2015-11-17',9.00],['2015-12-15',7.18],['2016-01-25',7.81],['2016-02-19',9.00],['2016-03-17',8.81],['2016-04-15',8.01],['2016-05-19',7.71],['2016-06-16',7.93],['2016-07-15',7.22] ],
+  'far-east': [ ['2015-06-01',11.20],['2015-06-15',11.18],['2015-07-15',10.40],['2015-08-17',10.00],['2015-09-15',9.71],['2015-10-15',9.46],['2015-11-17',9.26],['2015-12-15',7.64],['2016-01-25',8.06],['2016-02-19',8.69],['2016-03-17',8.60],['2016-04-15',8.01],['2016-05-19',7.62],['2016-06-16',7.99],['2016-07-15',7.43] ],
+  crimea: [ ['2015-06-01',14.18],['2015-06-15',13.31],['2015-07-15',9.89],['2015-08-17',9.07],['2015-09-15',8.53],['2015-10-15',8.17],['2015-11-17',7.75],['2015-12-15',8.09],['2016-01-25',7.55],['2016-02-19',8.60],['2016-03-17',8.52],['2016-04-15',7.62],['2016-05-19',7.24],['2016-06-16',7.55],['2016-07-15',6.69] ]
 };
-
 function rateFromHistory(history, date) {
     let result = history[0][1];
     for (let i = history.length - 1; i >= 0; i--) {
@@ -1774,21 +1482,16 @@ function rateFromHistory(history, date) {
     }
     return result;
 }
-
 function getRate395(date, region) {
     const depositsStart = new Date(2015, 5, 1);
     const keyRateStart = new Date(2016, 7, 1);
-    if (date < depositsStart) {
-        return rateFromHistory(REFINANCING_RATES, date);
-    }
+    if (date < depositsStart) return rateFromHistory(REFINANCING_RATES, date);
     if (date < keyRateStart) {
         const rates = DEPOSIT_RATES_BY_REGION[region] || DEPOSIT_RATES_BY_REGION.central;
         return rateFromHistory(rates, date);
     }
     return rateFromHistory(KEY_RATES, date);
 }
-
-// ---- Обработчики для таблицы платежей ----
 function addPaymentRow(dateValue, sumValue) {
     const row = document.createElement('tr');
     row.innerHTML = `
@@ -1798,41 +1501,29 @@ function addPaymentRow(dateValue, sumValue) {
     `;
     document.getElementById('payments').appendChild(row);
 }
-
-document.getElementById('addPayment').addEventListener('click', function () {
-    addPaymentRow('', '');
-});
-
-document.getElementById('clearPayments').addEventListener('click', function () {
-    document.getElementById('payments').innerHTML = '';
-});
-
-// ---- Основной расчёт 395 ----
-document.getElementById('calculate').addEventListener('click', function () {
+document.getElementById('addPayment').addEventListener('click', function() { addPaymentRow('', ''); });
+document.getElementById('clearPayments').addEventListener('click', function() { document.getElementById('payments').innerHTML = ''; });
+document.getElementById('calculate').addEventListener('click', function() {
     const result = document.getElementById('result');
     const debt = Number(document.getElementById('debt').value);
     const startValue = document.getElementById('start').value;
     const endValue = document.getElementById('end').value;
     const region = document.getElementById('region').value;
-
     if (!Number.isFinite(debt) || debt <= 0 || !startValue || !endValue) {
         result.className = 'result-box error';
         result.textContent = 'Введите корректную сумму задолженности и обе даты.';
         return;
     }
-
     const start = parseDate395(startValue);
     const end = parseDate395(endValue);
-
     if (end < start) {
         result.className = 'result-box error';
         result.textContent = 'Дата окончания не может быть раньше даты начала.';
         return;
     }
-
     const calculationEnd = addDays395(end, 1);
     const payments = [];
-    document.querySelectorAll('#payments tr').forEach(function (row) {
+    document.querySelectorAll('#payments tr').forEach(function(row) {
         const dateValue = row.querySelector('.payment-date').value;
         const sum = Number(row.querySelector('.payment-sum').value);
         if (dateValue && Number.isFinite(sum) && sum > 0) {
@@ -1842,82 +1533,43 @@ document.getElementById('calculate').addEventListener('click', function () {
             }
         }
     });
-    payments.sort(function (a, b) { return a.date - b.date; });
-
+    payments.sort((a,b) => a.date - b.date);
     const points = new Set();
     points.add(start.getTime());
     points.add(calculationEnd.getTime());
-
-    REFINANCING_RATES.forEach(function (item) {
-        const date = parseDate395(item[0]);
-        if (date >= start && date <= end) points.add(date.getTime());
-    });
-
-    DEPOSIT_RATES_BY_REGION.central.forEach(function (item) {
-        const date = parseDate395(item[0]);
-        if (date >= start && date <= end) points.add(date.getTime());
-    });
-
-    KEY_RATES.forEach(function (item) {
-        const date = parseDate395(item[0]);
-        if (date >= start && date <= end) points.add(date.getTime());
-    });
-
-    const depositStart = new Date(2015, 5, 1);
-    const keyRateStart = new Date(2016, 7, 1);
+    REFINANCING_RATES.forEach(item => { const d = parseDate395(item[0]); if (d >= start && d <= end) points.add(d.getTime()); });
+    DEPOSIT_RATES_BY_REGION.central.forEach(item => { const d = parseDate395(item[0]); if (d >= start && d <= end) points.add(d.getTime()); });
+    KEY_RATES.forEach(item => { const d = parseDate395(item[0]); if (d >= start && d <= end) points.add(d.getTime()); });
+    const depositStart = new Date(2015,5,1), keyRateStart = new Date(2016,7,1);
     if (depositStart >= start && depositStart <= end) points.add(depositStart.getTime());
     if (keyRateStart >= start && keyRateStart <= end) points.add(keyRateStart.getTime());
-
     for (let year = start.getFullYear() + 1; year <= end.getFullYear(); year++) {
         const firstDay = new Date(year, 0, 1);
         if (firstDay >= start && firstDay <= end) points.add(firstDay.getTime());
     }
-
-    payments.forEach(function (payment) {
-        points.add(payment.date.getTime());
-    });
-
-    const dates = Array.from(points).sort().map(function (time) { return new Date(time); });
-
+    payments.forEach(p => points.add(p.date.getTime()));
+    const dates = Array.from(points).sort().map(time => new Date(time));
     let balance = debt;
     let totalInterest = 0;
     let paymentIndex = 0;
     const details = [];
-
     for (let i = 0; i < dates.length - 1 && balance > 0; i++) {
         const periodStart = dates[i];
-        const periodEnd = new Date(dates[i + 1].getTime() - 1);
+        const periodEnd = new Date(dates[i+1].getTime() - 1);
         const days = daysBothInclusive(periodStart, periodEnd);
         const rate = getRate395(periodStart, region);
         const denominator = daysInYear(periodStart.getFullYear());
         const interest = balance * rate / 100 * days / denominator;
         totalInterest += interest;
-
-        details.push(
-            'Период с ' + formatDate395(periodStart) +
-            ' по ' + formatDate395(periodEnd) +
-            ': долг ' + balance.toFixed(2) + ' руб. × ' +
-            days + ' дн. × ' + rate.toFixed(2) +
-            '% / ' + denominator + ' = ' +
-            interest.toFixed(2) + ' руб.'
-        );
-
-        while (
-            paymentIndex < payments.length &&
-            payments[paymentIndex].date.getTime() <= periodEnd.getTime()
-        ) {
+        details.push('Период с ' + formatDate395(periodStart) + ' по ' + formatDate395(periodEnd) + ': долг ' + balance.toFixed(2) + ' руб. × ' + days + ' дн. × ' + rate.toFixed(2) + '% / ' + denominator + ' = ' + interest.toFixed(2) + ' руб.');
+        while (paymentIndex < payments.length && payments[paymentIndex].date.getTime() <= periodEnd.getTime()) {
             const payment = payments[paymentIndex];
             const appliedPayment = Math.min(payment.sum, balance);
             balance -= appliedPayment;
-            details.push(
-                'Платёж ' + formatDate395(payment.date) +
-                ': ' + payment.sum.toFixed(2) +
-                ' руб.; остаток долга: ' + balance.toFixed(2) + ' руб.'
-            );
+            details.push('Платёж ' + formatDate395(payment.date) + ': ' + payment.sum.toFixed(2) + ' руб.; остаток долга: ' + balance.toFixed(2) + ' руб.');
             paymentIndex++;
         }
     }
-
     result.className = 'result-box';
     result.textContent =
         'Сумма задолженности: ' + debt.toFixed(2) + ' руб.\n' +
@@ -1927,1731 +1579,628 @@ document.getElementById('calculate').addEventListener('click', function () {
 });
 
 // ============================================================
-// ВКЛАДКА 7: ЗАДОЛЖЕННОСТЬ ПО КРЕДИТУ (исправлена)
+// ВКЛАДКА 7: ЗАДОЛЖЕННОСТЬ ПО КРЕДИТУ (исправлена: обе даты включены)
 // ============================================================
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
     const tabs = document.getElementById('tabs');
-
     if (tabs && !document.querySelector('[data-tab="tab7"]')) {
         const button = document.createElement('button');
         button.className = 'tab-btn';
         button.dataset.tab = 'tab7';
         button.textContent = 'Задолженность по кредиту';
-
-        button.addEventListener('click', function () {
-            document.querySelectorAll('.tab-btn').forEach(function (item) {
-                item.classList.remove('active');
-            });
-
-            document.querySelectorAll('.tab-content').forEach(function (item) {
-                item.classList.remove('active');
-            });
-
+        button.addEventListener('click', function() {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             button.classList.add('active');
             document.getElementById('tab7').classList.add('active');
         });
-
         tabs.appendChild(button);
     }
-
     if (!document.getElementById('tab7')) {
         const tab = document.createElement('div');
-
         tab.id = 'tab7';
         tab.className = 'tab-content';
-
         tab.innerHTML = `
             <h2>Расчёт задолженности по кредитному договору</h2>
-
-            <div class="note">
-                Вкладка рассчитывает задолженность с учётом параметров договора, графика,
-                фактических платежей, просроченного основного долга, процентов и договорной неустойки.
-                Перед использованием проверьте условия конкретного договора: порядок погашения,
-                базу расчёта, дату начала просрочки и правила начисления пени.
-            </div>
-
+            <div class="note">Вкладка рассчитывает задолженность с учётом параметров договора, графика, фактических платежей, просроченного основного долга, процентов и договорной неустойки. Перед использованием проверьте условия конкретного договора: порядок погашения, базу расчёта, дату начала просрочки и правила начисления пени.</div>
             <div class="payment-block">
                 <label><strong>Условия кредитного договора</strong></label>
-
                 <div class="inline-group">
-                    <div class="form-group">
-                        <label>Сумма кредита (руб.)</label>
-                        <input type="number" id="credit-debt-amount" value="100000" min="0.01" step="0.01">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Процентная ставка (% годовых)</label>
-                        <input type="number" id="credit-debt-rate" value="24.9" min="0" step="0.01">
-                    </div>
+                    <div class="form-group"><label>Сумма кредита (руб.)</label><input type="number" id="credit-debt-amount" value="100000" min="0.01" step="0.01"></div>
+                    <div class="form-group"><label>Процентная ставка (% годовых)</label><input type="number" id="credit-debt-rate" value="24.9" min="0" step="0.01"></div>
                 </div>
-
                 <div class="inline-group">
-                    <div class="form-group">
-                        <label>Дата выдачи кредита</label>
-                        <input type="date" id="credit-debt-start" value="2025-01-01">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Дата расчёта задолженности</label>
-                        <input type="date" id="credit-debt-calc-date" value="2026-01-01">
-                    </div>
+                    <div class="form-group"><label>Дата выдачи кредита</label><input type="date" id="credit-debt-start" value="2025-01-01"></div>
+                    <div class="form-group"><label>Дата расчёта задолженности</label><input type="date" id="credit-debt-calc-date" value="2026-01-01"></div>
                 </div>
-
                 <div class="inline-group">
-                    <div class="form-group">
-                        <label>Срок кредита (месяцев)</label>
-                        <input type="number" id="credit-debt-term" value="12" min="1" step="1">
-                    </div>
-
-                    <div class="form-group">
-                        <label>День ежемесячного платежа</label>
-                        <input type="number" id="credit-debt-payment-day" value="10" min="1" max="31" step="1">
-                    </div>
+                    <div class="form-group"><label>Срок кредита (месяцев)</label><input type="number" id="credit-debt-term" value="12" min="1" step="1"></div>
+                    <div class="form-group"><label>День ежемесячного платежа</label><input type="number" id="credit-debt-payment-day" value="10" min="1" max="31" step="1"></div>
                 </div>
-
                 <div class="inline-group">
-                    <div class="form-group">
-                        <label>Тип платежей</label>
-                        <select id="credit-debt-type">
-                            <option value="annuity">Аннуитетные</option>
-                            <option value="differentiated">Дифференцированные</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Начисление процентов</label>
-                        <select id="credit-debt-interest-method">
-                            <option value="daily">По фактическим дням</option>
-                            <option value="monthly">Ежемесячно: ставка / 12</option>
-                        </select>
-                    </div>
+                    <div class="form-group"><label>Тип платежей</label><select id="credit-debt-type"><option value="annuity">Аннуитетные</option><option value="differentiated">Дифференцированные</option></select></div>
+                    <div class="form-group"><label>Начисление процентов</label><select id="credit-debt-interest-method"><option value="daily">По фактическим дням</option><option value="monthly">Ежемесячно: ставка / 12</option></select></div>
                 </div>
-
-                <div class="form-group">
-                    <label>База для расчёта процентов</label>
-                    <select id="credit-debt-base">
-                        <option value="365">365 дней в году</option>
-                        <option value="366">366 дней в году</option>
-                        <option value="actual">Фактическое число дней в году</option>
-                        <option value="360">360 дней в году</option>
-                    </select>
-                </div>
+                <div class="form-group"><label>База для расчёта процентов</label><select id="credit-debt-base"><option value="365">365 дней в году</option><option value="366">366 дней в году</option><option value="actual">Фактическое число дней в году</option><option value="360">360 дней в году</option></select></div>
             </div>
-
             <div class="payment-block">
                 <label><strong>Договорная неустойка</strong></label>
-
                 <div class="inline-group">
-                    <div class="form-group">
-                        <label>Пени на просроченный основной долг (% в день)</label>
-                        <input type="number" id="credit-debt-penalty-principal" value="0" min="0" step="0.001">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Пени на просроченные проценты (% в день)</label>
-                        <input type="number" id="credit-debt-penalty-interest" value="0" min="0" step="0.001">
-                    </div>
+                    <div class="form-group"><label>Пени на просроченный основной долг (% в день)</label><input type="number" id="credit-debt-penalty-principal" value="0" min="0" step="0.001"></div>
+                    <div class="form-group"><label>Пени на просроченные проценты (% в день)</label><input type="number" id="credit-debt-penalty-interest" value="0" min="0" step="0.001"></div>
                 </div>
-
-                <div class="form-group">
-                    <label>Максимальная неустойка (руб., 0 — без ограничения)</label>
-                    <input type="number" id="credit-debt-penalty-limit" value="0" min="0" step="0.01">
-                </div>
+                <div class="form-group"><label>Максимальная неустойка (руб., 0 — без ограничения)</label><input type="number" id="credit-debt-penalty-limit" value="0" min="0" step="0.01"></div>
             </div>
-
             <div class="payment-block">
                 <label><strong>Фактические платежи заёмщика</strong></label>
-
-                <p class="muted">
-                    Укажите все реально внесённые суммы. Не внесённые в срок платежи будут отражены
-                    как просроченные части основного долга и процентов.
-                </p>
-
+                <p class="muted">Укажите все реально внесённые суммы. Не внесённые в срок платежи будут отражены как просроченные части основного долга и процентов.</p>
                 <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Дата платежа</th>
-                                <th>Сумма (руб.)</th>
-                                <th>Действие</th>
-                            </tr>
-                        </thead>
-                        <tbody id="credit-debt-payment-tbody"></tbody>
-                    </table>
+                    <table><thead><tr><th>Дата платежа</th><th>Сумма (руб.)</th><th>Действие</th></tr></thead><tbody id="credit-debt-payment-tbody"></tbody></table>
                 </div>
-
-                <button type="button" class="add-row-btn" id="credit-debt-add-payment">
-                    ➕ Добавить платёж
-                </button>
-
-                <button type="button" class="add-row-btn" id="credit-debt-clear-payments"
-                    style="background:#6b7280; margin-left:8px;">
-                    🗑 Очистить платежи
-                </button>
+                <button type="button" class="add-row-btn" id="credit-debt-add-payment">➕ Добавить платёж</button>
+                <button type="button" class="add-row-btn" id="credit-debt-clear-payments" style="background:#6b7280; margin-left:8px;">🗑 Очистить платежи</button>
             </div>
-
-            <button class="btn" type="button" id="credit-debt-calculate">
-                Рассчитать задолженность
-            </button>
-
+            <button class="btn" type="button" id="credit-debt-calculate">Рассчитать задолженность</button>
             <div class="result-wrapper">
-                <div id="credit-debt-summary" class="result-box">
-                    Заполните условия договора и нажмите «Рассчитать задолженность».
-                </div>
+                <div id="credit-debt-summary" class="result-box">Заполните условия договора и нажмите «Рассчитать задолженность».</div>
                 <button class="copy-btn" onclick="copyResult('credit-debt-summary')">📋 Копировать результат</button>
             </div>
-
             <div class="scroll-table">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Дата</th>
-                            <th>Событие</th>
-                            <th>По графику</th>
-                            <th>Фактически</th>
-                            <th>Направлено в проценты</th>
-                            <th>Направлено в основной долг</th>
-                            <th>Просроченные проценты</th>
-                            <th>Просроченный основной долг</th>
-                            <th>Пени</th>
-                        </tr>
-                    </thead>
-                    <tbody id="credit-debt-result-tbody"></tbody>
-                </table>
+                <table><thead><tr><th>Дата</th><th>Событие</th><th>По графику</th><th>Фактически</th><th>Направлено в проценты</th><th>Направлено в основной долг</th><th>Просроченные проценты</th><th>Просроченный основной долг</th><th>Пени</th></tr></thead><tbody id="credit-debt-result-tbody"></tbody></table>
             </div>
         `;
-
         const scriptParent = document.querySelector('script');
         scriptParent.parentNode.insertBefore(tab, scriptParent);
     }
-
-    function creditDebtRound(value) {
-        return Math.round((Number(value) + Number.EPSILON) * 100) / 100;
-    }
-
-    function creditDebtFormat(value) {
-        return creditDebtRound(value).toLocaleString('ru-RU', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
-    }
-
-    function creditDebtParseDate(value) {
-        if (!value) return null;
-
-        const parts = value.split('-').map(Number);
-        return new Date(parts[0], parts[1] - 1, parts[2]);
-    }
-
-    function creditDebtFormatDate(date) {
-        return date.toLocaleDateString('ru-RU');
-    }
-
-    // Исправленная функция: включаем обе даты
-    function creditDebtDaysBetween(first, second) {
-        return Math.round((second.getTime() - first.getTime()) / 86400000) + 1;
-    }
-
-    function creditDebtIsLeapYear(year) {
-        return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
-    }
-
-    function creditDebtYearBase(date, base) {
-        if (base === '360') return 360;
-        if (base === '365') return 365;
-        if (base === '366') return 366;
-
-        return creditDebtIsLeapYear(date.getFullYear()) ? 366 : 365;
-    }
-
-    function creditDebtLastDayOfMonth(year, month) {
-        return new Date(year, month + 1, 0).getDate();
-    }
-
-    function creditDebtPaymentDate(startDate, monthNumber, paymentDay) {
-        const date = new Date(
-            startDate.getFullYear(),
-            startDate.getMonth() + monthNumber,
-            1
-        );
-
-        const lastDay = creditDebtLastDayOfMonth(
-            date.getFullYear(),
-            date.getMonth()
-        );
-
-        date.setDate(Math.min(paymentDay, lastDay));
-        return date;
-    }
-
-    function creditDebtAddPaymentRow(dateValue, amountValue) {
-        const tbody = document.getElementById('credit-debt-payment-tbody');
-        const row = document.createElement('tr');
-
-        row.innerHTML = `
-            <td>
-                <input type="date" class="credit-debt-pay-date"
-                    value="${dateValue || ''}">
-            </td>
-            <td>
-                <input type="number" class="credit-debt-pay-sum"
-                    value="${amountValue || ''}" min="0.01" step="0.01">
-            </td>
-            <td>
-                <button type="button" class="danger-btn" onclick="this.closest('tr').remove()">Удалить</button>
-            </td>
-        `;
-
-        tbody.appendChild(row);
-    }
-
-    function creditDebtGetActualPayments(startDate, calculationDate) {
-        const payments = [];
-
-        document.querySelectorAll('#credit-debt-payment-tbody tr').forEach(function (row) {
-            const dateValue = row.querySelector('.credit-debt-pay-date').value;
-            const amount = Number(row.querySelector('.credit-debt-pay-sum').value);
-
-            if (!dateValue || !Number.isFinite(amount) || amount <= 0) {
-                return;
-            }
-
-            const date = creditDebtParseDate(dateValue);
-
-            if (date >= startDate && date <= calculationDate) {
-                payments.push({
-                    date: date,
-                    amount: creditDebtRound(amount)
-                });
-            }
-        });
-
-        payments.sort(function (a, b) {
-            return a.date - b.date;
-        });
-
-        return payments;
-    }
-
-    function creditDebtCreateSchedule(data) {
-        const schedule = [];
-        const monthlyRate = data.rate / 100 / 12;
-        let remainingPrincipal = data.amount;
-        let annuityPayment = 0;
-
-        if (data.type === 'annuity') {
-            if (monthlyRate === 0) {
-                annuityPayment = data.amount / data.term;
-            } else {
-                annuityPayment =
-                    data.amount *
-                    (monthlyRate * Math.pow(1 + monthlyRate, data.term)) /
-                    (Math.pow(1 + monthlyRate, data.term) - 1);
-            }
-
-            annuityPayment = creditDebtRound(annuityPayment);
-        }
-
-        for (let number = 1; number <= data.term; number++) {
-            const dueDate = creditDebtPaymentDate(
-                data.startDate,
-                number,
-                data.paymentDay
-            );
-
-            const previousDate = number === 1
-                ? data.startDate
-                : creditDebtPaymentDate(
-                    data.startDate,
-                    number - 1,
-                    data.paymentDay
-                );
-
-            let interest = 0;
-
-            if (data.interestMethod === 'monthly') {
-                interest = creditDebtRound(remainingPrincipal * monthlyRate);
-            } else {
-                const days = creditDebtDaysBetween(previousDate, dueDate);
-                const base = creditDebtYearBase(previousDate, data.base);
-
-                interest = creditDebtRound(
-                    remainingPrincipal * data.rate / 100 * days / base
-                );
-            }
-
-            let principal;
-            let payment;
-
+    // Определим функции, если они ещё не определены (для безопасности)
+    if (typeof creditDebtRound === 'undefined') {
+        window.creditDebtRound = function(value) {
+            return Math.round((Number(value) + Number.EPSILON) * 100) / 100;
+        };
+        window.creditDebtFormat = function(value) {
+            return creditDebtRound(value).toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        };
+        window.creditDebtParseDate = function(value) {
+            if (!value) return null;
+            const parts = value.split('-').map(Number);
+            return new Date(parts[0], parts[1] - 1, parts[2]);
+        };
+        window.creditDebtFormatDate = function(date) {
+            return date.toLocaleDateString('ru-RU');
+        };
+        window.creditDebtDaysBetween = function(first, second) {
+            return Math.round((second.getTime() - first.getTime()) / 86400000) + 1; // обе даты включены
+        };
+        window.creditDebtIsLeapYear = function(year) {
+            return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+        };
+        window.creditDebtYearBase = function(date, base) {
+            if (base === '360') return 360;
+            if (base === '365') return 365;
+            if (base === '366') return 366;
+            return creditDebtIsLeapYear(date.getFullYear()) ? 366 : 365;
+        };
+        window.creditDebtLastDayOfMonth = function(year, month) {
+            return new Date(year, month + 1, 0).getDate();
+        };
+        window.creditDebtPaymentDate = function(startDate, monthNumber, paymentDay) {
+            const date = new Date(startDate.getFullYear(), startDate.getMonth() + monthNumber, 1);
+            const lastDay = creditDebtLastDayOfMonth(date.getFullYear(), date.getMonth());
+            date.setDate(Math.min(paymentDay, lastDay));
+            return date;
+        };
+        window.creditDebtAddPaymentRow = function(dateValue, amountValue) {
+            const tbody = document.getElementById('credit-debt-payment-tbody');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><input type="date" class="credit-debt-pay-date" value="${dateValue || ''}"></td>
+                <td><input type="number" class="credit-debt-pay-sum" value="${amountValue || ''}" min="0.01" step="0.01"></td>
+                <td><button type="button" class="danger-btn" onclick="this.closest('tr').remove()">Удалить</button></td>
+            `;
+            tbody.appendChild(row);
+        };
+        window.creditDebtGetActualPayments = function(startDate, calculationDate) {
+            const payments = [];
+            document.querySelectorAll('#credit-debt-payment-tbody tr').forEach(row => {
+                const dateValue = row.querySelector('.credit-debt-pay-date').value;
+                const amount = Number(row.querySelector('.credit-debt-pay-sum').value);
+                if (!dateValue || !Number.isFinite(amount) || amount <= 0) return;
+                const date = creditDebtParseDate(dateValue);
+                if (date >= startDate && date <= calculationDate) {
+                    payments.push({ date, amount: creditDebtRound(amount) });
+                }
+            });
+            payments.sort((a,b) => a.date - b.date);
+            return payments;
+        };
+        window.creditDebtCreateSchedule = function(data) {
+            const schedule = [];
+            const monthlyRate = data.rate / 100 / 12;
+            let remainingPrincipal = data.amount;
+            let annuityPayment = 0;
             if (data.type === 'annuity') {
-                payment = number === data.term
-                    ? creditDebtRound(remainingPrincipal + interest)
-                    : annuityPayment;
-
-                principal = creditDebtRound(payment - interest);
-
-                if (principal >= remainingPrincipal || number === data.term) {
-                    principal = creditDebtRound(remainingPrincipal);
+                if (monthlyRate === 0) {
+                    annuityPayment = data.amount / data.term;
+                } else {
+                    annuityPayment = data.amount * (monthlyRate * Math.pow(1 + monthlyRate, data.term)) / (Math.pow(1 + monthlyRate, data.term) - 1);
+                }
+                annuityPayment = creditDebtRound(annuityPayment);
+            }
+            for (let number = 1; number <= data.term; number++) {
+                const dueDate = creditDebtPaymentDate(data.startDate, number, data.paymentDay);
+                const previousDate = number === 1 ? data.startDate : creditDebtPaymentDate(data.startDate, number - 1, data.paymentDay);
+                let interest = 0;
+                if (data.interestMethod === 'monthly') {
+                    interest = creditDebtRound(remainingPrincipal * monthlyRate);
+                } else {
+                    const days = creditDebtDaysBetween(previousDate, dueDate);
+                    const base = creditDebtYearBase(previousDate, data.base);
+                    interest = creditDebtRound(remainingPrincipal * data.rate / 100 * days / base);
+                }
+                let principal, payment;
+                if (data.type === 'annuity') {
+                    payment = number === data.term ? creditDebtRound(remainingPrincipal + interest) : annuityPayment;
+                    principal = creditDebtRound(payment - interest);
+                    if (principal >= remainingPrincipal || number === data.term) {
+                        principal = creditDebtRound(remainingPrincipal);
+                        payment = creditDebtRound(principal + interest);
+                    }
+                } else {
+                    principal = number === data.term ? creditDebtRound(remainingPrincipal) : creditDebtRound(data.amount / data.term);
                     payment = creditDebtRound(principal + interest);
                 }
-            } else {
-                principal = number === data.term
-                    ? creditDebtRound(remainingPrincipal)
-                    : creditDebtRound(data.amount / data.term);
-
-                payment = creditDebtRound(principal + interest);
+                remainingPrincipal = creditDebtRound(Math.max(0, remainingPrincipal - principal));
+                schedule.push({ number, date: dueDate, payment, principal, interest });
             }
-
-            remainingPrincipal = creditDebtRound(
-                Math.max(0, remainingPrincipal - principal)
-            );
-
-            schedule.push({
-                number: number,
-                date: dueDate,
-                payment: payment,
-                principal: principal,
-                interest: interest
-            });
-        }
-
-        return schedule;
+            return schedule;
+        };
     }
-
-    document.getElementById('credit-debt-add-payment').addEventListener(
-        'click',
-        function () {
-            creditDebtAddPaymentRow('', '');
+    // Обработчики для кнопок
+    document.getElementById('credit-debt-add-payment').addEventListener('click', function() {
+        creditDebtAddPaymentRow('', '');
+    });
+    document.getElementById('credit-debt-clear-payments').addEventListener('click', function() {
+        document.getElementById('credit-debt-payment-tbody').innerHTML = '';
+    });
+    document.getElementById('credit-debt-calculate').addEventListener('click', function() {
+        const summary = document.getElementById('credit-debt-summary');
+        const resultBody = document.getElementById('credit-debt-result-tbody');
+        const data = {
+            amount: Number(document.getElementById('credit-debt-amount').value),
+            rate: Number(document.getElementById('credit-debt-rate').value),
+            startDate: creditDebtParseDate(document.getElementById('credit-debt-start').value),
+            calculationDate: creditDebtParseDate(document.getElementById('credit-debt-calc-date').value),
+            term: Number(document.getElementById('credit-debt-term').value),
+            paymentDay: Number(document.getElementById('credit-debt-payment-day').value),
+            type: document.getElementById('credit-debt-type').value,
+            base: document.getElementById('credit-debt-base').value,
+            interestMethod: document.getElementById('credit-debt-interest-method').value,
+            penaltyPrincipal: Number(document.getElementById('credit-debt-penalty-principal').value) || 0,
+            penaltyInterest: Number(document.getElementById('credit-debt-penalty-interest').value) || 0,
+            penaltyLimit: Number(document.getElementById('credit-debt-penalty-limit').value) || 0
+        };
+        if (!Number.isFinite(data.amount) || data.amount <= 0 || !Number.isFinite(data.rate) || data.rate < 0 || !data.startDate || !data.calculationDate || !Number.isInteger(data.term) || data.term < 1 || !Number.isInteger(data.paymentDay) || data.paymentDay < 1 || data.paymentDay > 31) {
+            summary.className = 'result-box error';
+            summary.textContent = 'Проверьте сумму кредита, ставку, даты, срок и день платежа.';
+            resultBody.innerHTML = '';
+            return;
         }
-    );
-
-    document.getElementById('credit-debt-clear-payments').addEventListener(
-        'click',
-        function () {
-            document.getElementById('credit-debt-payment-tbody').innerHTML = '';
+        if (data.calculationDate < data.startDate) {
+            summary.className = 'result-box error';
+            summary.textContent = 'Дата расчёта не может быть раньше даты выдачи кредита.';
+            resultBody.innerHTML = '';
+            return;
         }
-    );
-
-    document.getElementById('credit-debt-calculate').addEventListener(
-        'click',
-        function () {
-            const summary = document.getElementById('credit-debt-summary');
-            const resultBody = document.getElementById('credit-debt-result-tbody');
-
-            const data = {
-                amount: Number(document.getElementById('credit-debt-amount').value),
-                rate: Number(document.getElementById('credit-debt-rate').value),
-                startDate: creditDebtParseDate(
-                    document.getElementById('credit-debt-start').value
-                ),
-                calculationDate: creditDebtParseDate(
-                    document.getElementById('credit-debt-calc-date').value
-                ),
-                term: Number(document.getElementById('credit-debt-term').value),
-                paymentDay: Number(
-                    document.getElementById('credit-debt-payment-day').value
-                ),
-                type: document.getElementById('credit-debt-type').value,
-                base: document.getElementById('credit-debt-base').value,
-                interestMethod: document.getElementById(
-                    'credit-debt-interest-method'
-                ).value,
-                penaltyPrincipal: Number(
-                    document.getElementById(
-                        'credit-debt-penalty-principal'
-                    ).value
-                ) || 0,
-                penaltyInterest: Number(
-                    document.getElementById(
-                        'credit-debt-penalty-interest'
-                    ).value
-                ) || 0,
-                penaltyLimit: Number(
-                    document.getElementById(
-                        'credit-debt-penalty-limit'
-                    ).value
-                ) || 0
-            };
-
-            if (
-                !Number.isFinite(data.amount) ||
-                data.amount <= 0 ||
-                !Number.isFinite(data.rate) ||
-                data.rate < 0 ||
-                !data.startDate ||
-                !data.calculationDate ||
-                !Number.isInteger(data.term) ||
-                data.term < 1 ||
-                !Number.isInteger(data.paymentDay) ||
-                data.paymentDay < 1 ||
-                data.paymentDay > 31
-            ) {
-                summary.className = 'result-box error';
-                summary.textContent =
-                    'Проверьте сумму кредита, ставку, даты, срок и день платежа.';
-                resultBody.innerHTML = '';
-                return;
+        const schedule = creditDebtCreateSchedule(data);
+        const actualPayments = creditDebtGetActualPayments(data.startDate, data.calculationDate);
+        const events = [];
+        schedule.forEach(item => { if (item.date <= data.calculationDate) events.push({ type: 'due', date: item.date, schedule: item }); });
+        actualPayments.forEach(payment => { events.push({ type: 'payment', date: payment.date, payment }); });
+        events.push({ type: 'calculation', date: data.calculationDate });
+        const priority = { due: 1, payment: 2, calculation: 3 };
+        events.sort((a,b) => { if (a.date.getTime() !== b.date.getTime()) return a.date - b.date; return priority[a.type] - priority[b.type]; });
+        let currentDate = new Date(data.startDate);
+        let currentPrincipal = creditDebtRound(data.amount);
+        let currentInterest = 0, overduePrincipal = 0, overdueInterest = 0, penalty = 0;
+        let totalPaid = 0, totalPrincipalPaid = 0, totalInterestPaid = 0, totalPenaltyPaid = 0, totalInterestAccrued = 0, totalPenaltyAccrued = 0;
+        const resultRows = [];
+        function accrueUntil(targetDate) {
+            const days = creditDebtDaysBetween(currentDate, targetDate);
+            if (days <= 0) return;
+            let addedInterest = 0;
+            if (data.interestMethod === 'daily') {
+                let cursor = new Date(currentDate);
+                while (cursor < targetDate) {
+                    const nextYear = new Date(cursor.getFullYear() + 1, 0, 1);
+                    const partEnd = nextYear < targetDate ? nextYear : targetDate;
+                    const partDays = creditDebtDaysBetween(cursor, partEnd);
+                    const base = creditDebtYearBase(cursor, data.base);
+                    addedInterest += currentPrincipal * data.rate / 100 * partDays / base;
+                    cursor = partEnd;
+                }
             }
-
-            if (data.calculationDate < data.startDate) {
-                summary.className = 'result-box error';
-                summary.textContent =
-                    'Дата расчёта не может быть раньше даты выдачи кредита.';
-                resultBody.innerHTML = '';
-                return;
-            }
-
-            const schedule = creditDebtCreateSchedule(data);
-            const actualPayments = creditDebtGetActualPayments(
-                data.startDate,
-                data.calculationDate
-            );
-
-            const events = [];
-
-            schedule.forEach(function (item) {
-                if (item.date <= data.calculationDate) {
-                    events.push({
-                        type: 'due',
-                        date: item.date,
-                        schedule: item
-                    });
-                }
-            });
-
-            actualPayments.forEach(function (payment) {
-                events.push({
-                    type: 'payment',
-                    date: payment.date,
-                    payment: payment
-                });
-            });
-
-            events.push({
-                type: 'calculation',
-                date: data.calculationDate
-            });
-
-            const priority = {
-                due: 1,
-                payment: 2,
-                calculation: 3
-            };
-
-            events.sort(function (a, b) {
-                if (a.date.getTime() !== b.date.getTime()) {
-                    return a.date - b.date;
-                }
-
-                return priority[a.type] - priority[b.type];
-            });
-
-            let currentDate = new Date(data.startDate);
-            let currentPrincipal = creditDebtRound(data.amount);
-            let currentInterest = 0;
-            let overduePrincipal = 0;
-            let overdueInterest = 0;
-            let penalty = 0;
-
-            let totalPaid = 0;
-            let totalPrincipalPaid = 0;
-            let totalInterestPaid = 0;
-            let totalPenaltyPaid = 0;
-            let totalInterestAccrued = 0;
-            let totalPenaltyAccrued = 0;
-
-            const resultRows = [];
-
-            function accrueUntil(targetDate) {
-                const days = creditDebtDaysBetween(currentDate, targetDate);
-
-                if (days <= 0) return;
-
-                let addedInterest = 0;
-
-                if (data.interestMethod === 'daily') {
-                    let cursor = new Date(currentDate);
-
-                    while (cursor < targetDate) {
-                        const nextYear = new Date(
-                            cursor.getFullYear() + 1,
-                            0,
-                            1
-                        );
-
-                        const partEnd = nextYear < targetDate
-                            ? nextYear
-                            : targetDate;
-
-                        const partDays = creditDebtDaysBetween(
-                            cursor,
-                            partEnd
-                        );
-
-                        const base = creditDebtYearBase(cursor, data.base);
-
-                        addedInterest +=
-                            currentPrincipal *
-                            data.rate / 100 *
-                            partDays / base;
-
-                        cursor = partEnd;
-                    }
-                }
-
-                currentInterest = creditDebtRound(
-                    currentInterest + addedInterest
-                );
-
-                totalInterestAccrued = creditDebtRound(
-                    totalInterestAccrued + addedInterest
-                );
-
-                let addedPenalty =
-                    overduePrincipal * data.penaltyPrincipal / 100 * days +
-                    overdueInterest * data.penaltyInterest / 100 * days;
-
-                if (data.penaltyLimit > 0) {
-                    addedPenalty = Math.min(
-                        addedPenalty,
-                        Math.max(0, data.penaltyLimit - penalty)
-                    );
-                }
-
-                penalty = creditDebtRound(penalty + addedPenalty);
-
-                totalPenaltyAccrued = creditDebtRound(
-                    totalPenaltyAccrued + addedPenalty
-                );
-
-                currentDate = new Date(targetDate);
-            }
-
-            function allocatePayment(paymentAmount) {
-                let rest = creditDebtRound(paymentAmount);
-
-                const allocated = {
-                    penalty: 0,
-                    overdueInterest: 0,
-                    overduePrincipal: 0,
-                    currentInterest: 0,
-                    currentPrincipal: 0
-                };
-
-                let amount = Math.min(rest, penalty);
-                penalty = creditDebtRound(penalty - amount);
-                rest = creditDebtRound(rest - amount);
-                allocated.penalty = amount;
-                totalPenaltyPaid = creditDebtRound(totalPenaltyPaid + amount);
-
-                amount = Math.min(rest, overdueInterest);
-                overdueInterest = creditDebtRound(overdueInterest - amount);
-                rest = creditDebtRound(rest - amount);
-                allocated.overdueInterest = amount;
-                totalInterestPaid = creditDebtRound(
-                    totalInterestPaid + amount
-                );
-
-                amount = Math.min(rest, overduePrincipal);
-                overduePrincipal = creditDebtRound(overduePrincipal - amount);
-                rest = creditDebtRound(rest - amount);
-                allocated.overduePrincipal = amount;
-                totalPrincipalPaid = creditDebtRound(
-                    totalPrincipalPaid + amount
-                );
-
-                amount = Math.min(rest, currentInterest);
-                currentInterest = creditDebtRound(currentInterest - amount);
-                rest = creditDebtRound(rest - amount);
-                allocated.currentInterest = amount;
-                totalInterestPaid = creditDebtRound(
-                    totalInterestPaid + amount
-                );
-
-                amount = Math.min(rest, currentPrincipal);
-                currentPrincipal = creditDebtRound(currentPrincipal - amount);
-                rest = creditDebtRound(rest - amount);
-                allocated.currentPrincipal = amount;
-                totalPrincipalPaid = creditDebtRound(
-                    totalPrincipalPaid + amount
-                );
-
-                return allocated;
-            }
-
-            events.forEach(function (event) {
-                accrueUntil(event.date);
-
-                if (event.type === 'due') {
-                    const planned = event.schedule;
-
-                    const interestToOverdue = Math.min(
-                        currentInterest,
-                        planned.interest
-                    );
-
-                    currentInterest = creditDebtRound(
-                        currentInterest - interestToOverdue
-                    );
-
-                    overdueInterest = creditDebtRound(
-                        overdueInterest + interestToOverdue
-                    );
-
-                    const principalToOverdue = Math.min(
-                        currentPrincipal,
-                        planned.principal
-                    );
-
-                    currentPrincipal = creditDebtRound(
-                        currentPrincipal - principalToOverdue
-                    );
-
-                    overduePrincipal = creditDebtRound(
-                        overduePrincipal + principalToOverdue
-                    );
-
-                    resultRows.push({
-                        date: event.date,
-                        event: `Платёж по графику № ${planned.number}`,
-                        scheduled: planned.payment,
-                        actual: 0,
-                        interestPaid: 0,
-                        principalPaid: 0,
-                        overdueInterest: overdueInterest,
-                        overduePrincipal: overduePrincipal,
-                        penalty: penalty
-                    });
-                }
-
-                if (event.type === 'payment') {
-                    const allocated = allocatePayment(event.payment.amount);
-
-                    totalPaid = creditDebtRound(
-                        totalPaid + event.payment.amount
-                    );
-
-                    resultRows.push({
-                        date: event.date,
-                        event: 'Фактический платёж',
-                        scheduled: 0,
-                        actual: event.payment.amount,
-                        interestPaid: creditDebtRound(
-                            allocated.overdueInterest +
-                            allocated.currentInterest
-                        ),
-                        principalPaid: creditDebtRound(
-                            allocated.overduePrincipal +
-                            allocated.currentPrincipal
-                        ),
-                        overdueInterest: overdueInterest,
-                        overduePrincipal: overduePrincipal,
-                        penalty: penalty
-                    });
-                }
-            });
-
-            const totalPrincipalDebt = creditDebtRound(
-                currentPrincipal + overduePrincipal
-            );
-
-            const totalDebt = creditDebtRound(
-                totalPrincipalDebt +
-                currentInterest +
-                overdueInterest +
-                penalty
-            );
-
-            resultBody.innerHTML = resultRows.map(function (row) {
-                return `
-                    <tr>
-                        <td>${creditDebtFormatDate(row.date)}</td>
-                        <td>${row.event}</td>
-                        <td>${row.scheduled ? creditDebtFormat(row.scheduled) : '—'}</td>
-                        <td>${row.actual ? creditDebtFormat(row.actual) : '—'}</td>
-                        <td>${row.interestPaid ? creditDebtFormat(row.interestPaid) : '—'}</td>
-                        <td>${row.principalPaid ? creditDebtFormat(row.principalPaid) : '—'}</td>
-                        <td>${creditDebtFormat(row.overdueInterest)}</td>
-                        <td>${creditDebtFormat(row.overduePrincipal)}</td>
-                        <td>${creditDebtFormat(row.penalty)}</td>
-                    </tr>
-                `;
-            }).join('');
-
-            summary.className = 'result-box';
-
-            summary.textContent =
-                `Дата расчёта: ${creditDebtFormatDate(data.calculationDate)}
-` +
-                `Схема платежей: ${data.type === 'annuity' ? 'аннуитетная' : 'дифференцированная'}
-` +
-                `
-ОСНОВНОЙ ДОЛГ
-` +
-                `Текущий основной долг: ${creditDebtFormat(currentPrincipal)} руб.
-` +
-                `Просроченный основной долг: ${creditDebtFormat(overduePrincipal)} руб.
-` +
-                `
-ПРОЦЕНТЫ И НЕУСТОЙКА
-` +
-                `Текущие начисленные проценты: ${creditDebtFormat(currentInterest)} руб.
-` +
-                `Просроченные проценты: ${creditDebtFormat(overdueInterest)} руб.
-` +
-                `Неустойка: ${creditDebtFormat(penalty)} руб.
-` +
-                `
-ИТОГО ЗАДОЛЖЕННОСТЬ: ${creditDebtFormat(totalDebt)} руб.
-` +
-                `
-СПРАВОЧНО
-` +
-                `Всего внесено: ${creditDebtFormat(totalPaid)} руб.
-` +
-                `Погашено основного долга: ${creditDebtFormat(totalPrincipalPaid)} руб.
-` +
-                `Погашено процентов: ${creditDebtFormat(totalInterestPaid)} руб.
-` +
-                `Погашено неустойки: ${creditDebtFormat(totalPenaltyPaid)} руб.
-` +
-                `Всего начислено процентов: ${creditDebtFormat(totalInterestAccrued)} руб.
-` +
-                `Всего начислено неустойки: ${creditDebtFormat(totalPenaltyAccrued)} руб.`;
+            currentInterest = creditDebtRound(currentInterest + addedInterest);
+            totalInterestAccrued = creditDebtRound(totalInterestAccrued + addedInterest);
+            let addedPenalty = overduePrincipal * data.penaltyPrincipal / 100 * days + overdueInterest * data.penaltyInterest / 100 * days;
+            if (data.penaltyLimit > 0) { addedPenalty = Math.min(addedPenalty, Math.max(0, data.penaltyLimit - penalty)); }
+            penalty = creditDebtRound(penalty + addedPenalty);
+            totalPenaltyAccrued = creditDebtRound(totalPenaltyAccrued + addedPenalty);
+            currentDate = new Date(targetDate);
         }
-    );
-
+        function allocatePayment(paymentAmount) {
+            let rest = creditDebtRound(paymentAmount);
+            const allocated = { penalty:0, overdueInterest:0, overduePrincipal:0, currentInterest:0, currentPrincipal:0 };
+            let amount = Math.min(rest, penalty);
+            penalty = creditDebtRound(penalty - amount);
+            rest = creditDebtRound(rest - amount);
+            allocated.penalty = amount;
+            totalPenaltyPaid = creditDebtRound(totalPenaltyPaid + amount);
+            amount = Math.min(rest, overdueInterest);
+            overdueInterest = creditDebtRound(overdueInterest - amount);
+            rest = creditDebtRound(rest - amount);
+            allocated.overdueInterest = amount;
+            totalInterestPaid = creditDebtRound(totalInterestPaid + amount);
+            amount = Math.min(rest, overduePrincipal);
+            overduePrincipal = creditDebtRound(overduePrincipal - amount);
+            rest = creditDebtRound(rest - amount);
+            allocated.overduePrincipal = amount;
+            totalPrincipalPaid = creditDebtRound(totalPrincipalPaid + amount);
+            amount = Math.min(rest, currentInterest);
+            currentInterest = creditDebtRound(currentInterest - amount);
+            rest = creditDebtRound(rest - amount);
+            allocated.currentInterest = amount;
+            totalInterestPaid = creditDebtRound(totalInterestPaid + amount);
+            amount = Math.min(rest, currentPrincipal);
+            currentPrincipal = creditDebtRound(currentPrincipal - amount);
+            rest = creditDebtRound(rest - amount);
+            allocated.currentPrincipal = amount;
+            totalPrincipalPaid = creditDebtRound(totalPrincipalPaid + amount);
+            return allocated;
+        }
+        events.forEach(event => {
+            accrueUntil(event.date);
+            if (event.type === 'due') {
+                const planned = event.schedule;
+                const interestToOverdue = Math.min(currentInterest, planned.interest);
+                currentInterest = creditDebtRound(currentInterest - interestToOverdue);
+                overdueInterest = creditDebtRound(overdueInterest + interestToOverdue);
+                const principalToOverdue = Math.min(currentPrincipal, planned.principal);
+                currentPrincipal = creditDebtRound(currentPrincipal - principalToOverdue);
+                overduePrincipal = creditDebtRound(overduePrincipal + principalToOverdue);
+                resultRows.push({ date: event.date, event: `Платёж по графику № ${planned.number}`, scheduled: planned.payment, actual:0, interestPaid:0, principalPaid:0, overdueInterest, overduePrincipal, penalty });
+            }
+            if (event.type === 'payment') {
+                const allocated = allocatePayment(event.payment.amount);
+                totalPaid = creditDebtRound(totalPaid + event.payment.amount);
+                resultRows.push({ date: event.date, event: 'Фактический платёж', scheduled:0, actual: event.payment.amount, interestPaid: creditDebtRound(allocated.overdueInterest + allocated.currentInterest), principalPaid: creditDebtRound(allocated.overduePrincipal + allocated.currentPrincipal), overdueInterest, overduePrincipal, penalty });
+            }
+        });
+        const totalPrincipalDebt = creditDebtRound(currentPrincipal + overduePrincipal);
+        const totalDebt = creditDebtRound(totalPrincipalDebt + currentInterest + overdueInterest + penalty);
+        resultBody.innerHTML = resultRows.map(row => `
+            <tr>
+                <td>${creditDebtFormatDate(row.date)}</td>
+                <td>${row.event}</td>
+                <td>${row.scheduled ? creditDebtFormat(row.scheduled) : '—'}</td>
+                <td>${row.actual ? creditDebtFormat(row.actual) : '—'}</td>
+                <td>${row.interestPaid ? creditDebtFormat(row.interestPaid) : '—'}</td>
+                <td>${row.principalPaid ? creditDebtFormat(row.principalPaid) : '—'}</td>
+                <td>${creditDebtFormat(row.overdueInterest)}</td>
+                <td>${creditDebtFormat(row.overduePrincipal)}</td>
+                <td>${creditDebtFormat(row.penalty)}</td>
+            </tr>
+        `).join('');
+        summary.className = 'result-box';
+        summary.textContent =
+            `Дата расчёта: ${creditDebtFormatDate(data.calculationDate)}\n` +
+            `Схема платежей: ${data.type === 'annuity' ? 'аннуитетная' : 'дифференцированная'}\n` +
+            `\nОСНОВНОЙ ДОЛГ\n` +
+            `Текущий основной долг: ${creditDebtFormat(currentPrincipal)} руб.\n` +
+            `Просроченный основной долг: ${creditDebtFormat(overduePrincipal)} руб.\n` +
+            `\nПРОЦЕНТЫ И НЕУСТОЙКА\n` +
+            `Текущие начисленные проценты: ${creditDebtFormat(currentInterest)} руб.\n` +
+            `Просроченные проценты: ${creditDebtFormat(overdueInterest)} руб.\n` +
+            `Неустойка: ${creditDebtFormat(penalty)} руб.\n` +
+            `\nИТОГО ЗАДОЛЖЕННОСТЬ: ${creditDebtFormat(totalDebt)} руб.\n` +
+            `\nСПРАВОЧНО\n` +
+            `Всего внесено: ${creditDebtFormat(totalPaid)} руб.\n` +
+            `Погашено основного долга: ${creditDebtFormat(totalPrincipalPaid)} руб.\n` +
+            `Погашено процентов: ${creditDebtFormat(totalInterestPaid)} руб.\n` +
+            `Погашено неустойки: ${creditDebtFormat(totalPenaltyPaid)} руб.\n` +
+            `Всего начислено процентов: ${creditDebtFormat(totalInterestAccrued)} руб.\n` +
+            `Всего начислено неустойки: ${creditDebtFormat(totalPenaltyAccrued)} руб.`;
+    });
     creditDebtAddPaymentRow('', '');
 });
-/* ==========================================================
-   ВКЛАДКА 8: ГОСУДАРСТВЕННАЯ ПОШЛИНА И СУДЕБНЫЕ ИЗДЕРЖКИ
-   Суды общей юрисдикции, мировые судьи, арбитражные суды.
-   ========================================================== */
 
-document.addEventListener('DOMContentLoaded', function () {
+// ============================================================
+// ВКЛАДКА 8: ГОСУДАРСТВЕННАЯ ПОШЛИНА И СУДЕБНЫЕ ИЗДЕРЖКИ
+// ============================================================
+document.addEventListener('DOMContentLoaded', function() {
     const tabsContainer = document.getElementById('tabs');
-
-    /* ---------- Кнопка вкладки ---------- */
     if (tabsContainer && !document.querySelector('[data-tab="tab8"]')) {
         const tabButton = document.createElement('button');
-
         tabButton.className = 'tab-btn';
         tabButton.dataset.tab = 'tab8';
         tabButton.textContent = 'Госпошлина и издержки';
-
-        tabButton.addEventListener('click', function () {
-            document.querySelectorAll('.tab-btn').forEach(function (button) {
-                button.classList.remove('active');
-            });
-
-            document.querySelectorAll('.tab-content').forEach(function (content) {
-                content.classList.remove('active');
-            });
-
+        tabButton.addEventListener('click', function() {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             tabButton.classList.add('active');
-
             const tab = document.getElementById('tab8');
             if (tab) tab.classList.add('active');
         });
-
         tabsContainer.appendChild(tabButton);
     }
-
-    /* Не создаём дубль, если вкладка уже есть */
     if (document.getElementById('tab8')) return;
-
-    /* ---------- HTML вкладки ---------- */
     const tab = document.createElement('div');
-
     tab.id = 'tab8';
     tab.className = 'tab-content';
-
     tab.innerHTML = `
         <h2>Калькулятор государственной пошлины и издержек</h2>
-
-        <div class="note">
-            Калькулятор определяет госпошлину при обращении в суд и ориентировочно
-            распределяет госпошлину и подтверждённые судебные издержки между сторонами.
-            Для имущественных требований используется цена иска и удовлетворённая судом сумма.
-            Для смешанных требований расчёт доли расходов можно скорректировать вручную.
-        </div>
-
+        <div class="note">Калькулятор определяет госпошлину при обращении в суд и ориентировочно распределяет госпошлину и подтверждённые судебные издержки между сторонами. Для имущественных требований используется цена иска и удовлетворённая судом сумма. Для смешанных требований расчёт доли расходов можно скорректировать вручную.</div>
         <div class="payment-block">
             <label><strong>Вид судопроизводства и обращение</strong></label>
-
             <div class="inline-group">
-                <div class="form-group">
-                    <label>Вид судопроизводства</label>
-                    <select id="fee-jurisdiction">
-                        <option value="general">
-                            Суды общей юрисдикции / мировой судья
-                        </option>
-                        <option value="arbitration">
-                            Арбитражный суд
-                        </option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Суд</label>
-                    <select id="fee-court">
-                        <option value="magistrate">Мировой судья</option>
-                        <option value="district">Районный (городской) суд</option>
-                    </select>
-                </div>
+                <div class="form-group"><label>Вид судопроизводства</label><select id="fee-jurisdiction"><option value="general">Суды общей юрисдикции / мировой судья</option><option value="arbitration">Арбитражный суд</option></select></div>
+                <div class="form-group"><label>Суд</label><select id="fee-court"><option value="magistrate">Мировой судья</option><option value="district">Районный (городской) суд</option></select></div>
             </div>
-
             <div class="inline-group">
-                <div class="form-group">
-                    <label>Документ, подаваемый в суд</label>
-                    <select id="fee-stage">
-                        <option value="claim">Исковое заявление</option>
-                        <option value="order">Заявление о вынесении судебного приказа</option>
-                        <option value="appeal">Апелляционная жалоба</option>
-                        <option value="cassation">Кассационная жалоба</option>
-                        <option value="supervisory">Надзорная жалоба</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Заявитель / истец</label>
-                    <select id="fee-applicant-status">
-                        <option value="individual">Физическое лицо</option>
-                        <option value="organization">Юридическое лицо / организация</option>
-                    </select>
-                </div>
+                <div class="form-group"><label>Документ, подаваемый в суд</label><select id="fee-stage"><option value="claim">Исковое заявление</option><option value="order">Заявление о вынесении судебного приказа</option><option value="appeal">Апелляционная жалоба</option><option value="cassation">Кассационная жалоба</option><option value="supervisory">Надзорная жалоба</option></select></div>
+                <div class="form-group"><label>Заявитель / истец</label><select id="fee-applicant-status"><option value="individual">Физическое лицо</option><option value="organization">Юридическое лицо / организация</option></select></div>
             </div>
         </div>
-
         <div class="payment-block">
             <label><strong>Требования и результат рассмотрения</strong></label>
-
-            <div class="form-group">
-                <label>Характер заявленных требований</label>
-                <select id="fee-claim-type">
-                    <option value="property">
-                        Имущественные требования, подлежащие оценке
-                    </option>
-                    <option value="nonproperty">
-                        Неимущественные требования / имущественные без оценки
-                    </option>
-                    <option value="mixed">
-                        Смешанные: имущественные и неимущественные требования
-                    </option>
-                </select>
-            </div>
-
+            <div class="form-group"><label>Характер заявленных требований</label><select id="fee-claim-type"><option value="property">Имущественные требования, подлежащие оценке</option><option value="nonproperty">Неимущественные требования / имущественные без оценки</option><option value="mixed">Смешанные: имущественные и неимущественные требования</option></select></div>
             <div class="inline-group">
-                <div class="form-group">
-                    <label>Цена имущественного иска (руб.)</label>
-                    <input
-                        type="number"
-                        id="fee-claim-price"
-                        value="100000"
-                        min="0"
-                        step="0.01"
-                    >
-                </div>
-
-                <div class="form-group">
-                    <label>Удовлетворено имущественных требований (руб.)</label>
-                    <input
-                        type="number"
-                        id="fee-awarded-price"
-                        value="50000"
-                        min="0"
-                        step="0.01"
-                    >
-                </div>
+                <div class="form-group"><label>Цена имущественного иска (руб.)</label><input type="number" id="fee-claim-price" value="100000" min="0" step="0.01"></div>
+                <div class="form-group"><label>Удовлетворено имущественных требований (руб.)</label><input type="number" id="fee-awarded-price" value="50000" min="0" step="0.01"></div>
             </div>
-
             <div class="inline-group">
-                <div class="form-group">
-                    <label>Неимущественные требования заявлены</label>
-                    <select id="fee-nonproperty-requested">
-                        <option value="no">Нет</option>
-                        <option value="yes">Да</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Неимущественные требования удовлетворены</label>
-                    <select id="fee-nonproperty-awarded">
-                        <option value="no">Нет</option>
-                        <option value="yes">Да</option>
-                    </select>
-                </div>
+                <div class="form-group"><label>Неимущественные требования заявлены</label><select id="fee-nonproperty-requested"><option value="no">Нет</option><option value="yes">Да</option></select></div>
+                <div class="form-group"><label>Неимущественные требования удовлетворены</label><select id="fee-nonproperty-awarded"><option value="no">Нет</option><option value="yes">Да</option></select></div>
             </div>
-
-            <p class="muted">
-                Для неимущественного иска цена иска не требуется. Для жалоб поля
-                требований отключаются, поскольку пошлина устанавливается фиксированно.
-            </p>
+            <p class="muted">Для неимущественного иска цена иска не требуется. Для жалоб поля требований отключаются, поскольку пошлина устанавливается фиксированно.</p>
         </div>
-
         <div class="payment-block">
             <label><strong>Уплата госпошлины и льготы</strong></label>
-
             <div class="inline-group">
-                <div class="form-group">
-                    <label>Положение истца / заявителя</label>
-                    <select id="fee-plaintiff-benefit">
-                        <option value="none">
-                            Госпошлина уплачивается в общем порядке
-                        </option>
-                        <option value="full">
-                            Полностью освобождён от уплаты госпошлины
-                        </option>
-                        <option value="defer">
-                            Отсрочка, рассрочка или уменьшение пошлины судом
-                        </option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Ответчик освобождён от госпошлины</label>
-                    <select id="fee-defendant-benefit">
-                        <option value="no">Нет</option>
-                        <option value="yes">Да</option>
-                    </select>
-                </div>
+                <div class="form-group"><label>Положение истца / заявителя</label><select id="fee-plaintiff-benefit"><option value="none">Госпошлина уплачивается в общем порядке</option><option value="full">Полностью освобождён от уплаты госпошлины</option><option value="defer">Отсрочка, рассрочка или уменьшение пошлины судом</option></select></div>
+                <div class="form-group"><label>Ответчик освобождён от госпошлины</label><select id="fee-defendant-benefit"><option value="no">Нет</option><option value="yes">Да</option></select></div>
             </div>
-
             <div class="inline-group">
-                <div class="form-group">
-                    <label>Фактически уплачено истцом / заявителем (руб.)</label>
-                    <input
-                        type="number"
-                        id="fee-plaintiff-paid"
-                        value=""
-                        min="0"
-                        step="0.01"
-                        placeholder="Пусто — расчётная сумма"
-                    >
-                </div>
-
-                <div class="form-group">
-                    <label>Фактически уплачено ответчиком (руб.)</label>
-                    <input
-                        type="number"
-                        id="fee-defendant-paid"
-                        value="0"
-                        min="0"
-                        step="0.01"
-                    >
-                </div>
+                <div class="form-group"><label>Фактически уплачено истцом / заявителем (руб.)</label><input type="number" id="fee-plaintiff-paid" value="" min="0" step="0.01" placeholder="Пусто — расчётная сумма"></div>
+                <div class="form-group"><label>Фактически уплачено ответчиком (руб.)</label><input type="number" id="fee-defendant-paid" value="0" min="0" step="0.01"></div>
             </div>
-
-            <p class="muted">
-                Если истец освобождён от уплаты пошлины и иск удовлетворён,
-                госпошлина может быть взыскана с неосвобождённого ответчика
-                в доход бюджета пропорционально удовлетворённой части требований.
-            </p>
+            <p class="muted">Если истец освобождён от уплаты пошлины и иск удовлетворён, госпошлина может быть взыскана с неосвобождённого ответчика в доход бюджета пропорционально удовлетворённой части требований.</p>
         </div>
-
         <div class="payment-block">
             <label><strong>Судебные издержки</strong></label>
-
             <div class="inline-group">
-                <div class="form-group">
-                    <label>Издержки истца (представитель, эксперт, почта и др.), руб.</label>
-                    <input
-                        type="number"
-                        id="fee-plaintiff-costs"
-                        value="0"
-                        min="0"
-                        step="0.01"
-                    >
-                </div>
-
-                <div class="form-group">
-                    <label>Издержки ответчика (представитель, эксперт и др.), руб.</label>
-                    <input
-                        type="number"
-                        id="fee-defendant-costs"
-                        value="0"
-                        min="0"
-                        step="0.01"
-                    >
-                </div>
+                <div class="form-group"><label>Издержки истца (представитель, эксперт, почта и др.), руб.</label><input type="number" id="fee-plaintiff-costs" value="0" min="0" step="0.01"></div>
+                <div class="form-group"><label>Издержки ответчика (представитель, эксперт и др.), руб.</label><input type="number" id="fee-defendant-costs" value="0" min="0" step="0.01"></div>
             </div>
-
-            <div class="form-group">
-                <label>Способ распределения издержек</label>
-                <select id="fee-costs-mode">
-                    <option value="proportional">
-                        Пропорционально удовлетворённым требованиям
-                    </option>
-                    <option value="full-plaintiff">
-                        Полностью в пользу истца
-                    </option>
-                    <option value="full-defendant">
-                        Полностью в пользу ответчика
-                    </option>
-                    <option value="manual">
-                        Указать долю удовлетворения вручную
-                    </option>
-                </select>
-            </div>
-
-            <div
-                class="form-group"
-                id="fee-manual-ratio-group"
-                style="display:none;"
-            >
-                <label>Доля удовлетворения для распределения расходов (%)</label>
-                <input
-                    type="number"
-                    id="fee-manual-ratio"
-                    value="50"
-                    min="0"
-                    max="100"
-                    step="0.01"
-                >
-            </div>
-
-            <p class="muted">
-                Вводите подтверждённые расходы. Суд самостоятельно проверяет их
-                необходимость и разумность, в том числе может уменьшить расходы
-                на представителя.
-            </p>
+            <div class="form-group"><label>Способ распределения издержек</label><select id="fee-costs-mode"><option value="proportional">Пропорционально удовлетворённым требованиям</option><option value="full-plaintiff">Полностью в пользу истца</option><option value="full-defendant">Полностью в пользу ответчика</option><option value="manual">Указать долю удовлетворения вручную</option></select></div>
+            <div class="form-group" id="fee-manual-ratio-group" style="display:none;"><label>Доля удовлетворения для распределения расходов (%)</label><input type="number" id="fee-manual-ratio" value="50" min="0" max="100" step="0.01"></div>
+            <p class="muted">Вводите подтверждённые расходы. Суд самостоятельно проверяет их необходимость и разумность, в том числе может уменьшить расходы на представителя.</p>
         </div>
-
-        <button type="button" class="btn" id="fee-calculate">
-            Рассчитать госпошлину и распределение расходов
-        </button>
-
+        <button type="button" class="btn" id="fee-calculate">Рассчитать госпошлину и распределение расходов</button>
         <div class="result-wrapper">
-            <div id="fee-result" class="result-box">
-                Заполните параметры дела и нажмите «Рассчитать госпошлину и распределение расходов».
-            </div>
-
-            <button
-                type="button"
-                class="copy-btn"
-                onclick="copyResult('fee-result')"
-            >
-                📋 Копировать результат
-            </button>
+            <div id="fee-result" class="result-box">Заполните параметры дела и нажмите «Рассчитать госпошлину и распределение расходов».</div>
+            <button type="button" class="copy-btn" onclick="copyResult('fee-result')">📋 Копировать результат</button>
         </div>
     `;
-
     const scriptElement = document.querySelector('script');
     scriptElement.parentNode.insertBefore(tab, scriptElement);
 
-    /* ---------- Вспомогательные функции ---------- */
-
-    function feeRound(value) {
-        return Math.round((Number(value) + Number.EPSILON) * 100) / 100;
-    }
-
-    function feeFormat(value) {
-        return feeRound(value).toLocaleString('ru-RU', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
-    }
-
+    // Вспомогательные функции для госпошлины
+    function feeRound(value) { return Math.round((Number(value) + Number.EPSILON) * 100) / 100; }
+    function feeFormat(value) { return feeRound(value).toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
     function feeInputNumber(id, defaultValue) {
-        const rawValue = document.getElementById(id).value.trim();
-
-        if (rawValue === '') return defaultValue;
-
-        const value = Number(rawValue);
-        return Number.isFinite(value) ? value : NaN;
+        const raw = document.getElementById(id).value.trim();
+        if (raw === '') return defaultValue;
+        const val = Number(raw);
+        return Number.isFinite(val) ? val : NaN;
     }
-
-    /* ======================================================
-       СУДЫ ОБЩЕЙ ЮРИСДИКЦИИ И МИРОВОЙ СУДЬЯ
-       Ст. 333.19 НК РФ.
-       ====================================================== */
-
-    function feeGeneralPropertyClaim(claimPrice) {
-        if (claimPrice <= 0) return 0;
-
+    function feeGeneralPropertyClaim(price) {
+        if (price <= 0) return 0;
         let duty = 0;
-
-        if (claimPrice <= 100000) {
-            duty = 4000;
-        } else if (claimPrice <= 300000) {
-            duty = 4000 + (claimPrice - 100000) * 0.03;
-        } else if (claimPrice <= 500000) {
-            duty = 10000 + (claimPrice - 300000) * 0.025;
-        } else if (claimPrice <= 1000000) {
-            duty = 15000 + (claimPrice - 500000) * 0.02;
-        } else if (claimPrice <= 3000000) {
-            duty = 25000 + (claimPrice - 1000000) * 0.01;
-        } else if (claimPrice <= 8000000) {
-            duty = 45000 + (claimPrice - 3000000) * 0.007;
-        } else if (claimPrice <= 24000000) {
-            duty = 80000 + (claimPrice - 8000000) * 0.0035;
-        } else if (claimPrice <= 50000000) {
-            duty = 136000 + (claimPrice - 24000000) * 0.0022;
-        } else if (claimPrice <= 100000000) {
-            duty = 214000 + (claimPrice - 50000000) * 0.002;
-        } else {
-            duty = 314000 + (claimPrice - 100000000) * 0.0015;
-            duty = Math.min(duty, 900000);
-        }
-
+        if (price <= 100000) duty = 4000;
+        else if (price <= 300000) duty = 4000 + (price - 100000)*0.03;
+        else if (price <= 500000) duty = 10000 + (price - 300000)*0.025;
+        else if (price <= 1000000) duty = 15000 + (price - 500000)*0.02;
+        else if (price <= 3000000) duty = 25000 + (price - 1000000)*0.01;
+        else if (price <= 8000000) duty = 45000 + (price - 3000000)*0.007;
+        else if (price <= 24000000) duty = 80000 + (price - 8000000)*0.0035;
+        else if (price <= 50000000) duty = 136000 + (price - 24000000)*0.0022;
+        else if (price <= 100000000) duty = 214000 + (price - 50000000)*0.002;
+        else { duty = 314000 + (price - 100000000)*0.0015; duty = Math.min(duty, 900000); }
         return feeRound(duty);
     }
-
-    function feeGeneralNonPropertyClaim(applicantStatus) {
-        return applicantStatus === 'organization' ? 20000 : 3000;
-    }
-
-    function feeGeneralComplaint(stage, applicantStatus) {
-        if (stage === 'appeal') {
-            return applicantStatus === 'organization' ? 15000 : 3000;
-        }
-
-        if (stage === 'cassation') {
-            return applicantStatus === 'organization' ? 20000 : 5000;
-        }
-
-        if (stage === 'supervisory') {
-            return applicantStatus === 'organization' ? 30000 : 7000;
-        }
-
+    function feeGeneralNonProperty(status) { return status === 'organization' ? 20000 : 3000; }
+    function feeGeneralComplaint(stage, status) {
+        if (stage === 'appeal') return status === 'organization' ? 15000 : 3000;
+        if (stage === 'cassation') return status === 'organization' ? 20000 : 5000;
+        if (stage === 'supervisory') return status === 'organization' ? 30000 : 7000;
         return 0;
     }
-
-    /* ======================================================
-       АРБИТРАЖНЫЙ СУД
-       Ст. 333.21 НК РФ.
-       ====================================================== */
-
-    function feeArbitrationPropertyClaim(claimPrice) {
-        if (claimPrice <= 0) return 0;
-
+    function feeArbitrationPropertyClaim(price) {
+        if (price <= 0) return 0;
         let duty = 0;
-
-        if (claimPrice <= 100000) {
-            duty = Math.max(claimPrice * 0.04, 10000);
-        } else if (claimPrice <= 200000) {
-            duty = 10000 + (claimPrice - 100000) * 0.03;
-        } else if (claimPrice <= 1000000) {
-            duty = 13000 + (claimPrice - 200000) * 0.02;
-        } else if (claimPrice <= 2000000) {
-            duty = 29000 + (claimPrice - 1000000) * 0.01;
-        } else if (claimPrice <= 10000000) {
-            duty = 39000 + (claimPrice - 2000000) * 0.005;
-        } else if (claimPrice <= 50000000) {
-            duty = 79000 + (claimPrice - 10000000) * 0.003;
-        } else {
-            duty = 199000 + (claimPrice - 50000000) * 0.001;
-            duty = Math.min(duty, 10000000);
-        }
-
+        if (price <= 100000) duty = Math.max(price*0.04, 10000);
+        else if (price <= 200000) duty = 10000 + (price-100000)*0.03;
+        else if (price <= 1000000) duty = 13000 + (price-200000)*0.02;
+        else if (price <= 2000000) duty = 29000 + (price-1000000)*0.01;
+        else if (price <= 10000000) duty = 39000 + (price-2000000)*0.005;
+        else if (price <= 50000000) duty = 79000 + (price-10000000)*0.003;
+        else { duty = 199000 + (price-50000000)*0.001; duty = Math.min(duty, 10000000); }
         return feeRound(duty);
     }
-
-    function feeArbitrationNonPropertyClaim(applicantStatus) {
-        return applicantStatus === 'organization' ? 50000 : 15000;
-    }
-
-    function feeArbitrationComplaint(stage, applicantStatus) {
-        if (stage === 'appeal' || stage === 'cassation') {
-            return applicantStatus === 'organization' ? 30000 : 10000;
-        }
-
-        if (stage === 'supervisory') {
-            return applicantStatus === 'organization' ? 80000 : 30000;
-        }
-
+    function feeArbitrationNonProperty(status) { return status === 'organization' ? 50000 : 15000; }
+    function feeArbitrationComplaint(stage, status) {
+        if (stage === 'appeal' || stage === 'cassation') return status === 'organization' ? 30000 : 10000;
+        if (stage === 'supervisory') return status === 'organization' ? 80000 : 30000;
         return 0;
     }
-
-    /* ---------- Определение базовой госпошлины ---------- */
-
     function getBaseStateFee(data) {
-        const isComplaint =
-            data.stage === 'appeal' ||
-            data.stage === 'cassation' ||
-            data.stage === 'supervisory';
-
+        const isComplaint = ['appeal','cassation','supervisory'].includes(data.stage);
         const isArbitration = data.jurisdiction === 'arbitration';
-
         if (isComplaint) {
-            return isArbitration
-                ? feeArbitrationComplaint(data.stage, data.applicantStatus)
-                : feeGeneralComplaint(data.stage, data.applicantStatus);
+            return isArbitration ? feeArbitrationComplaint(data.stage, data.applicantStatus) : feeGeneralComplaint(data.stage, data.applicantStatus);
         }
-
-        const propertyDuty = isArbitration
-            ? feeArbitrationPropertyClaim(data.claimPrice)
-            : feeGeneralPropertyClaim(data.claimPrice);
-
-        const nonPropertyDuty = isArbitration
-            ? feeArbitrationNonPropertyClaim(data.applicantStatus)
-            : feeGeneralNonPropertyClaim(data.applicantStatus);
-
-        let totalDuty = 0;
-
-        if (
-            data.claimType === 'property' ||
-            data.claimType === 'mixed'
-        ) {
-            totalDuty += propertyDuty;
-        }
-
-        if (
-            data.claimType === 'nonproperty' ||
-            data.claimType === 'mixed'
-        ) {
-            totalDuty += nonPropertyDuty;
-        }
-
-        /*
-          Для судебного приказа пошлина равна 50% от пошлины
-          по имущественному иску, но не менее 2 000 руб.
-        */
-        if (data.stage === 'order') {
-            totalDuty = Math.max(propertyDuty * 0.5, 2000);
-        }
-
-        return feeRound(totalDuty);
+        const propertyDuty = isArbitration ? feeArbitrationPropertyClaim(data.claimPrice) : feeGeneralPropertyClaim(data.claimPrice);
+        const nonPropertyDuty = isArbitration ? feeArbitrationNonProperty(data.applicantStatus) : feeGeneralNonProperty(data.applicantStatus);
+        let total = 0;
+        if (data.claimType === 'property' || data.claimType === 'mixed') total += propertyDuty;
+        if (data.claimType === 'nonproperty' || data.claimType === 'mixed') total += nonPropertyDuty;
+        if (data.stage === 'order') total = Math.max(propertyDuty * 0.5, 2000);
+        return feeRound(total);
     }
-
-    /* ---------- Доля для распределения расходов ---------- */
-
     function getDistributionRatio(data) {
         if (data.costsMode === 'full-plaintiff') return 1;
         if (data.costsMode === 'full-defendant') return 0;
-
-        if (data.costsMode === 'manual') {
-            return data.manualRatio / 100;
-        }
-
-        if (
-            data.stage === 'appeal' ||
-            data.stage === 'cassation' ||
-            data.stage === 'supervisory'
-        ) {
-            return 1;
-        }
-
-        if (data.claimType === 'property') {
-            return data.claimPrice > 0
-                ? data.awardedPrice / data.claimPrice
-                : 0;
-        }
-
-        if (data.claimType === 'nonproperty') {
-            return data.nonPropertyAwarded === 'yes' ? 1 : 0;
-        }
-
-        /*
-          Смешанный иск: базово — среднее между долей удовлетворения
-          имущественных и неимущественных требований. Для иной методики
-          выберите ручной режим распределения.
-        */
-        const propertyRatio = data.claimPrice > 0
-            ? data.awardedPrice / data.claimPrice
-            : 0;
-
-        const nonPropertyRatio = data.nonPropertyAwarded === 'yes'
-            ? 1
-            : 0;
-
-        return (propertyRatio + nonPropertyRatio) / 2;
+        if (data.costsMode === 'manual') return data.manualRatio / 100;
+        if (['appeal','cassation','supervisory'].includes(data.stage)) return 1;
+        if (data.claimType === 'property') return data.claimPrice > 0 ? data.awardedPrice / data.claimPrice : 0;
+        if (data.claimType === 'nonproperty') return data.nonPropertyAwarded === 'yes' ? 1 : 0;
+        const propRatio = data.claimPrice > 0 ? data.awardedPrice / data.claimPrice : 0;
+        const nonPropRatio = data.nonPropertyAwarded === 'yes' ? 1 : 0;
+        return (propRatio + nonPropRatio) / 2;
     }
-
     function getCourtName(data) {
-        if (data.jurisdiction === 'arbitration') {
-            return 'арбитражный суд';
-        }
-
-        return data.court === 'magistrate'
-            ? 'мировой судья'
-            : 'районный (городской) суд';
+        if (data.jurisdiction === 'arbitration') return 'арбитражный суд';
+        return data.court === 'magistrate' ? 'мировой судья' : 'районный (городской) суд';
     }
-
     function getStageName(stage) {
-        const stages = {
-            claim: 'исковое заявление',
-            order: 'заявление о вынесении судебного приказа',
-            appeal: 'апелляционная жалоба',
-            cassation: 'кассационная жалоба',
-            supervisory: 'надзорная жалоба'
-        };
-
-        return stages[stage] || 'обращение в суд';
+        const map = { claim:'исковое заявление', order:'заявление о вынесении судебного приказа', appeal:'апелляционная жалоба', cassation:'кассационная жалоба', supervisory:'надзорная жалоба' };
+        return map[stage] || 'обращение в суд';
     }
-
-    /* ---------- Адаптация полей вкладки ---------- */
-
     function updateFeeInterface() {
-        const jurisdiction = document.getElementById(
-            'fee-jurisdiction'
-        ).value;
-
+        const jur = document.getElementById('fee-jurisdiction').value;
         const stage = document.getElementById('fee-stage').value;
         const claimType = document.getElementById('fee-claim-type').value;
         const costsMode = document.getElementById('fee-costs-mode').value;
-
         const courtSelect = document.getElementById('fee-court');
-        const orderOption = document.querySelector(
-            '#fee-stage option[value="order"]'
-        );
-
+        const orderOption = document.querySelector('#fee-stage option[value="order"]');
         const priceInput = document.getElementById('fee-claim-price');
         const awardedInput = document.getElementById('fee-awarded-price');
-        const nonPropertyRequested = document.getElementById(
-            'fee-nonproperty-requested'
-        );
-        const nonPropertyAwarded = document.getElementById(
-            'fee-nonproperty-awarded'
-        );
-
-        const manualRatioGroup = document.getElementById(
-            'fee-manual-ratio-group'
-        );
-
-        const isComplaint =
-            stage === 'appeal' ||
-            stage === 'cassation' ||
-            stage === 'supervisory';
-
-        if (jurisdiction === 'arbitration') {
-            courtSelect.value = 'district';
-            courtSelect.disabled = true;
-
-            if (orderOption) {
-                orderOption.disabled = true;
-
-                if (stage === 'order') {
-                    document.getElementById('fee-stage').value = 'claim';
-                }
-            }
-        } else {
-            courtSelect.disabled = false;
-
-            if (orderOption) {
-                orderOption.disabled = false;
-            }
-        }
-
-        manualRatioGroup.style.display = costsMode === 'manual'
-            ? 'block'
-            : 'none';
-
+        const nonReq = document.getElementById('fee-nonproperty-requested');
+        const nonAwd = document.getElementById('fee-nonproperty-awarded');
+        const manualGroup = document.getElementById('fee-manual-ratio-group');
+        const isComplaint = ['appeal','cassation','supervisory'].includes(stage);
+        if (jur === 'arbitration') { courtSelect.value = 'district'; courtSelect.disabled = true; if (orderOption) { orderOption.disabled = true; if (stage === 'order') document.getElementById('fee-stage').value = 'claim'; } } else { courtSelect.disabled = false; if (orderOption) orderOption.disabled = false; }
+        manualGroup.style.display = costsMode === 'manual' ? 'block' : 'none';
         if (isComplaint) {
-            priceInput.disabled = true;
-            awardedInput.disabled = true;
-            nonPropertyRequested.disabled = true;
-            nonPropertyAwarded.disabled = true;
+            priceInput.disabled = true; awardedInput.disabled = true; nonReq.disabled = true; nonAwd.disabled = true;
             return;
         }
-
         priceInput.disabled = claimType === 'nonproperty';
         awardedInput.disabled = claimType === 'nonproperty';
-
-        nonPropertyRequested.disabled = claimType === 'property';
-        nonPropertyAwarded.disabled = claimType === 'property';
-
-        if (claimType === 'property') {
-            nonPropertyRequested.value = 'no';
-            nonPropertyAwarded.value = 'no';
-        }
-
-        if (claimType === 'nonproperty') {
-            priceInput.value = '0';
-            awardedInput.value = '0';
-            nonPropertyRequested.value = 'yes';
-        }
+        nonReq.disabled = claimType === 'property';
+        nonAwd.disabled = claimType === 'property';
+        if (claimType === 'property') { nonReq.value = 'no'; nonAwd.value = 'no'; }
+        if (claimType === 'nonproperty') { priceInput.value = '0'; awardedInput.value = '0'; nonReq.value = 'yes'; }
     }
-
-    [
-        'fee-jurisdiction',
-        'fee-stage',
-        'fee-claim-type',
-        'fee-costs-mode'
-    ].forEach(function (id) {
-        document.getElementById(id).addEventListener(
-            'change',
-            updateFeeInterface
-        );
+    ['fee-jurisdiction','fee-stage','fee-claim-type','fee-costs-mode'].forEach(id => {
+        document.getElementById(id).addEventListener('change', updateFeeInterface);
     });
-
     updateFeeInterface();
-
-    /* ---------- Основной расчёт ---------- */
-
-    document.getElementById('fee-calculate').addEventListener(
-        'click',
-        function () {
-            const result = document.getElementById('fee-result');
-
-            const data = {
-                jurisdiction: document.getElementById(
-                    'fee-jurisdiction'
-                ).value,
-                court: document.getElementById('fee-court').value,
-                stage: document.getElementById('fee-stage').value,
-                applicantStatus: document.getElementById(
-                    'fee-applicant-status'
-                ).value,
-                claimType: document.getElementById('fee-claim-type').value,
-                claimPrice: feeInputNumber('fee-claim-price', 0),
-                awardedPrice: feeInputNumber('fee-awarded-price', 0),
-                nonPropertyRequested: document.getElementById(
-                    'fee-nonproperty-requested'
-                ).value,
-                nonPropertyAwarded: document.getElementById(
-                    'fee-nonproperty-awarded'
-                ).value,
-                plaintiffBenefit: document.getElementById(
-                    'fee-plaintiff-benefit'
-                ).value,
-                defendantBenefit: document.getElementById(
-                    'fee-defendant-benefit'
-                ).value,
-                plaintiffPaid: feeInputNumber('fee-plaintiff-paid', null),
-                defendantPaid: feeInputNumber('fee-defendant-paid', 0),
-                plaintiffCosts: feeInputNumber('fee-plaintiff-costs', 0),
-                defendantCosts: feeInputNumber('fee-defendant-costs', 0),
-                costsMode: document.getElementById('fee-costs-mode').value,
-                manualRatio: feeInputNumber('fee-manual-ratio', 50)
-            };
-
-            const isComplaint =
-                data.stage === 'appeal' ||
-                data.stage === 'cassation' ||
-                data.stage === 'supervisory';
-
-            if (
-                !Number.isFinite(data.claimPrice) ||
-                data.claimPrice < 0 ||
-                !Number.isFinite(data.awardedPrice) ||
-                data.awardedPrice < 0 ||
-                !Number.isFinite(data.plaintiffCosts) ||
-                data.plaintiffCosts < 0 ||
-                !Number.isFinite(data.defendantCosts) ||
-                data.defendantCosts < 0 ||
-                !Number.isFinite(data.defendantPaid) ||
-                data.defendantPaid < 0 ||
-                !Number.isFinite(data.manualRatio) ||
-                data.manualRatio < 0 ||
-                data.manualRatio > 100
-            ) {
-                result.className = 'result-box error';
-                result.textContent =
-                    'Проверьте введённые суммы и процент распределения расходов.';
-                return;
-            }
-
-            if (
-                !isComplaint &&
-                (
-                    data.claimType === 'property' ||
-                    data.claimType === 'mixed'
-                ) &&
-                data.awardedPrice > data.claimPrice
-            ) {
-                result.className = 'result-box error';
-                result.textContent =
-                    'Сумма удовлетворённых имущественных требований не может превышать цену иска.';
-                return;
-            }
-
-            const calculatedDuty = getBaseStateFee(data);
-
-            const plaintiffPaidDuty = data.plaintiffPaid === null
-                ? (
-                    data.plaintiffBenefit === 'none'
-                        ? calculatedDuty
-                        : 0
-                )
-                : data.plaintiffPaid;
-
-            if (
-                !Number.isFinite(plaintiffPaidDuty) ||
-                plaintiffPaidDuty < 0
-            ) {
-                result.className = 'result-box error';
-                result.textContent =
-                    'Проверьте фактически уплаченную сумму госпошлины.';
-                return;
-            }
-
-            let satisfactionRatio = getDistributionRatio(data);
-
-            satisfactionRatio = Math.min(
-                1,
-                Math.max(0, satisfactionRatio)
-            );
-
-            const refusalRatio = 1 - satisfactionRatio;
-
-            /*
-              Если истец оплатил госпошлину, она возмещается ему
-              пропорционально удовлетворённой части требований.
-            */
-            const dutyRecoveredByPlaintiff = feeRound(
-                plaintiffPaidDuty * satisfactionRatio
-            );
-
-            /*
-              При освобождении истца пошлина взыскивается с
-              неосвобождённого ответчика в доход бюджета.
-            */
-            let dutyToBudgetFromDefendant = 0;
-
-            if (
-                data.plaintiffBenefit === 'full' &&
-                data.defendantBenefit === 'no'
-            ) {
-                dutyToBudgetFromDefendant = feeRound(
-                    calculatedDuty * satisfactionRatio
-                );
-            }
-
-            const plaintiffCostsRecovered = feeRound(
-                data.plaintiffCosts * satisfactionRatio
-            );
-
-            const defendantCostsRecovered = feeRound(
-                data.defendantCosts * refusalRatio
-            );
-
-            const defendantDutyRecovered = feeRound(
-                data.defendantPaid * refusalRatio
-            );
-
-            const totalToPlaintiff = feeRound(
-                dutyRecoveredByPlaintiff +
-                plaintiffCostsRecovered
-            );
-
-            const totalToDefendant = feeRound(
-                defendantCostsRecovered +
-                defendantDutyRecovered
-            );
-
-            const netBetweenParties = feeRound(
-                totalToPlaintiff - totalToDefendant
-            );
-
-            const applicantName = data.applicantStatus === 'organization'
-                ? 'юридическое лицо / организация'
-                : 'физическое лицо';
-
-            const benefitName = {
-                none: 'госпошлина уплачивается в общем порядке',
-                full: 'полное освобождение от уплаты госпошлины',
-                defer: 'отсрочка, рассрочка или уменьшение пошлины судом'
-            }[data.plaintiffBenefit];
-
-            let claimsText = '';
-
-            if (!isComplaint) {
-                claimsText =
-                    `Цена имущественного иска: ${feeFormat(data.claimPrice)} руб.
-` +
-                    `Удовлетворено имущественных требований: ` +
-                    `${feeFormat(data.awardedPrice)} руб.
-`;
-            }
-
-            let netText = '';
-
-            if (netBetweenParties > 0) {
-                netText =
-                    `После взаимного зачёта ответчик уплачивает истцу: ` +
-                    `${feeFormat(netBetweenParties)} руб.`;
-            } else if (netBetweenParties < 0) {
-                netText =
-                    `После взаимного зачёта истец уплачивает ответчику: ` +
-                    `${feeFormat(Math.abs(netBetweenParties))} руб.`;
-            } else {
-                netText =
-                    'После взаимного зачёта денежных обязательств между сторонами не возникает.';
-            }
-
-            let budgetText = '';
-
-            if (dutyToBudgetFromDefendant > 0) {
-                budgetText =
-                    `
-ВЗЫСКАНИЕ В ДОХОД БЮДЖЕТА
-` +
-                    `С ответчика в доход бюджета: ` +
-                    `${feeFormat(dutyToBudgetFromDefendant)} руб.
-`;
-            }
-
-            result.className = 'result-box';
-            result.textContent =
-                `ОБРАЩЕНИЕ В СУД
-` +
-                `Вид судопроизводства: ${
-                    data.jurisdiction === 'arbitration'
-                        ? 'арбитражное'
-                        : 'гражданское / административное в СОЮ'
-                }.
-` +
-                `Суд: ${getCourtName(data)}.
-` +
-                `Документ: ${getStageName(data)}.
-` +
-                `Заявитель: ${applicantName}.
-` +
-                `Статус по госпошлине: ${benefitName}.
-` +
-                `${claimsText}` +
-                `Доля для распределения судебных расходов: ` +
-                `${(satisfactionRatio * 100).toFixed(2)}%.
-` +
-                `Доля отказа: ${(refusalRatio * 100).toFixed(2)}%.
-` +
-                `
-ГОСУДАРСТВЕННАЯ ПОШЛИНА
-` +
-                `Расчётный размер: ${feeFormat(calculatedDuty)} руб.
-` +
-                `Фактически уплачено истцом / заявителем: ` +
-                `${feeFormat(plaintiffPaidDuty)} руб.
-` +
-                `Возмещается истцу с ответчика: ` +
-                `${feeFormat(dutyRecoveredByPlaintiff)} руб.
-` +
-                `
-СУДЕБНЫЕ ИЗДЕРЖКИ ИСТЦА
-` +
-                `Издержки истца: ${feeFormat(data.plaintiffCosts)} руб.
-` +
-                `Подлежит взысканию с ответчика: ` +
-                `${feeFormat(plaintiffCostsRecovered)} руб.
-` +
-                `
-СУДЕБНЫЕ ИЗДЕРЖКИ ОТВЕТЧИКА
-` +
-                `Издержки ответчика: ${feeFormat(data.defendantCosts)} руб.
-` +
-                `Подлежит взысканию с истца: ` +
-                `${feeFormat(defendantCostsRecovered)} руб.
-` +
-                `
-ИТОГОВОЕ РАСПРЕДЕЛЕНИЕ МЕЖДУ СТОРОНАМИ
-` +
-                `Всего с ответчика в пользу истца: ` +
-                `${feeFormat(totalToPlaintiff)} руб.
-` +
-                `Всего с истца в пользу ответчика: ` +
-                `${feeFormat(totalToDefendant)} руб.
-` +
-                `${netText}
-` +
-                `${budgetText}` +
-                `
-Примечание: расчёт является ориентировочным. Суд проверяет ` +
-                `документальное подтверждение, необходимость и разумность издержек, ` +
-                `а также наличие предусмотренных законом льгот.`;
+    document.getElementById('fee-calculate').addEventListener('click', function() {
+        const result = document.getElementById('fee-result');
+        const data = {
+            jurisdiction: document.getElementById('fee-jurisdiction').value,
+            court: document.getElementById('fee-court').value,
+            stage: document.getElementById('fee-stage').value,
+            applicantStatus: document.getElementById('fee-applicant-status').value,
+            claimType: document.getElementById('fee-claim-type').value,
+            claimPrice: feeInputNumber('fee-claim-price', 0),
+            awardedPrice: feeInputNumber('fee-awarded-price', 0),
+            nonPropertyRequested: document.getElementById('fee-nonproperty-requested').value,
+            nonPropertyAwarded: document.getElementById('fee-nonproperty-awarded').value,
+            plaintiffBenefit: document.getElementById('fee-plaintiff-benefit').value,
+            defendantBenefit: document.getElementById('fee-defendant-benefit').value,
+            plaintiffPaid: feeInputNumber('fee-plaintiff-paid', null),
+            defendantPaid: feeInputNumber('fee-defendant-paid', 0),
+            plaintiffCosts: feeInputNumber('fee-plaintiff-costs', 0),
+            defendantCosts: feeInputNumber('fee-defendant-costs', 0),
+            costsMode: document.getElementById('fee-costs-mode').value,
+            manualRatio: feeInputNumber('fee-manual-ratio', 50)
+        };
+        const isComplaint = ['appeal','cassation','supervisory'].includes(data.stage);
+        if (!Number.isFinite(data.claimPrice) || data.claimPrice < 0 || !Number.isFinite(data.awardedPrice) || data.awardedPrice < 0 || !Number.isFinite(data.plaintiffCosts) || data.plaintiffCosts < 0 || !Number.isFinite(data.defendantCosts) || data.defendantCosts < 0 || !Number.isFinite(data.defendantPaid) || data.defendantPaid < 0 || !Number.isFinite(data.manualRatio) || data.manualRatio < 0 || data.manualRatio > 100) {
+            result.className = 'result-box error';
+            result.textContent = 'Проверьте введённые суммы и процент распределения расходов.';
+            return;
         }
-    );
-});            
+        if (!isComplaint && (data.claimType === 'property' || data.claimType === 'mixed') && data.awardedPrice > data.claimPrice) {
+            result.className = 'result-box error';
+            result.textContent = 'Сумма удовлетворённых имущественных требований не может превышать цену иска.';
+            return;
+        }
+        const calculatedDuty = getBaseStateFee(data);
+        const plaintiffPaidDuty = data.plaintiffPaid === null ? (data.plaintiffBenefit === 'none' ? calculatedDuty : 0) : data.plaintiffPaid;
+        if (!Number.isFinite(plaintiffPaidDuty) || plaintiffPaidDuty < 0) {
+            result.className = 'result-box error';
+            result.textContent = 'Проверьте фактически уплаченную сумму госпошлины.';
+            return;
+        }
+        let satisfactionRatio = Math.min(1, Math.max(0, getDistributionRatio(data)));
+        const refusalRatio = 1 - satisfactionRatio;
+        const dutyRecoveredByPlaintiff = feeRound(plaintiffPaidDuty * satisfactionRatio);
+        let dutyToBudgetFromDefendant = 0;
+        if (data.plaintiffBenefit === 'full' && data.defendantBenefit === 'no') {
+            dutyToBudgetFromDefendant = feeRound(calculatedDuty * satisfactionRatio);
+        }
+        const plaintiffCostsRecovered = feeRound(data.plaintiffCosts * satisfactionRatio);
+        const defendantCostsRecovered = feeRound(data.defendantCosts * refusalRatio);
+        const defendantDutyRecovered = feeRound(data.defendantPaid * refusalRatio);
+        const totalToPlaintiff = feeRound(dutyRecoveredByPlaintiff + plaintiffCostsRecovered);
+        const totalToDefendant = feeRound(defendantCostsRecovered + defendantDutyRecovered);
+        const netBetweenParties = feeRound(totalToPlaintiff - totalToDefendant);
+        const applicantName = data.applicantStatus === 'organization' ? 'юридическое лицо / организация' : 'физическое лицо';
+        const benefitName = { none:'госпошлина уплачивается в общем порядке', full:'полное освобождение от уплаты госпошлины', defer:'отсрочка, рассрочка или уменьшение пошлины судом' }[data.plaintiffBenefit];
+        let claimsText = '';
+        if (!isComplaint) {
+            claimsText = `Цена имущественного иска: ${feeFormat(data.claimPrice)} руб.\nУдовлетворено имущественных требований: ${feeFormat(data.awardedPrice)} руб.\n`;
+        }
+        let netText = '';
+        if (netBetweenParties > 0) netText = `После взаимного зачёта ответчик уплачивает истцу: ${feeFormat(netBetweenParties)} руб.`;
+        else if (netBetweenParties < 0) netText = `После взаимного зачёта истец уплачивает ответчику: ${feeFormat(Math.abs(netBetweenParties))} руб.`;
+        else netText = 'После взаимного зачёта денежных обязательств между сторонами не возникает.';
+        let budgetText = '';
+        if (dutyToBudgetFromDefendant > 0) {
+            budgetText = `\nВЗЫСКАНИЕ В ДОХОД БЮДЖЕТА\nС ответчика в доход бюджета: ${feeFormat(dutyToBudgetFromDefendant)} руб.\n`;
+        }
+        result.className = 'result-box';
+        result.textContent =
+            `ОБРАЩЕНИЕ В СУД\n` +
+            `Вид судопроизводства: ${data.jurisdiction === 'arbitration' ? 'арбитражное' : 'гражданское / административное в СОЮ'}.\n` +
+            `Суд: ${getCourtName(data)}.\n` +
+            `Документ: ${getStageName(data)}.\n` +
+            `Заявитель: ${applicantName}.\n` +
+            `Статус по госпошлине: ${benefitName}.\n` +
+            `${claimsText}` +
+            `Доля для распределения судебных расходов: ${(satisfactionRatio * 100).toFixed(2)}%.\n` +
+            `Доля отказа: ${(refusalRatio * 100).toFixed(2)}%.\n` +
+            `\nГОСУДАРСТВЕННАЯ ПОШЛИНА\n` +
+            `Расчётный размер: ${feeFormat(calculatedDuty)} руб.\n` +
+            `Фактически уплачено истцом / заявителем: ${feeFormat(plaintiffPaidDuty)} руб.\n` +
+            `Возмещается истцу с ответчика: ${feeFormat(dutyRecoveredByPlaintiff)} руб.\n` +
+            `\nСУДЕБНЫЕ ИЗДЕРЖКИ ИСТЦА\n` +
+            `Издержки истца: ${feeFormat(data.plaintiffCosts)} руб.\n` +
+            `Подлежит взысканию с ответчика: ${feeFormat(plaintiffCostsRecovered)} руб.\n` +
+            `\nСУДЕБНЫЕ ИЗДЕРЖКИ ОТВЕТЧИКА\n` +
+            `Издержки ответчика: ${feeFormat(data.defendantCosts)} руб.\n` +
+            `Подлежит взысканию с истца: ${feeFormat(defendantCostsRecovered)} руб.\n` +
+            `\nИТОГОВОЕ РАСПРЕДЕЛЕНИЕ МЕЖДУ СТОРОНАМИ\n` +
+            `Всего с ответчика в пользу истца: ${feeFormat(totalToPlaintiff)} руб.\n` +
+            `Всего с истца в пользу ответчика: ${feeFormat(totalToDefendant)} руб.\n` +
+            `${netText}\n` +
+            `${budgetText}` +
+            `Примечание: расчёт является ориентировочным. Суд проверяет документальное подтверждение, необходимость и разумность издержек, а также наличие предусмотренных законом льгот.`;
+    });
+});
 </script>
 </body>
 </html>
