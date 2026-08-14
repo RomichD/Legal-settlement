@@ -88,8 +88,11 @@ input:focus, select:focus {
     width: 100%;
 }
 .btn:hover { background: #0d1559; }
-.result-box {
+.result-wrapper {
     margin-top: 20px;
+    position: relative;
+}
+.result-box {
     padding: 18px;
     background: #e8f5e9;
     border-left: 5px solid #2e7d32;
@@ -101,6 +104,36 @@ input:focus, select:focus {
     overflow-y: auto;
 }
 .result-box.error { background: #ffebee; border-color: #c62828; color: #b71c1c; }
+.copy-btn {
+    background: #3949ab;
+    color: #fff;
+    border: none;
+    padding: 6px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-top: 10px;
+    display: inline-block;
+    transition: background 0.2s;
+}
+.copy-btn:hover { background: #1a237e; }
+.copy-toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a237e;
+    color: #fff;
+    padding: 12px 28px;
+    border-radius: 8px;
+    font-size: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 9999;
+}
+.copy-toast.show { opacity: 1; }
 .inline-group { display: flex; gap: 12px; flex-wrap: wrap; }
 .inline-group .form-group { flex: 1; min-width: 120px; }
 @media (max-width: 600px) {
@@ -193,7 +226,11 @@ table input { width: 100%; padding: 6px 8px; border: 1px solid #cfd8dc; border-r
         <div class="form-group"><label>Дата выдачи (ДД-ММ-ГГГГ)</label><input type="date" id="loan-start" value="2025-01-01" placeholder="ДД-ММ-ГГГГ"></div>
         <div class="form-group"><label>Дата расчёта (ДД-ММ-ГГГГ)</label><input type="date" id="loan-end" value="2026-06-01" placeholder="ДД-ММ-ГГГГ"></div>
         <button class="btn" onclick="calcLoanInterest()">Рассчитать проценты</button>
-        <div id="loan-result" class="result-box">Результат появится здесь</div>
+
+        <div class="result-wrapper">
+            <div id="loan-result" class="result-box">Результат появится здесь</div>
+            <button class="copy-btn" onclick="copyResult('loan-result')">📋 Копировать результат</button>
+        </div>
     </div>
 
     <!-- ========== ВКЛАДКА 2 ========== -->
@@ -225,7 +262,11 @@ table input { width: 100%; padding: 6px 8px; border: 1px solid #cfd8dc; border-r
             <button class="add-row-btn" onclick="addPenaltyRow()">➕ Добавить частичное погашение</button>
         </div>
         <button class="btn" onclick="calcPenalty()" style="margin-top:15px;">Рассчитать неустойку</button>
-        <div id="penalty-result" class="result-box">Результат появится здесь</div>
+
+        <div class="result-wrapper">
+            <div id="penalty-result" class="result-box">Результат появится здесь</div>
+            <button class="copy-btn" onclick="copyResult('penalty-result')">📋 Копировать результат</button>
+        </div>
     </div>
 
     <!-- ========== ВКЛАДКА 3 ========== -->
@@ -243,7 +284,11 @@ table input { width: 100%; padding: 6px 8px; border: 1px solid #cfd8dc; border-r
             <select id="frac-op"><option value="+">+</option><option value="-">-</option><option value="*">*</option><option value="/">/</option></select>
         </div>
         <button class="btn" onclick="calcFraction()">Вычислить</button>
-        <div id="frac-result" class="result-box">Результат появится здесь</div>
+
+        <div class="result-wrapper">
+            <div id="frac-result" class="result-box">Результат появится здесь</div>
+            <button class="copy-btn" onclick="copyResult('frac-result')">📋 Копировать результат</button>
+        </div>
     </div>
 
     <!-- ========== ВКЛАДКА 4 ========== -->
@@ -299,7 +344,11 @@ table input { width: 100%; padding: 6px 8px; border: 1px solid #cfd8dc; border-r
         </div>
 
         <button class="btn" onclick="calcCreditCard()">Рассчитать график платежей</button>
-        <div id="card-result" class="result-box">Результат появится здесь</div>
+
+        <div class="result-wrapper">
+            <div id="card-result" class="result-box">Результат появится здесь</div>
+            <button class="copy-btn" onclick="copyResult('card-result')">📋 Копировать результат</button>
+        </div>
     </div>
 
     <!-- ========== ВКЛАДКА 5 ========== -->
@@ -325,10 +374,14 @@ table input { width: 100%; padding: 6px 8px; border: 1px solid #cfd8dc; border-r
             <button class="add-row-btn" onclick="addRow()">➕ Добавить платёж</button>
         </div>
         <button class="btn" onclick="calcLimitation()" style="margin-top:18px;">Проверить сроки</button>
-        <div id="lim-result" class="result-box">Результат появится здесь</div>
+
+        <div class="result-wrapper">
+            <div id="lim-result" class="result-box">Результат появится здесь</div>
+            <button class="copy-btn" onclick="copyResult('lim-result')">📋 Копировать результат</button>
+        </div>
     </div>
 
-    <!-- ========== ВКЛАДКА 6 (ОБНОВЛЕНА) ========== -->
+    <!-- ========== ВКЛАДКА 6 ========== -->
     <div id="tab6" class="tab-content">
         <h2>Расчёт процентов по ст. 395 ГК РФ</h2>
 
@@ -401,11 +454,74 @@ table input { width: 100%; padding: 6px 8px; border: 1px solid #cfd8dc; border-r
 
         <button class="btn" type="button" id="calculate" style="margin-top:15px;">Рассчитать проценты</button>
 
-        <div id="result" class="result-box">Введите данные и нажмите «Рассчитать проценты».</div>
+        <div class="result-wrapper">
+            <div id="result" class="result-box">Введите данные и нажмите «Рассчитать проценты».</div>
+            <button class="copy-btn" onclick="copyResult('result')">📋 Копировать результат</button>
+        </div>
     </div>
 </div>
 
 <script>
+// ============================================================
+// Копирование результата в буфер обмена
+// ============================================================
+function copyResult(elementId) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+
+    // Берём текстовое содержимое (без HTML-тегов)
+    let text = element.innerText || element.textContent;
+    if (!text || text.trim() === '') {
+        alert('Нет данных для копирования.');
+        return;
+    }
+
+    // Используем Clipboard API
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text.trim()).then(() => {
+            showToast('✅ Результат скопирован!');
+        }).catch(() => {
+            fallbackCopy(text);
+        });
+    } else {
+        fallbackCopy(text);
+    }
+}
+
+function fallbackCopy(text) {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    try {
+        document.execCommand('copy');
+        showToast('✅ Результат скопирован!');
+    } catch (e) {
+        alert('Не удалось скопировать текст. Выделите его вручную и скопируйте (Ctrl+C).');
+    }
+    document.body.removeChild(textarea);
+}
+
+function showToast(message) {
+    const toast = document.createElement('div');
+    toast.className = 'copy-toast';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    // Показываем
+    requestAnimationFrame(() => {
+        toast.classList.add('show');
+    });
+    // Скрываем через 2 секунды
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => {
+            document.body.removeChild(toast);
+        }, 300);
+    }, 2000);
+}
+
 // ============================================================
 // Вкладки
 // ============================================================
@@ -1545,8 +1661,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 Рассчитать задолженность
             </button>
 
-            <div id="credit-debt-summary" class="result-box">
-                Заполните условия договора и нажмите «Рассчитать задолженность».
+            <div class="result-wrapper">
+                <div id="credit-debt-summary" class="result-box">
+                    Заполните условия договора и нажмите «Рассчитать задолженность».
+                </div>
+                <button class="copy-btn" onclick="copyResult('credit-debt-summary')">📋 Копировать результат</button>
             </div>
 
             <div class="scroll-table">
