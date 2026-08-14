@@ -218,11 +218,18 @@ table input { width: 100%; padding: 6px 8px; border: 1px solid #cfd8dc; border-r
         <button class="tab-btn" data-tab="tab6">Ст. 395 ГК РФ</button>
     </div>
 
-    <!-- ========== ВКЛАДКА 1 ========== -->
+    <!-- ========== ВКЛАДКА 1 (ОБНОВЛЕНА) ========== -->
     <div id="tab1" class="tab-content active">
         <h2>Расчёт процентов по займу (помесячно)</h2>
         <div class="form-group"><label>Сумма займа (руб.)</label><input type="number" id="loan-amount" value="100000" step="any"></div>
-        <div class="form-group"><label>Годовая ставка (% годовых, например 15)</label><input type="number" id="loan-rate" value="15" step="0.01"></div>
+        <div class="form-group">
+            <label>Тип ставки</label>
+            <div class="radio-group">
+                <label><input type="radio" name="loan-rate-type" value="yearly" checked> Годовая (% годовых)</label>
+                <label><input type="radio" name="loan-rate-type" value="daily"> Дневная (% в день)</label>
+            </div>
+        </div>
+        <div class="form-group"><label>Значение ставки (если годовая – % годовых, если дневная – % в день)</label><input type="number" id="loan-rate" value="15" step="0.01"></div>
         <div class="form-group"><label>Дата выдачи (ДД-ММ-ГГГГ)</label><input type="date" id="loan-start" value="2025-01-01" placeholder="ДД-ММ-ГГГГ"></div>
         <div class="form-group"><label>Дата расчёта (ДД-ММ-ГГГГ)</label><input type="date" id="loan-end" value="2026-06-01" placeholder="ДД-ММ-ГГГГ"></div>
         <button class="btn" onclick="calcLoanInterest()">Рассчитать проценты</button>
@@ -468,15 +475,11 @@ table input { width: 100%; padding: 6px 8px; border: 1px solid #cfd8dc; border-r
 function copyResult(elementId) {
     const element = document.getElementById(elementId);
     if (!element) return;
-
-    // Берём текстовое содержимое (без HTML-тегов)
     let text = element.innerText || element.textContent;
     if (!text || text.trim() === '') {
         alert('Нет данных для копирования.');
         return;
     }
-
-    // Используем Clipboard API
     if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(text.trim()).then(() => {
             showToast('✅ Результат скопирован!');
@@ -487,7 +490,6 @@ function copyResult(elementId) {
         fallbackCopy(text);
     }
 }
-
 function fallbackCopy(text) {
     const textarea = document.createElement('textarea');
     textarea.value = text;
@@ -503,17 +505,14 @@ function fallbackCopy(text) {
     }
     document.body.removeChild(textarea);
 }
-
 function showToast(message) {
     const toast = document.createElement('div');
     toast.className = 'copy-toast';
     toast.textContent = message;
     document.body.appendChild(toast);
-    // Показываем
     requestAnimationFrame(() => {
         toast.classList.add('show');
     });
-    // Скрываем через 2 секунды
     setTimeout(() => {
         toast.classList.remove('show');
         setTimeout(() => {
@@ -595,15 +594,17 @@ function getDayWord(n) {
 }
 
 // ============================================================
-// 1. Проценты по займу
+// 1. Проценты по займу (ОБНОВЛЕНА)
 // ============================================================
 function calcLoanInterest() {
     const principal = parseFloat(document.getElementById('loan-amount').value);
-    const ratePercent = parseFloat(document.getElementById('loan-rate').value);
+    const rateType = document.querySelector('input[name="loan-rate-type"]:checked').value;
+    const rateVal = parseFloat(document.getElementById('loan-rate').value);
     const startStr = document.getElementById('loan-start').value;
     const endStr = document.getElementById('loan-end').value;
     const resultDiv = document.getElementById('loan-result');
-    if (!principal || !ratePercent || !startStr || !endStr) {
+
+    if (!principal || !rateVal || !startStr || !endStr) {
         resultDiv.className = 'result-box error';
         resultDiv.textContent = 'Заполните все поля.';
         return;
@@ -615,10 +616,38 @@ function calcLoanInterest() {
         resultDiv.textContent = 'Дата расчёта должна быть позже даты выдачи.';
         return;
     }
-    const rate = ratePercent / 100;
+
+    const rate = rateVal / 100; // переводим в доли
     const totalDays = daysBetween(start, end);
-    const totalInterest = principal * rate * totalDays / 365;
+    let totalInterest = 0;
     let monthlyDetails = [];
+
+    // Функция расчёта процентов за период
+    function calcPeriodInterest(amount, fromDate, toDate) {
+        if (fromDate >= toDate) return 0;
+        const days = daysBetween(fromDate, toDate);
+        if (days === 0) return 0;
+        if (rateType === 'daily') {
+            return amount * rate * days;
+        } else { // годовая
+            // разбиваем по годам
+            let current = new Date(fromDate);
+            let total = 0;
+            while (current < toDate) {
+                const year = current.getFullYear();
+                const dInYear = daysInYear(year);
+                const nextYear = new Date(year + 1, 0, 1);
+                const segmentEnd = nextYear < toDate ? nextYear : toDate;
+                const segDays = daysBetween(current, segmentEnd);
+                if (segDays === 0) break;
+                total += amount * rate * segDays / dInYear;
+                current = segmentEnd;
+            }
+            return total;
+        }
+    }
+
+    // Рассчитываем помесячно
     let current = new Date(start);
     let nextMonth = new Date(current.getFullYear(), current.getMonth() + 1, 1);
     while (current < end) {
@@ -626,19 +655,23 @@ function calcLoanInterest() {
         const monthEnd = nextMonth > end ? new Date(end) : new Date(nextMonth);
         const daysInMonth = daysBetween(monthStart, monthEnd);
         if (daysInMonth === 0) break;
-        const monthInterest = principal * rate * daysInMonth / 365;
+        const monthInterest = calcPeriodInterest(principal, monthStart, monthEnd);
+        totalInterest += monthInterest;
         monthlyDetails.push(
             `${monthStart.toLocaleString('ru', {month:'long', year:'numeric'})}: ${daysInMonth} дн. → ${monthInterest.toFixed(2)} руб.`
         );
         current = new Date(nextMonth);
         nextMonth = new Date(current.getFullYear(), current.getMonth() + 1, 1);
     }
+
+    const rateLabel = rateType === 'daily' ? 'дневная' : 'годовая';
     const output =
         `Сумма займа: ${principal} руб.\n` +
-        `Годовая ставка: ${ratePercent}%\n` +
+        `Тип ставки: ${rateLabel} (${rateVal}%)\n` +
         `Период: с ${formatDate(start)} по ${formatDate(end)} (${totalDays} дней)\n` +
         `Всего процентов: ${totalInterest.toFixed(2)} руб.\n\n` +
         `Помесячный расчёт:\n${monthlyDetails.join('\n')}`;
+
     resultDiv.className = 'result-box';
     resultDiv.textContent = output;
 }
