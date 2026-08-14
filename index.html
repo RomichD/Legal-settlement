@@ -563,20 +563,57 @@ pre {
         </div>
     </div>
 
-    <!-- ========== ВКЛАДКА 6 (СТ. 395 ГК РФ) ========== -->
+    <!-- ========== ВКЛАДКА 6 (НОВАЯ СТ. 395 ГК РФ) ========== -->
     <div id="tab6" class="tab-content">
         <h2>Расчёт процентов по ст. 395 ГК РФ</h2>
+
         <div class="note">
-            Расчёт включает обе даты периода. До 01.06.2015 используется ставка рефинансирования,
-            с 01.06.2015 по 31.07.2016 — средние ставки банковского процента по федеральным округам,
-            с 01.08.2016 — ключевая ставка Банка России.
+            Проценты начисляются за каждый день просрочки по ключевой ставке
+            Банка России, действовавшей в соответствующий период. Частичный
+            платёж уменьшает основной долг с даты его внесения.
         </div>
+
         <div class="grid">
-            <div><label for="debt">Сумма задолженности, руб.</label><input id="debt" type="number" min="0.01" step="0.01" value="250000"></div>
-            <div><label for="start">Дата начала просрочки</label><input id="start" type="date" value="2023-01-01"></div>
-            <div><label for="end">Дата окончания просрочки</label><input id="end" type="date" value="2024-01-01"></div>
-            <div><label for="region">Федеральный округ (2015–2016)</label>
-                <select id="region">
+            <div class="form-group">
+                <label for="gk395-debt">Сумма основного долга, руб.</label>
+                <input
+                    id="gk395-debt"
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    value="100000"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="gk395-start">
+                    Первый день начисления процентов
+                </label>
+                <input id="gk395-start" type="date" value="2026-07-01">
+
+                <div class="muted">
+                    Обычно это день, следующий за датой, в которую обязательство
+                    должно было быть исполнено.
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="gk395-end">
+                    Последний день начисления процентов
+                </label>
+                <input id="gk395-end" type="date" value="2026-08-14">
+
+                <div class="muted">
+                    При полном погашении обычно указывается дата фактической оплаты.
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="gk395-region">
+                    Федеральный округ (только для 01.06.2015–31.07.2016)
+                </label>
+
+                <select id="gk395-region">
                     <option value="central">Центральный</option>
                     <option value="northwest">Северо-Западный</option>
                     <option value="south">Южный</option>
@@ -589,25 +626,98 @@ pre {
                 </select>
             </div>
         </div>
-        <section class="payment-block" style="margin-top:15px;">
-            <strong>Частичные платежи</strong>
-            <p class="muted">Платёж уменьшает долг с даты его внесения. При отсутствии платежей оставьте таблицу пустой.</p>
+
+        <div class="payment-block">
+            <label><strong>Частичные платежи</strong></label>
+
+            <p class="muted">
+                Платёж уменьшает сумму основного долга в день его внесения.
+                За день платежа проценты рассчитываются уже на уменьшенный остаток.
+            </p>
+
             <div class="table-wrapper">
                 <table>
-                    <thead><tr><th>Дата платежа</th><th>Сумма, руб.</th><th>Действие</th></tr></thead>
-                    <tbody id="payments">
-                        <tr><td><input class="payment-date" type="date" value="2023-06-01"></td><td><input class="payment-sum" type="number" min="0.01" step="0.01" value="20000"></td><td><button class="danger-btn" onclick="this.closest('tr').remove()">Удалить</button></td></tr>
-                        <tr><td><input class="payment-date" type="date" value="2023-09-01"></td><td><input class="payment-sum" type="number" min="0.01" step="0.01" value="15000"></td><td><button class="danger-btn" onclick="this.closest('tr').remove()">Удалить</button></td></tr>
+                    <thead>
+                        <tr>
+                            <th>Дата платежа</th>
+                            <th>Сумма, руб.</th>
+                            <th>Действие</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="gk395-payment-tbody">
+                        <tr>
+                            <td>
+                                <input type="date" class="gk395-pay-date">
+                            </td>
+                            <td>
+                                <input
+                                    type="number"
+                                    class="gk395-pay-sum"
+                                    min="0.01"
+                                    step="0.01"
+                                >
+                            </td>
+                            <td>
+                                <button
+                                    type="button"
+                                    class="danger-btn"
+                                    onclick="removeGk395Row(this)"
+                                >
+                                    Удалить
+                                </button>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
-            <button class="add-row-btn" type="button" id="addPayment">➕ Добавить платёж</button>
-            <button class="add-row-btn" type="button" id="clearPayments" style="background:#6b7280; margin-left:8px;">🗑 Очистить платежи</button>
-        </section>
-        <button class="btn" type="button" id="calculate" style="margin-top:15px;">Рассчитать проценты</button>
+
+            <button
+                type="button"
+                class="add-row-btn"
+                onclick="addGk395Row()"
+            >
+                ➕ Добавить платёж
+            </button>
+
+            <button
+                type="button"
+                class="add-row-btn"
+                style="background: #6b7280; margin-left: 8px;"
+                onclick="clearGk395Payments()"
+            >
+                🗑 Очистить платежи
+            </button>
+        </div>
+
+        <button type="button" class="btn" onclick="calcGK395()">
+            Рассчитать проценты
+        </button>
+
         <div class="result-wrapper">
-            <div id="result" class="result-box">Введите данные и нажмите «Рассчитать проценты».</div>
-            <button class="copy-btn" onclick="copyResult('result')">📋 Копировать результат</button>
+            <div id="gk395-result" class="result-box">
+                Введите данные и нажмите «Рассчитать проценты».
+            </div>
+
+            <button class="copy-btn" onclick="copyResult('gk395-result')">
+                📋 Копировать результат
+            </button>
+        </div>
+
+        <div class="scroll-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Период</th>
+                        <th>Дней</th>
+                        <th>Ставка</th>
+                        <th>Долг</th>
+                        <th>Проценты</th>
+                    </tr>
+                </thead>
+
+                <tbody id="gk395-result-tbody"></tbody>
+            </table>
         </div>
     </div>
 </div>
@@ -1388,198 +1498,390 @@ function addYears(d, years) {
 }
 
 // ============================================================
-// 6. Калькулятор по ст. 395 ГК РФ (исправлен: обе даты включены)
+// СТ. 395 ГК РФ (НОВАЯ ВЕРСИЯ)
 // ============================================================
-function parseDate395(str) {
-    const parts = str.split('-');
+const GK395_KEY_RATES = [
+    { from: '2016-08-01', rate: 10.50 },
+    { from: '2016-09-19', rate: 10.00 },
+    { from: '2017-03-27', rate: 9.75 },
+    { from: '2017-05-02', rate: 9.25 },
+    { from: '2017-06-19', rate: 9.00 },
+    { from: '2017-09-18', rate: 8.50 },
+    { from: '2017-10-30', rate: 8.25 },
+    { from: '2017-12-18', rate: 7.75 },
+    { from: '2018-02-12', rate: 7.50 },
+    { from: '2018-03-26', rate: 7.25 },
+    { from: '2018-09-17', rate: 7.50 },
+    { from: '2018-12-17', rate: 7.75 },
+    { from: '2019-06-17', rate: 7.50 },
+    { from: '2019-07-29', rate: 7.25 },
+    { from: '2019-09-09', rate: 7.00 },
+    { from: '2019-10-28', rate: 6.50 },
+    { from: '2019-12-16', rate: 6.25 },
+    { from: '2020-02-10', rate: 6.00 },
+    { from: '2020-04-27', rate: 5.50 },
+    { from: '2020-06-22', rate: 4.50 },
+    { from: '2020-07-27', rate: 4.25 },
+    { from: '2021-03-22', rate: 4.50 },
+    { from: '2021-04-26', rate: 5.00 },
+    { from: '2021-06-15', rate: 5.50 },
+    { from: '2021-07-26', rate: 6.50 },
+    { from: '2021-09-13', rate: 6.75 },
+    { from: '2021-10-25', rate: 7.50 },
+    { from: '2021-12-20', rate: 8.50 },
+    { from: '2022-02-14', rate: 9.50 },
+    { from: '2022-02-28', rate: 20.00 },
+    { from: '2022-04-11', rate: 17.00 },
+    { from: '2022-05-04', rate: 14.00 },
+    { from: '2022-05-27', rate: 11.00 },
+    { from: '2022-06-14', rate: 9.50 },
+    { from: '2022-07-25', rate: 8.00 },
+    { from: '2022-09-19', rate: 7.50 },
+    { from: '2023-07-24', rate: 8.50 },
+    { from: '2023-08-15', rate: 12.00 },
+    { from: '2023-09-18', rate: 13.00 },
+    { from: '2023-10-30', rate: 15.00 },
+    { from: '2023-12-18', rate: 16.00 },
+    { from: '2024-07-29', rate: 18.00 },
+    { from: '2024-09-16', rate: 19.00 },
+    { from: '2024-10-28', rate: 21.00 },
+    { from: '2025-06-09', rate: 20.00 },
+    { from: '2025-07-28', rate: 18.00 },
+    { from: '2025-09-15', rate: 17.00 },
+    { from: '2025-10-27', rate: 16.50 },
+    { from: '2026-02-16', rate: 15.50 },
+    { from: '2026-04-27', rate: 15.00 },
+    { from: '2026-06-15', rate: 14.50 },
+    { from: '2026-07-27', rate: 14.00 }
+];
+
+const GK395_DEPOSIT_RATES_FALLBACK = {
+    central: 7.52,
+    northwest: 7.11,
+    south: 7.01,
+    'north-caucasus': 6.66,
+    volga: 7.10,
+    ural: 7.15,
+    siberia: 7.22,
+    'far-east': 7.43,
+    crimea: 6.69
+};
+
+function gk395DateKey(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+function gk395ParseDate(value) {
+    if (!value) return null;
+    const parts = value.split('-').map(Number);
     return new Date(parts[0], parts[1] - 1, parts[2]);
 }
-function formatDate395(date) {
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    return day + '-' + month + '-' + date.getFullYear();
+
+function gk395FormatDate(date) {
+    return date.toLocaleDateString('ru-RU');
 }
-function addDays395(date, days) {
+
+function gk395AddDays(date, days) {
     const result = new Date(date);
     result.setDate(result.getDate() + days);
     return result;
 }
-const REFINANCING_RATES = [
-    ['1992-01-01', 20], ['1992-04-10', 50], ['1992-05-23', 80],
-    ['1992-05-30', 100], ['1992-06-10', 150], ['1992-06-22', 170],
-    ['1992-09-15', 180], ['1992-09-23', 170], ['1992-10-21', 180],
-    ['1993-04-30', 190], ['1993-06-02', 170], ['1993-06-22', 140],
-    ['1993-06-29', 170], ['1993-07-15', 180], ['1993-09-23', 210],
-    ['1993-10-15', 170], ['1994-04-29', 205], ['1994-05-17', 200],
-    ['1994-06-22', 180], ['1994-06-30', 155], ['1994-08-01', 150],
-    ['1994-08-24', 130], ['1994-10-17', 170], ['1994-11-12', 180],
-    ['1995-01-06', 200], ['1995-04-28', 195], ['1995-05-16', 185],
-    ['1995-06-19', 180], ['1995-10-24', 170], ['1996-02-10', 160],
-    ['1996-05-01', 120], ['1996-08-19', 110], ['1996-10-21', 80],
-    ['1997-04-28', 36], ['1997-06-16', 24], ['1997-10-06', 21],
-    ['1998-05-27', 150], ['1998-06-05', 60], ['1998-06-29', 80],
-    ['1998-07-24', 60], ['1999-06-10', 55], ['2000-01-24', 45],
-    ['2000-03-21', 38], ['2000-07-10', 28], ['2000-11-04', 25],
-    ['2001-04-09', 25], ['2001-06-19', 25], ['2001-08-06', 25],
-    ['2001-11-04', 25], ['2002-04-09', 23], ['2002-08-07', 21],
-    ['2003-02-17', 18], ['2003-06-21', 16], ['2004-01-15', 14],
-    ['2004-06-15', 13], ['2005-06-15', 12], ['2006-12-26', 11],
-    ['2007-01-29', 10.5], ['2007-06-19', 10], ['2008-02-04', 10.25],
-    ['2008-04-29', 10.5], ['2008-06-10', 10.75], ['2008-07-14', 11],
-    ['2008-11-12', 12], ['2008-12-01', 13], ['2009-04-24', 12.5],
-    ['2009-05-14', 12], ['2009-06-05', 11.5], ['2009-07-13', 11],
-    ['2009-08-10', 10.75], ['2009-09-15', 10.5], ['2009-09-30', 10],
-    ['2009-10-30', 9.5], ['2009-12-28', 8.75], ['2010-02-24', 8.5],
-    ['2010-03-29', 8.25], ['2011-02-28', 8], ['2011-05-03', 8.25],
-    ['2011-12-26', 8], ['2012-09-14', 8.25]
-];
-const KEY_RATES = [
-    ['2016-08-01', 10.5], ['2016-09-19', 10],
-    ['2017-03-27', 9.75], ['2017-05-02', 9.25],
-    ['2017-06-19', 9], ['2017-09-18', 8.5],
-    ['2017-10-30', 8.25], ['2017-12-18', 7.75],
-    ['2018-02-12', 7.5], ['2018-03-26', 7.25],
-    ['2018-09-17', 7.5], ['2018-12-17', 7.75],
-    ['2019-06-17', 7.5], ['2019-07-29', 7.25],
-    ['2019-09-09', 7], ['2019-10-28', 6.5],
-    ['2019-12-16', 6.25], ['2020-02-10', 6],
-    ['2020-04-27', 5.5], ['2020-06-22', 4.5],
-    ['2020-07-27', 4.25], ['2021-03-22', 4.5],
-    ['2021-04-26', 5], ['2021-06-15', 5.5],
-    ['2021-07-26', 6.5], ['2021-09-13', 6.75],
-    ['2021-10-25', 7.5], ['2021-12-20', 8.5],
-    ['2022-02-14', 9.5], ['2022-02-28', 20],
-    ['2022-04-11', 17], ['2022-05-04', 14],
-    ['2022-05-27', 11], ['2022-06-14', 9.5],
-    ['2022-07-25', 8], ['2022-09-19', 7.5],
-    ['2023-07-24', 8.5], ['2023-08-15', 12],
-    ['2023-09-18', 13], ['2023-10-30', 15],
-    ['2023-12-18', 16], ['2024-07-29', 18],
-    ['2024-09-16', 19], ['2024-10-28', 21],
-    ['2025-06-09', 20], ['2025-07-28', 18],
-    ['2025-09-15', 17], ['2025-10-27', 16.5],
-    ['2026-02-16', 15.5], ['2026-04-27', 15],
-    ['2026-06-15', 14.5], ['2026-07-27', 14]
-];
-const DEPOSIT_RATES_BY_REGION = {
-  central: [ ['2015-06-01',11.80],['2015-06-15',11.70],['2015-07-15',10.74],['2015-08-17',10.51],['2015-09-15',9.91],['2015-10-15',9.49],['2015-11-17',9.39],['2015-12-15',7.32],['2016-01-25',7.94],['2016-02-19',8.96],['2016-03-17',8.64],['2016-04-15',8.14],['2016-05-19',7.90],['2016-06-16',8.24],['2016-07-15',7.52] ],
-  northwest: [ ['2015-06-01',11.44],['2015-06-15',11.37],['2015-07-15',10.36],['2015-08-17',10.11],['2015-09-15',9.55],['2015-10-15',9.29],['2015-11-17',9.25],['2015-12-15',7.08],['2016-01-25',7.72],['2016-02-19',8.72],['2016-03-17',8.41],['2016-04-15',7.85],['2016-05-19',7.58],['2016-06-16',7.86],['2016-07-15',7.11] ],
-  south: [ ['2015-06-01',11.24],['2015-06-15',11.19],['2015-07-15',10.25],['2015-08-17',10.14],['2015-09-15',9.52],['2015-10-15',9.17],['2015-11-17',9.11],['2015-12-15',6.93],['2016-01-25',7.53],['2016-02-19',8.73],['2016-03-17',8.45],['2016-04-15',7.77],['2016-05-19',7.45],['2016-06-16',7.81],['2016-07-15',7.01] ],
-  'north-caucasus': [ ['2015-06-01',10.46],['2015-06-15',10.70],['2015-07-15',9.64],['2015-08-17',9.49],['2015-09-15',9.00],['2015-10-15',8.72],['2015-11-17',8.73],['2015-12-15',6.34],['2016-01-25',7.01],['2016-02-19',8.23],['2016-03-17',7.98],['2016-04-15',7.32],['2016-05-19',7.05],['2016-06-16',7.40],['2016-07-15',6.66] ],
-  volga: [ ['2015-06-01',11.15],['2015-06-15',11.16],['2015-07-15',10.14],['2015-08-17',10.12],['2015-09-15',9.59],['2015-10-15',9.24],['2015-11-17',9.15],['2015-12-15',7.07],['2016-01-25',7.57],['2016-02-19',8.69],['2016-03-17',8.29],['2016-04-15',7.76],['2016-05-19',7.53],['2016-06-16',7.82],['2016-07-15',7.10] ],
-  ural: [ ['2015-06-01',11.27],['2015-06-15',11.14],['2015-07-15',10.12],['2015-08-17',9.96],['2015-09-15',9.50],['2015-10-15',9.09],['2015-11-17',9.20],['2015-12-15',7.44],['2016-01-25',7.89],['2016-02-19',8.57],['2016-03-17',8.44],['2016-04-15',7.92],['2016-05-19',7.74],['2016-06-16',7.89],['2016-07-15',7.15] ],
-  siberia: [ ['2015-06-01',10.89],['2015-06-15',10.81],['2015-07-15',9.89],['2015-08-17',9.75],['2015-09-15',9.21],['2015-10-15',9.02],['2015-11-17',9.00],['2015-12-15',7.18],['2016-01-25',7.81],['2016-02-19',9.00],['2016-03-17',8.81],['2016-04-15',8.01],['2016-05-19',7.71],['2016-06-16',7.93],['2016-07-15',7.22] ],
-  'far-east': [ ['2015-06-01',11.20],['2015-06-15',11.18],['2015-07-15',10.40],['2015-08-17',10.00],['2015-09-15',9.71],['2015-10-15',9.46],['2015-11-17',9.26],['2015-12-15',7.64],['2016-01-25',8.06],['2016-02-19',8.69],['2016-03-17',8.60],['2016-04-15',8.01],['2016-05-19',7.62],['2016-06-16',7.99],['2016-07-15',7.43] ],
-  crimea: [ ['2015-06-01',14.18],['2015-06-15',13.31],['2015-07-15',9.89],['2015-08-17',9.07],['2015-09-15',8.53],['2015-10-15',8.17],['2015-11-17',7.75],['2015-12-15',8.09],['2016-01-25',7.55],['2016-02-19',8.60],['2016-03-17',8.52],['2016-04-15',7.62],['2016-05-19',7.24],['2016-06-16',7.55],['2016-07-15',6.69] ]
-};
-function rateFromHistory(history, date) {
-    let result = history[0][1];
-    for (let i = history.length - 1; i >= 0; i--) {
-        if (date >= parseDate395(history[i][0])) {
-            result = history[i][1];
+
+function gk395DaysBetween(fromDate, toDate) {
+    return Math.round((toDate.getTime() - fromDate.getTime()) / 86400000);
+}
+
+function gk395DaysInYear(date) {
+    const year = date.getFullYear();
+    return ((year % 4 === 0 && year % 100 !== 0) || year % 400 === 0) ? 366 : 365;
+}
+
+function gk395Round(value) {
+    return Math.round((Number(value) + Number.EPSILON) * 100) / 100;
+}
+
+function gk395Money(value) {
+    return gk395Round(value).toLocaleString('ru-RU', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+}
+
+function gk395LastKnownRateDate() {
+    return gk395ParseDate(GK395_KEY_RATES[GK395_KEY_RATES.length - 1].from);
+}
+
+function gk395GetKeyRate(date) {
+    let rate = null;
+    for (const item of GK395_KEY_RATES) {
+        const fromDate = gk395ParseDate(item.from);
+        if (fromDate <= date) {
+            rate = item.rate;
+        } else {
             break;
         }
     }
-    return result;
+    return rate;
 }
-function getRate395(date, region) {
-    const depositsStart = new Date(2015, 5, 1);
+
+function gk395GetRateInfo(date, region) {
+    const depositRateStart = new Date(2015, 5, 1);
     const keyRateStart = new Date(2016, 7, 1);
-    if (date < depositsStart) return rateFromHistory(REFINANCING_RATES, date);
-    if (date < keyRateStart) {
-        const rates = DEPOSIT_RATES_BY_REGION[region] || DEPOSIT_RATES_BY_REGION.central;
-        return rateFromHistory(rates, date);
+
+    if (date < depositRateStart) {
+        return {
+            rate: 8.25,
+            source: 'Ставка рефинансирования (требуется историческая таблица)'
+        };
     }
-    return rateFromHistory(KEY_RATES, date);
+
+    if (date < keyRateStart) {
+        return {
+            rate: GK395_DEPOSIT_RATES_FALLBACK[region] || GK395_DEPOSIT_RATES_FALLBACK.central,
+            source: 'Средняя ставка банковского процента (временное значение)'
+        };
+    }
+
+    return {
+        rate: gk395GetKeyRate(date),
+        source: 'Ключевая ставка Банка России'
+    };
 }
-function addPaymentRow(dateValue, sumValue) {
+
+function addGk395Row() {
+    const tbody = document.getElementById('gk395-payment-tbody');
     const row = document.createElement('tr');
     row.innerHTML = `
-        <td><input class="payment-date" type="date" value="${dateValue || ''}"></td>
-        <td><input class="payment-sum" type="number" min="0.01" step="0.01" value="${sumValue || ''}"></td>
-        <td><button class="danger-btn" onclick="this.closest('tr').remove()">Удалить</button></td>
+        <td><input type="date" class="gk395-pay-date"></td>
+        <td>
+            <input type="number" class="gk395-pay-sum" min="0.01" step="0.01">
+        </td>
+        <td>
+            <button type="button" class="danger-btn" onclick="removeGk395Row(this)">Удалить</button>
+        </td>
     `;
-    document.getElementById('payments').appendChild(row);
+    tbody.appendChild(row);
 }
-document.getElementById('addPayment').addEventListener('click', function() { addPaymentRow('', ''); });
-document.getElementById('clearPayments').addEventListener('click', function() { document.getElementById('payments').innerHTML = ''; });
-document.getElementById('calculate').addEventListener('click', function() {
-    const result = document.getElementById('result');
-    const debt = Number(document.getElementById('debt').value);
-    const startValue = document.getElementById('start').value;
-    const endValue = document.getElementById('end').value;
-    const region = document.getElementById('region').value;
-    if (!Number.isFinite(debt) || debt <= 0 || !startValue || !endValue) {
-        result.className = 'result-box error';
-        result.textContent = 'Введите корректную сумму задолженности и обе даты.';
+
+function removeGk395Row(button) {
+    const tbody = document.getElementById('gk395-payment-tbody');
+    const row = button.closest('tr');
+    if (tbody.rows.length > 1) {
+        row.remove();
         return;
     }
-    const start = parseDate395(startValue);
-    const end = parseDate395(endValue);
-    if (end < start) {
-        result.className = 'result-box error';
-        result.textContent = 'Дата окончания не может быть раньше даты начала.';
-        return;
-    }
-    const calculationEnd = addDays395(end, 1);
+    row.querySelector('.gk395-pay-date').value = '';
+    row.querySelector('.gk395-pay-sum').value = '';
+}
+
+function clearGk395Payments() {
+    const tbody = document.getElementById('gk395-payment-tbody');
+    tbody.innerHTML = `
+        <tr>
+            <td><input type="date" class="gk395-pay-date"></td>
+            <td>
+                <input type="number" class="gk395-pay-sum" min="0.01" step="0.01">
+            </td>
+            <td>
+                <button type="button" class="danger-btn" onclick="removeGk395Row(this)">Удалить</button>
+            </td>
+        </tr>
+    `;
+}
+
+function gk395GetPayments(startDate, endDate) {
     const payments = [];
-    document.querySelectorAll('#payments tr').forEach(function(row) {
-        const dateValue = row.querySelector('.payment-date').value;
-        const sum = Number(row.querySelector('.payment-sum').value);
-        if (dateValue && Number.isFinite(sum) && sum > 0) {
-            const date = parseDate395(dateValue);
-            if (date >= start && date <= end) {
-                payments.push({ date: date, sum: sum });
-            }
+    document.querySelectorAll('#gk395-payment-tbody tr').forEach(row => {
+        const dateValue = row.querySelector('.gk395-pay-date').value;
+        const amountValue = parseFloat(row.querySelector('.gk395-pay-sum').value);
+        if (!dateValue || !Number.isFinite(amountValue) || amountValue <= 0) return;
+        const paymentDate = gk395ParseDate(dateValue);
+        if (paymentDate >= startDate && paymentDate <= endDate) {
+            payments.push({
+                date: paymentDate,
+                amount: gk395Round(amountValue)
+            });
         }
     });
-    payments.sort((a,b) => a.date - b.date);
-    const points = new Set();
-    points.add(start.getTime());
-    points.add(calculationEnd.getTime());
-    REFINANCING_RATES.forEach(item => { const d = parseDate395(item[0]); if (d >= start && d <= end) points.add(d.getTime()); });
-    DEPOSIT_RATES_BY_REGION.central.forEach(item => { const d = parseDate395(item[0]); if (d >= start && d <= end) points.add(d.getTime()); });
-    KEY_RATES.forEach(item => { const d = parseDate395(item[0]); if (d >= start && d <= end) points.add(d.getTime()); });
-    const depositStart = new Date(2015,5,1), keyRateStart = new Date(2016,7,1);
-    if (depositStart >= start && depositStart <= end) points.add(depositStart.getTime());
-    if (keyRateStart >= start && keyRateStart <= end) points.add(keyRateStart.getTime());
-    for (let year = start.getFullYear() + 1; year <= end.getFullYear(); year++) {
-        const firstDay = new Date(year, 0, 1);
-        if (firstDay >= start && firstDay <= end) points.add(firstDay.getTime());
+    return payments.sort((a, b) => a.date - b.date);
+}
+
+function calcGK395() {
+    const resultDiv = document.getElementById('gk395-result');
+    const resultBody = document.getElementById('gk395-result-tbody');
+
+    const debt = parseFloat(document.getElementById('gk395-debt').value);
+    const startDate = gk395ParseDate(document.getElementById('gk395-start').value);
+    const endDate = gk395ParseDate(document.getElementById('gk395-end').value);
+    const region = document.getElementById('gk395-region').value;
+
+    if (!Number.isFinite(debt) || debt <= 0 || !startDate || !endDate) {
+        resultDiv.className = 'result-box error';
+        resultDiv.textContent = 'Проверьте сумму основного долга и даты расчёта.';
+        resultBody.innerHTML = '';
+        return;
     }
-    payments.forEach(p => points.add(p.date.getTime()));
-    const dates = Array.from(points).sort().map(time => new Date(time));
-    let balance = debt;
-    let totalInterest = 0;
-    let paymentIndex = 0;
-    const details = [];
-    for (let i = 0; i < dates.length - 1 && balance > 0; i++) {
-        const periodStart = dates[i];
-        const periodEnd = new Date(dates[i+1].getTime() - 1);
-        const days = daysBothInclusive(periodStart, periodEnd);
-        const rate = getRate395(periodStart, region);
-        const denominator = daysInYear(periodStart.getFullYear());
-        const interest = balance * rate / 100 * days / denominator;
-        totalInterest += interest;
-        details.push('Период с ' + formatDate395(periodStart) + ' по ' + formatDate395(periodEnd) + ': долг ' + balance.toFixed(2) + ' руб. × ' + days + ' дн. × ' + rate.toFixed(2) + '% / ' + denominator + ' = ' + interest.toFixed(2) + ' руб.');
-        while (paymentIndex < payments.length && payments[paymentIndex].date.getTime() <= periodEnd.getTime()) {
-            const payment = payments[paymentIndex];
-            const appliedPayment = Math.min(payment.sum, balance);
-            balance -= appliedPayment;
-            details.push('Платёж ' + formatDate395(payment.date) + ': ' + payment.sum.toFixed(2) + ' руб.; остаток долга: ' + balance.toFixed(2) + ' руб.');
-            paymentIndex++;
+
+    if (endDate < startDate) {
+        resultDiv.className = 'result-box error';
+        resultDiv.textContent = 'Последний день начисления не может быть раньше первого дня.';
+        resultBody.innerHTML = '';
+        return;
+    }
+
+    const lastKnownRateDate = gk395LastKnownRateDate();
+    if (endDate > lastKnownRateDate) {
+        resultDiv.className = 'result-box error';
+        resultDiv.textContent =
+            `В таблице ставок нет подтверждённых данных для периода после ` +
+            `${gk395FormatDate(lastKnownRateDate)}.\n\nОбновите массив GK395_KEY_RATES по официальным решениям Банка России и повторите расчёт.`;
+        resultBody.innerHTML = '';
+        return;
+    }
+
+    const payments = gk395GetPayments(startDate, endDate);
+
+    const events = new Map();
+
+    function addEvent(date, event) {
+        const key = gk395DateKey(date);
+        if (!events.has(key)) {
+            events.set(key, {
+                date: new Date(date),
+                payments: [],
+                rateChange: false
+            });
+        }
+        if (event.type === 'payment') {
+            events.get(key).payments.push(event);
+        }
+        if (event.type === 'rate') {
+            events.get(key).rateChange = true;
         }
     }
-    result.className = 'result-box';
-    result.textContent =
-        'Сумма задолженности: ' + debt.toFixed(2) + ' руб.\n' +
-        'Период: с ' + formatDate395(start) + ' по ' + formatDate395(end) + ' (включительно)\n' +
-        'Всего процентов по ст. 395 ГК РФ: ' + totalInterest.toFixed(2) + ' руб.\n\n' +
-        'Детали расчёта:\n' + details.join('\n');
-});
+
+    addEvent(startDate, { type: 'start' });
+    addEvent(gk395AddDays(endDate, 1), { type: 'end' });
+
+    payments.forEach(payment => {
+        addEvent(payment.date, {
+            type: 'payment',
+            amount: payment.amount
+        });
+    });
+
+    GK395_KEY_RATES.forEach(item => {
+        const date = gk395ParseDate(item.from);
+        if (date > startDate && date <= endDate) {
+            addEvent(date, { type: 'rate' });
+        }
+    });
+
+    for (let year = startDate.getFullYear() + 1; year <= endDate.getFullYear(); year += 1) {
+        const newYear = new Date(year, 0, 1);
+        if (newYear > startDate && newYear <= endDate) {
+            addEvent(newYear, { type: 'year' });
+        }
+    }
+
+    const timeline = Array.from(events.values()).sort((a, b) => a.date - b.date);
+
+    let balance = gk395Round(debt);
+    let totalInterest = 0;
+    let totalPaid = 0;
+
+    const rows = [];
+    const warnings = [];
+
+    if (startDate < new Date(2016, 7, 1)) {
+        warnings.push(
+            'Период до 01.08.2016 рассчитан предварительно: для судебного расчёта требуется заменить временные ставки полной исторической таблицей Банка России.'
+        );
+    }
+
+    for (let index = 0; index < timeline.length - 1; index += 1) {
+        const currentEvent = timeline[index];
+        const nextEvent = timeline[index + 1];
+
+        // Применяем платежи в начале дня
+        currentEvent.payments.forEach(payment => {
+            const applied = Math.min(payment.amount, balance);
+            balance = gk395Round(balance - applied);
+            totalPaid = gk395Round(totalPaid + applied);
+        });
+
+        const days = gk395DaysBetween(currentEvent.date, nextEvent.date);
+        if (days <= 0 || balance <= 0) {
+            continue;
+        }
+
+        const rateInfo = gk395GetRateInfo(currentEvent.date, region);
+        if (!Number.isFinite(rateInfo.rate)) {
+            resultDiv.className = 'result-box error';
+            resultDiv.textContent = `Не найдена ставка для даты ${gk395FormatDate(currentEvent.date)}.`;
+            resultBody.innerHTML = '';
+            return;
+        }
+
+        const denominator = gk395DaysInYear(currentEvent.date);
+        const interest = balance * (rateInfo.rate / 100) * days / denominator;
+        totalInterest = gk395Round(totalInterest + interest);
+
+        rows.push({
+            from: new Date(currentEvent.date),
+            to: gk395AddDays(nextEvent.date, -1),
+            days,
+            rate: rateInfo.rate,
+            debt: balance,
+            interest: gk395Round(interest)
+        });
+    }
+
+    resultBody.innerHTML = rows.map(row => `
+        <tr>
+            <td>${gk395FormatDate(row.from)} — ${gk395FormatDate(row.to)}</td>
+            <td>${row.days}</td>
+            <td>${row.rate.toFixed(2)}%</td>
+            <td>${gk395Money(row.debt)} руб.</td>
+            <td>${gk395Money(row.interest)} руб.</td>
+        </tr>
+    `).join('');
+
+    const currentRateInfo = gk395GetRateInfo(endDate, region);
+
+    resultDiv.className = 'result-box';
+    resultDiv.textContent =
+        `РАСЧЁТ ПРОЦЕНТОВ ПО СТ. 395 ГК РФ
+
+` +
+        `Первый день начисления: ${gk395FormatDate(startDate)}
+` +
+        `Последний день начисления: ${gk395FormatDate(endDate)}
+` +
+        `Начальная сумма долга: ${gk395Money(debt)} руб.
+` +
+        `Учтено платежей: ${gk395Money(totalPaid)} руб.
+` +
+        `Остаток основного долга: ${gk395Money(balance)} руб.
+` +
+        `Ставка на последний день расчёта: ${currentRateInfo.rate.toFixed(2)}% годовых
+
+` +
+        `ИТОГО ПРОЦЕНТЫ: ${gk395Money(totalInterest)} руб.
+
+` +
+        `Правило расчёта: платёж уменьшает основной долг в день его внесения; за дату платежа проценты начисляются на уменьшенный остаток.` +
+        (warnings.length ? `
+
+ВНИМАНИЕ:
+${warnings.join('\n')}` : '');
+}
 
 // ============================================================
-// ВКЛАДКА 7: ЗАДОЛЖЕННОСТЬ ПО КРЕДИТУ (исправлена: обе даты включены)
+// ВКЛАДКА 7: ЗАДОЛЖЕННОСТЬ ПО КРЕДИТУ
 // ============================================================
 document.addEventListener('DOMContentLoaded', function() {
     const tabs = document.getElementById('tabs');
@@ -1652,7 +1954,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const scriptParent = document.querySelector('script');
         scriptParent.parentNode.insertBefore(tab, scriptParent);
     }
-    // Определим функции, если они ещё не определены (для безопасности)
     if (typeof creditDebtRound === 'undefined') {
         window.creditDebtRound = function(value) {
             return Math.round((Number(value) + Number.EPSILON) * 100) / 100;
@@ -1669,7 +1970,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return date.toLocaleDateString('ru-RU');
         };
         window.creditDebtDaysBetween = function(first, second) {
-            return Math.round((second.getTime() - first.getTime()) / 86400000) + 1; // обе даты включены
+            return Math.round((second.getTime() - first.getTime()) / 86400000) + 1;
         };
         window.creditDebtIsLeapYear = function(year) {
             return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
@@ -1755,7 +2056,6 @@ document.addEventListener('DOMContentLoaded', function() {
             return schedule;
         };
     }
-    // Обработчики для кнопок
     document.getElementById('credit-debt-add-payment').addEventListener('click', function() {
         creditDebtAddPaymentRow('', '');
     });
@@ -1994,7 +2294,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const scriptElement = document.querySelector('script');
     scriptElement.parentNode.insertBefore(tab, scriptElement);
 
-    // Вспомогательные функции для госпошлины
     function feeRound(value) { return Math.round((Number(value) + Number.EPSILON) * 100) / 100; }
     function feeFormat(value) { return feeRound(value).toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
     function feeInputNumber(id, defaultValue) {
