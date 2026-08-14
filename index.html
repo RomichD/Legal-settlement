@@ -218,7 +218,7 @@ table input { width: 100%; padding: 6px 8px; border: 1px solid #cfd8dc; border-r
         <button class="tab-btn" data-tab="tab6">Ст. 395 ГК РФ</button>
     </div>
 
-    <!-- ========== ВКЛАДКА 1 (ОБНОВЛЕНА) ========== -->
+    <!-- ========== ВКЛАДКА 1 ========== -->
     <div id="tab1" class="tab-content active">
         <h2>Расчёт процентов по займу (помесячно)</h2>
         <div class="form-group"><label>Сумма займа (руб.)</label><input type="number" id="loan-amount" value="100000" step="any"></div>
@@ -546,10 +546,14 @@ function formatDate(d) {
     const day = String(d.getDate()).padStart(2,'0');
     return `${day}-${m}-${y}`;
 }
-function daysBetweenInclusive(d1, d2) {
-    // Разница в днях между датами включительно (т.е. d2 также учитывается)
+// Единая функция для подсчёта дней: первый день НЕ учитывается, последний ДА
+function daysExcludingStart(d1, d2) {
     const ms = Math.abs(d2 - d1);
-    return Math.floor(ms / (1000*60*60*24)) + 1;
+    return Math.floor(ms / (1000*60*60*24));
+}
+// Для обратной совместимости (используется в редких местах, например, для отображения периода)
+function daysBetweenInclusive(d1, d2) {
+    return daysExcludingStart(d1, d2) + 1;
 }
 function addMonths(d, months) {
     let r = new Date(d);
@@ -595,7 +599,7 @@ function getDayWord(n) {
 }
 
 // ============================================================
-// 1. Проценты по займу (ОБНОВЛЕНА)
+// 1. Проценты по займу (исправлено)
 // ============================================================
 function calcLoanInterest() {
     const principal = parseFloat(document.getElementById('loan-amount').value);
@@ -619,19 +623,17 @@ function calcLoanInterest() {
     }
 
     const rate = rateVal / 100;
-    const totalDays = daysBetweenInclusive(start, end);
+    const totalDays = daysExcludingStart(start, end);
     let totalInterest = 0;
     let monthlyDetails = [];
 
-    // Функция расчёта процентов за период
     function calcPeriodInterest(amount, fromDate, toDate) {
         if (fromDate >= toDate) return 0;
-        const days = daysBetweenInclusive(fromDate, toDate);
+        const days = daysExcludingStart(fromDate, toDate);
         if (days === 0) return 0;
         if (rateType === 'daily') {
             return amount * rate * days;
-        } else { // годовая
-            // разбиваем по годам
+        } else {
             let current = new Date(fromDate);
             let total = 0;
             while (current < toDate) {
@@ -639,7 +641,7 @@ function calcLoanInterest() {
                 const dInYear = daysInYear(year);
                 const nextYear = new Date(year + 1, 0, 1);
                 const segmentEnd = nextYear < toDate ? nextYear : toDate;
-                const segDays = daysBetweenInclusive(current, segmentEnd);
+                const segDays = daysExcludingStart(current, segmentEnd);
                 if (segDays === 0) break;
                 total += amount * rate * segDays / dInYear;
                 current = segmentEnd;
@@ -648,28 +650,29 @@ function calcLoanInterest() {
         }
     }
 
-    // Рассчитываем помесячно
     let current = new Date(start);
-    let nextMonth = new Date(current.getFullYear(), current.getMonth() + 1, 1);
     while (current < end) {
         const monthStart = new Date(current);
-        const monthEnd = nextMonth > end ? new Date(end) : new Date(nextMonth);
-        const daysInMonth = daysBetweenInclusive(monthStart, monthEnd);
+        const lastDay = new Date(current.getFullYear(), current.getMonth() + 1, 0);
+        const monthEnd = lastDay < end ? lastDay : new Date(end);
+        const daysInMonth = daysExcludingStart(monthStart, monthEnd);
         if (daysInMonth === 0) break;
+
         const monthInterest = calcPeriodInterest(principal, monthStart, monthEnd);
         totalInterest += monthInterest;
         monthlyDetails.push(
             `${monthStart.toLocaleString('ru', {month:'long', year:'numeric'})}: ${daysInMonth} дн. → ${monthInterest.toFixed(2)} руб.`
         );
-        current = new Date(nextMonth);
-        nextMonth = new Date(current.getFullYear(), current.getMonth() + 1, 1);
+
+        current = new Date(current.getFullYear(), current.getMonth() + 1, 1);
+        if (current > end) break;
     }
 
     const rateLabel = rateType === 'daily' ? 'дневная' : 'годовая';
     const output =
         `Сумма займа: ${principal} руб.\n` +
         `Тип ставки: ${rateLabel} (${rateVal}%)\n` +
-        `Период: с ${formatDate(start)} по ${formatDate(end)} (${totalDays} дней включительно)\n` +
+        `Период: с ${formatDate(start)} по ${formatDate(end)} (${totalDays} дней, первый день не учитывается, последний учитывается)\n` +
         `Всего процентов: ${totalInterest.toFixed(2)} руб.\n\n` +
         `Помесячный расчёт:\n${monthlyDetails.join('\n')}`;
 
@@ -678,7 +681,7 @@ function calcLoanInterest() {
 }
 
 // ============================================================
-// 2. Неустойка
+// 2. Неустойка (исправлено)
 // ============================================================
 function addPenaltyRow() {
     const tbody = document.getElementById('penalty-payment-tbody');
@@ -750,7 +753,7 @@ function calcPenalty() {
 
     function calcPeriodPenalty(amount, fromDate, toDate) {
         if (amount <= 0 || fromDate >= toDate) return 0;
-        const days = daysBetweenInclusive(fromDate, toDate);
+        const days = daysExcludingStart(fromDate, toDate); // исключаем первый, включаем последний
         if (days === 0) return 0;
         let penalty = 0;
         if (percentType === 'daily') {
@@ -763,7 +766,7 @@ function calcPenalty() {
                 const dInYear = daysInYear(year);
                 const nextYear = new Date(year + 1, 0, 1);
                 const segmentEnd = nextYear < toDate ? nextYear : toDate;
-                const segDays = daysBetweenInclusive(current, segmentEnd);
+                const segDays = daysExcludingStart(current, segmentEnd);
                 if (segDays === 0) break;
                 const yearRate = percentVal / 100;
                 penalty += amount * yearRate * (segDays / dInYear);
@@ -861,7 +864,7 @@ function calcFraction() {
 }
 
 // ============================================================
-// 4. Кредитная карта
+// 4. Кредитная карта (без изменений)
 // ============================================================
 function addCardExtraRow() {
     const tbody = document.getElementById('card-extra-payment-tbody');
@@ -1053,7 +1056,7 @@ function calcCreditCard() {
 }
 
 // ============================================================
-// 5. Срок исковой давности
+// 5. Срок исковой давности (исправлено)
 // ============================================================
 function addRow() {
     const tbody = document.getElementById('payment-tbody');
@@ -1093,7 +1096,7 @@ function calcLimitation() {
         return;
     }
 
-    const suspensionDays = daysBetweenInclusive(orderDt, cancelDt);
+    const suspensionDays = daysExcludingStart(orderDt, cancelDt);
     const suspensionFormatted = formatPeriod(suspensionDays);
 
     const rows = document.querySelectorAll('#payment-tbody tr');
@@ -1124,9 +1127,9 @@ function calcLimitation() {
             status = 'Истёк до подачи приказа';
             finalEnd = new Date(endSimple);
         } else {
-            const daysInOrder = daysBetweenInclusive(orderDt, cancelDt);
+            const daysInOrder = daysExcludingStart(orderDt, cancelDt);
             const endWithOrder = addDays(endSimple, daysInOrder);
-            const remaining = daysBetweenInclusive(cancelDt, endWithOrder);
+            const remaining = daysExcludingStart(cancelDt, endWithOrder);
             if (remaining < 180) {
                 finalEnd = addDays(cancelDt, 180);
             } else {
@@ -1201,14 +1204,9 @@ function addYears(d, years) {
     }
     return newD;
 }
-function addDays(d, days) {
-    let r = new Date(d);
-    r.setDate(r.getDate() + days);
-    return r;
-}
 
 // ============================================================
-// 6. НОВЫЙ КАЛЬКУЛЯТОР ПО СТ. 395 ГК РФ (С ПОДДЕРЖКОЙ ОКРУГОВ)
+// 6. Калькулятор по ст. 395 ГК РФ (исправлен)
 // ============================================================
 function parseDate395(str) {
     const parts = str.split('-');
@@ -1393,7 +1391,7 @@ document.getElementById('clearPayments').addEventListener('click', function () {
     document.getElementById('payments').innerHTML = '';
 });
 
-// ---- Основной расчёт ----
+// ---- Основной расчёт 395 ----
 document.getElementById('calculate').addEventListener('click', function () {
     const result = document.getElementById('result');
     const debt = Number(document.getElementById('debt').value);
@@ -1416,7 +1414,7 @@ document.getElementById('calculate').addEventListener('click', function () {
         return;
     }
 
-    const calculationEnd = addDays395(end, 1); // включаем последний день
+    const calculationEnd = addDays395(end, 1); // добавляем 1, чтобы включить последний день
     const payments = [];
     document.querySelectorAll('#payments tr').forEach(function (row) {
         const dateValue = row.querySelector('.payment-date').value;
@@ -1474,7 +1472,7 @@ document.getElementById('calculate').addEventListener('click', function () {
     for (let i = 0; i < dates.length - 1 && balance > 0; i++) {
         const periodStart = dates[i];
         const periodEndExclusive = dates[i + 1];
-        const days = daysBetweenInclusive(periodStart, periodEndExclusive);
+        const days = daysExcludingStart(periodStart, periodEndExclusive); // исключаем первый, включаем последний (periodEndExclusive - не включаем, т.к. это первая дата следующего периода)
         const rate = getRate395(periodStart, region);
         const denominator = daysInYear(periodStart.getFullYear());
         const interest = balance * rate / 100 * days / denominator;
@@ -1513,13 +1511,9 @@ document.getElementById('calculate').addEventListener('click', function () {
         'Детали расчёта:\n' + details.join('\n');
 });
 
-// Добавляем пару строк с примерами платежей (для наглядности)
-document.addEventListener('DOMContentLoaded', function () {
-    // уже есть в HTML, ничего не добавляем
-});
-
-/* ===== ВКЛАДКА 7: ЗАДОЛЖЕННОСТЬ ПО КРЕДИТУ ===== */
-
+// ============================================================
+// ВКЛАДКА 7: ЗАДОЛЖЕННОСТЬ ПО КРЕДИТУ (исправлена)
+// ============================================================
 document.addEventListener('DOMContentLoaded', function () {
     const tabs = document.getElementById('tabs');
 
@@ -1738,8 +1732,9 @@ document.addEventListener('DOMContentLoaded', function () {
         return date.toLocaleDateString('ru-RU');
     }
 
+    // Исправленная функция: исключаем первый день, включаем последний
     function creditDebtDaysBetween(first, second) {
-        return Math.round((second.getTime() - first.getTime()) / 86400000) + 1;
+        return Math.round((second.getTime() - first.getTime()) / 86400000);
     }
 
     function creditDebtIsLeapYear(year) {
