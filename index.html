@@ -355,7 +355,7 @@ pre {
 
     <div class="tabs" id="tabs">
         <button class="tab-btn active" data-tab="tab1">Проценты по займу</button>
-        <button class="tab-btn" data-tab="tab2">Неустойка</button>
+        <button class="tab-btn" data-tab="tab2">Договорная неустойка</button>
         <button class="tab-btn" data-tab="tab3">Простые дроби</button>
         <button class="tab-btn" data-tab="tab4">Кредитная карта</button>
         <button class="tab-btn" data-tab="tab5">Срок исковой давности</button>
@@ -446,38 +446,280 @@ pre {
         </div>
     </div>
 
-    <!-- ========== ВКЛАДКА 2 (НЕУСТОЙКА) ========== -->
+    <!-- ========== ВКЛАДКА 2 (ДОГОВОРНАЯ НЕУСТОЙКА) ========== -->
     <div id="tab2" class="tab-content">
-        <h2>Расчёт неустойки (с частичными погашениями)</h2>
-        <div class="form-group"><label>Сумма задолженности (руб.)</label><input type="number" id="penalty-debt" value="45000" step="any"></div>
-        <div class="form-group"><label>Дата начала просрочки (ДД-ММ-ГГГГ)</label><input type="date" id="penalty-start" value="2023-09-14"></div>
-        <div class="form-group"><label>Дата окончания просрочки (ДД-ММ-ГГГГ)</label><input type="date" id="penalty-end" value="2024-03-06"></div>
-        <div class="form-group"><label>Тип процентной ставки</label>
-            <div class="radio-group">
-                <label><input type="radio" name="percent-type" value="daily" checked> Дневной процент</label>
-                <label><input type="radio" name="percent-type" value="yearly"> Годовой процент</label>
+        <h2>Расчёт договорной неустойки</h2>
+
+        <div class="note">
+            Неустойка начисляется на непогашенную сумму просроченного обязательства
+            со дня, следующего за установленной датой платежа, по день фактической
+            оплаты не включительно. Если договор содержит иной порядок, выберите
+            соответствующую настройку либо скорректируйте даты расчёта.
+        </div>
+
+        <div class="payment-block">
+            <label><strong>Период расчёта</strong></label>
+
+            <div class="inline-group">
+                <div class="form-group">
+                    <label>Дата, когда обязательство должно быть исполнено</label>
+                    <input type="date" id="penalty-due-date" value="2023-09-13">
+                </div>
+
+                <div class="form-group">
+                    <label>Дата расчёта включительно</label>
+                    <input type="date" id="penalty-end" value="2024-03-06">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Первый день начисления</label>
+
+                <select id="penalty-start-rule">
+                    <option value="next-day">
+                        Следующий день после даты платежа
+                    </option>
+
+                    <option value="due-date">
+                        В дату платежа
+                    </option>
+                </select>
             </div>
         </div>
-        <div class="form-group"><label>Значение процента (например, 0.26 для дневного или 26 для годового)</label><input type="number" id="penalty-percent" value="0.26" step="0.001"></div>
-        <div class="form-group"><label>Ограничение неустойки (% от суммы долга, 0 = без ограничения)</label><input type="number" id="penalty-limit" value="100" step="any"></div>
+
         <div class="payment-block">
-            <label><strong>Частичные погашения (дата и сумма)</strong></label>
+            <label><strong>Просроченная задолженность</strong></label>
+
+            <div class="inline-group">
+                <div class="form-group">
+                    <label>Просроченный основной долг, руб.</label>
+                    <input
+                        type="number"
+                        id="penalty-principal-debt"
+                        value="45000"
+                        min="0"
+                        step="0.01"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label>Просроченные проценты, руб.</label>
+                    <input
+                        type="number"
+                        id="penalty-interest-debt"
+                        value="0"
+                        min="0"
+                        step="0.01"
+                    >
+                </div>
+            </div>
+
+            <p class="muted">
+                Укажите суммы, которые уже стали просроченными на дату начала
+                начисления. Для нескольких платежей по графику с разными датами
+                просрочки расчёт выполняйте отдельно либо добавляйте их
+                отдельными расчётами.
+            </p>
+        </div>
+
+        <div class="payment-block">
+            <label><strong>Ставка неустойки</strong></label>
+
+            <div class="inline-group">
+                <div class="form-group">
+                    <label>
+                        На основной долг, % в день
+                    </label>
+                    <input
+                        type="number"
+                        id="penalty-principal-rate"
+                        value="0.26"
+                        min="0"
+                        step="0.001"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        На проценты, % в день
+                    </label>
+                    <input
+                        type="number"
+                        id="penalty-interest-rate"
+                        value="0"
+                        min="0"
+                        step="0.001"
+                    >
+                </div>
+            </div>
+
+            <div class="inline-group">
+                <div class="form-group">
+                    <label>Тип ставки</label>
+
+                    <select id="penalty-rate-type">
+                        <option value="daily">Процент в день</option>
+                        <option value="yearly">Процент годовых</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>База для годовой ставки</label>
+
+                    <select id="penalty-year-base">
+                        <option value="actual">
+                            Фактическое количество дней в году
+                        </option>
+                        <option value="365">365 дней</option>
+                        <option value="366">366 дней</option>
+                        <option value="360">360 дней</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="payment-block">
+            <label><strong>Ограничение неустойки</strong></label>
+
+            <div class="form-group">
+                <label>Максимальная сумма неустойки, руб. (0 — без ограничения)</label>
+                <input
+                    type="number"
+                    id="penalty-limit"
+                    value="0"
+                    min="0"
+                    step="0.01"
+                >
+            </div>
+
+            <p class="muted">
+                Укажите лимит, только если он прямо предусмотрен законом или
+                договором. Возможное уменьшение по статье 333 ГК РФ суд определяет
+                отдельно, поэтому калькулятор его не применяет.
+            </p>
+        </div>
+
+        <div class="payment-block">
+            <label><strong>Платежи в периоде просрочки</strong></label>
+
+            <p class="muted">
+                Сумма платежа уменьшает соответствующую задолженность с даты его
+                поступления. День платежа не входит в период начисления неустойки
+                на погашенную сумму.
+            </p>
+
             <div class="table-wrapper">
                 <table id="penalty-payment-table">
-                    <thead><tr><th>Дата оплаты (ДД-ММ-ГГГГ)</th><th>Сумма (руб.)</th><th></th></tr></thead>
+                    <thead>
+                        <tr>
+                            <th>Дата платежа</th>
+                            <th>Сумма, руб.</th>
+                            <th>Направление платежа</th>
+                            <th>Действие</th>
+                        </tr>
+                    </thead>
+
                     <tbody id="penalty-payment-tbody">
-                        <tr><td><input type="date" class="penalty-pay-date" value="2023-10-01"></td><td><input type="number" class="penalty-pay-sum" value="5000" step="any"></td><td><button class="danger-btn" onclick="removePenaltyRow(this)">Удалить</button></td></tr>
-                        <tr><td><input type="date" class="penalty-pay-date" value="2023-11-15"></td><td><input type="number" class="penalty-pay-sum" value="3000" step="any"></td><td><button class="danger-btn" onclick="removePenaltyRow(this)">Удалить</button></td></tr>
-                        <tr><td><input type="date" class="penalty-pay-date" value="2024-01-10"></td><td><input type="number" class="penalty-pay-sum" value="2000" step="any"></td><td><button class="danger-btn" onclick="removePenaltyRow(this)">Удалить</button></td></tr>
+                        <tr>
+                            <td>
+                                <input
+                                    type="date"
+                                    class="penalty-pay-date"
+                                    value="2023-10-01"
+                                >
+                            </td>
+
+                            <td>
+                                <input
+                                    type="number"
+                                    class="penalty-pay-sum"
+                                    value="5000"
+                                    min="0.01"
+                                    step="0.01"
+                                >
+                            </td>
+
+                            <td>
+                                <select class="penalty-pay-target">
+                                    <option value="principal">
+                                        Основной долг
+                                    </option>
+                                    <option value="interest">
+                                        Проценты
+                                    </option>
+                                    <option value="proportional">
+                                        Пропорционально долгу и процентам
+                                    </option>
+                                </select>
+                            </td>
+
+                            <td>
+                                <button
+                                    type="button"
+                                    class="danger-btn"
+                                    onclick="removePenaltyRow(this)"
+                                >
+                                    Удалить
+                                </button>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
-            <button class="add-row-btn" onclick="addPenaltyRow()">➕ Добавить частичное погашение</button>
+
+            <button
+                type="button"
+                class="add-row-btn"
+                onclick="addPenaltyRow()"
+            >
+                ➕ Добавить платёж
+            </button>
+
+            <button
+                type="button"
+                class="add-row-btn"
+                style="background: #6b7280; margin-left: 8px;"
+                onclick="clearPenaltyRows()"
+            >
+                🗑 Очистить платежи
+            </button>
         </div>
-        <button class="btn" onclick="calcPenalty()" style="margin-top:15px;">Рассчитать неустойку</button>
+
+        <button
+            class="btn"
+            type="button"
+            onclick="calcPenalty()"
+            style="margin-top: 15px;"
+        >
+            Рассчитать неустойку
+        </button>
+
         <div class="result-wrapper">
-            <div id="penalty-result" class="result-box">Результат появится здесь</div>
-            <button class="copy-btn" onclick="copyResult('penalty-result')">📋 Копировать результат</button>
+            <div id="penalty-result" class="result-box">
+                Заполните данные и нажмите «Рассчитать неустойку».
+            </div>
+
+            <button class="copy-btn" onclick="copyResult('penalty-result')">
+                📋 Копировать результат
+            </button>
+        </div>
+
+        <div class="scroll-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Период</th>
+                        <th>Дней</th>
+                        <th>ОД в начале периода</th>
+                        <th>Проценты в начале периода</th>
+                        <th>Пени на ОД</th>
+                        <th>Пени на проценты</th>
+                        <th>Всего за период</th>
+                    </tr>
+                </thead>
+
+                <tbody id="penalty-result-tbody"></tbody>
+            </table>
         </div>
     </div>
 
@@ -534,7 +776,7 @@ pre {
         </div>
     </div>
 
-    <!-- ========== ВКЛАДКА 5 (НОВЫЙ СРОК ИСКОВОЙ ДАВНОСТИ) ========== -->
+    <!-- ========== ВКЛАДКА 5 (СРОК ИСКОВОЙ ДАВНОСТИ) ========== -->
     <div id="tab5" class="tab-content">
         <h2>Срок исковой давности</h2>
 
@@ -1250,142 +1492,589 @@ function calcLoanInterest() {
 }
 
 // ============================================================
-// 2. Неустойка (исправлено: обе даты включены)
+// 2. ДОГОВОРНАЯ НЕУСТОЙКА (НОВАЯ ВЕРСИЯ)
 // ============================================================
+
+function penaltyRound(value) {
+    return Math.round((Number(value) + Number.EPSILON) * 100) / 100;
+}
+
+function penaltyMoney(value) {
+    return penaltyRound(value).toLocaleString('ru-RU', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+}
+
+function penaltyAddDays(date, days) {
+    const result = new Date(date);
+    result.setDate(result.getDate() + days);
+    return result;
+}
+
+function penaltyDaysBetween(startDate, endDate) {
+    return Math.round(
+        (endDate.getTime() - startDate.getTime()) / 86400000
+    );
+}
+
+function penaltyIsLeapYear(year) {
+    return (
+        (year % 4 === 0 && year % 100 !== 0) ||
+        year % 400 === 0
+    );
+}
+
+function penaltyYearBase(date, base) {
+    if (base === '360') {
+        return 360;
+    }
+    if (base === '365') {
+        return 365;
+    }
+    if (base === '366') {
+        return 366;
+    }
+    return penaltyIsLeapYear(date.getFullYear()) ? 366 : 365;
+}
+
+function penaltyPaymentRowHtml(
+    date = '',
+    sum = '',
+    target = 'principal'
+) {
+    return `
+        <tr>
+            <td>
+                <input
+                    type="date"
+                    class="penalty-pay-date"
+                    value="${date}"
+                >
+            </td>
+
+            <td>
+                <input
+                    type="number"
+                    class="penalty-pay-sum"
+                    value="${sum}"
+                    min="0.01"
+                    step="0.01"
+                >
+            </td>
+
+            <td>
+                <select class="penalty-pay-target">
+                    <option
+                        value="principal"
+                        ${target === 'principal' ? 'selected' : ''}
+                    >
+                        Основной долг
+                    </option>
+
+                    <option
+                        value="interest"
+                        ${target === 'interest' ? 'selected' : ''}
+                    >
+                        Проценты
+                    </option>
+
+                    <option
+                        value="proportional"
+                        ${target === 'proportional' ? 'selected' : ''}
+                    >
+                        Пропорционально долгу и процентам
+                    </option>
+                </select>
+            </td>
+
+            <td>
+                <button
+                    type="button"
+                    class="danger-btn"
+                    onclick="removePenaltyRow(this)"
+                >
+                    Удалить
+                </button>
+            </td>
+        </tr>
+    `;
+}
+
 function addPenaltyRow() {
     const tbody = document.getElementById('penalty-payment-tbody');
-    const tr = document.createElement('tr');
-    const today = new Date().toISOString().slice(0,10);
-    tr.innerHTML = `
-        <td><input type="date" class="penalty-pay-date" value="${today}"></td>
-        <td><input type="number" class="penalty-pay-sum" value="1000" step="any"></td>
-        <td><button class="danger-btn" onclick="removePenaltyRow(this)">Удалить</button></td>
-    `;
-    tbody.appendChild(tr);
+    tbody.insertAdjacentHTML(
+        'beforeend',
+        penaltyPaymentRowHtml()
+    );
 }
-function removePenaltyRow(btn) {
-    const tr = btn.closest('tr');
-    if (document.querySelectorAll('#penalty-payment-tbody tr').length > 1) {
-        tr.remove();
-    } else {
-        alert('Должна быть хотя бы одна строка.');
+
+function removePenaltyRow(button) {
+    const tbody = document.getElementById('penalty-payment-tbody');
+    const row = button.closest('tr');
+    if (tbody.rows.length > 1) {
+        row.remove();
+        return;
     }
+    row.querySelector('.penalty-pay-date').value = '';
+    row.querySelector('.penalty-pay-sum').value = '';
+    row.querySelector('.penalty-pay-target').value = 'principal';
 }
-function calcPenalty() {
-    const debt = parseFloat(document.getElementById('penalty-debt').value);
-    const startStr = document.getElementById('penalty-start').value;
-    const endStr = document.getElementById('penalty-end').value;
-    const percentType = document.querySelector('input[name="percent-type"]:checked').value;
-    const percentVal = parseFloat(document.getElementById('penalty-percent').value);
-    const limitPercent = parseFloat(document.getElementById('penalty-limit').value) || 0;
-    const resultDiv = document.getElementById('penalty-result');
-    if (isNaN(debt) || debt <= 0) {
-        resultDiv.className = 'result-box error';
-        resultDiv.textContent = 'Введите корректную сумму задолженности.';
-        return;
-    }
-    if (!startStr || !endStr) {
-        resultDiv.className = 'result-box error';
-        resultDiv.textContent = 'Заполните даты начала и окончания просрочки.';
-        return;
-    }
-    if (isNaN(percentVal) || percentVal < 0) {
-        resultDiv.className = 'result-box error';
-        resultDiv.textContent = 'Введите корректное значение процента.';
-        return;
-    }
-    const start = parseDate(startStr);
-    const end = parseDate(endStr);
-    if (end < start) {
-        resultDiv.className = 'result-box error';
-        resultDiv.textContent = 'Дата окончания должна быть позже даты начала.';
-        return;
-    }
-    const rows = document.querySelectorAll('#penalty-payment-tbody tr');
+
+function clearPenaltyRows() {
+    const tbody = document.getElementById('penalty-payment-tbody');
+    tbody.innerHTML = penaltyPaymentRowHtml();
+}
+
+function penaltyGetPayments(startDate, endDate) {
     const payments = [];
-    rows.forEach(tr => {
-        const dateVal = tr.querySelector('.penalty-pay-date').value;
-        const sumVal = tr.querySelector('.penalty-pay-sum').value;
-        if (dateVal && sumVal) {
-            const dt = parseDate(dateVal);
-            if (dt >= start && dt <= end) {
-                payments.push({ date: dt, sum: parseFloat(sumVal) });
+    document
+        .querySelectorAll('#penalty-payment-tbody tr')
+        .forEach(row => {
+            const dateValue = row.querySelector(
+                '.penalty-pay-date'
+            ).value;
+
+            const amount = Number(row.querySelector(
+                '.penalty-pay-sum'
+            ).value);
+
+            const target = row.querySelector(
+                '.penalty-pay-target'
+            ).value;
+
+            if (
+                !dateValue ||
+                !Number.isFinite(amount) ||
+                amount <= 0
+            ) {
+                return;
             }
+
+            const date = parseDate(dateValue);
+
+            if (date >= startDate && date <= endDate) {
+                payments.push({
+                    date,
+                    amount: penaltyRound(amount),
+                    target
+                });
+            }
+        });
+
+    return payments.sort((first, second) => first.date - second.date);
+}
+
+function penaltyCalculateForPeriod(
+    debt,
+    rate,
+    rateType,
+    base,
+    startDate,
+    endDate
+) {
+    const days = penaltyDaysBetween(startDate, endDate);
+
+    if (debt <= 0 || rate <= 0 || days <= 0) {
+        return 0;
+    }
+
+    /*
+       Дневная ставка: сумма долга × ставка / 100 × количество дней.
+    */
+    if (rateType === 'daily') {
+        return debt * rate / 100 * days;
+    }
+
+    /*
+       Годовая ставка: период разбивается по календарным годам,
+       чтобы при базе «фактическое число дней» учитывался високосный год.
+    */
+    let result = 0;
+    let cursor = new Date(startDate);
+
+    while (cursor < endDate) {
+        const nextYear = new Date(
+            cursor.getFullYear() + 1,
+            0,
+            1
+        );
+
+        const segmentEnd = nextYear < endDate
+            ? nextYear
+            : endDate;
+
+        const segmentDays = penaltyDaysBetween(
+            cursor,
+            segmentEnd
+        );
+
+        result +=
+            debt *
+            rate / 100 *
+            segmentDays /
+            penaltyYearBase(cursor, base);
+
+        cursor = segmentEnd;
+    }
+
+    return result;
+}
+
+function penaltyApplyPayment(state, payment) {
+    let amount = penaltyRound(payment.amount);
+
+    const paid = {
+        principal: 0,
+        interest: 0,
+        excess: 0
+    };
+
+    if (payment.target === 'principal') {
+        paid.principal = Math.min(amount, state.principalDebt);
+        state.principalDebt = penaltyRound(
+            state.principalDebt - paid.principal
+        );
+
+        amount = penaltyRound(amount - paid.principal);
+        paid.excess = amount;
+
+        return paid;
+    }
+
+    if (payment.target === 'interest') {
+        paid.interest = Math.min(amount, state.interestDebt);
+        state.interestDebt = penaltyRound(
+            state.interestDebt - paid.interest
+        );
+
+        amount = penaltyRound(amount - paid.interest);
+        paid.excess = amount;
+
+        return paid;
+    }
+
+    const totalDebt = state.principalDebt + state.interestDebt;
+
+    if (totalDebt <= 0) {
+        paid.excess = amount;
+        return paid;
+    }
+
+    const principalPart = penaltyRound(
+        Math.min(
+            state.principalDebt,
+            amount * state.principalDebt / totalDebt
+        )
+    );
+
+    const interestPart = penaltyRound(
+        Math.min(
+            state.interestDebt,
+            amount - principalPart
+        )
+    );
+
+    paid.principal = principalPart;
+    paid.interest = interestPart;
+
+    state.principalDebt = penaltyRound(
+        state.principalDebt - principalPart
+    );
+
+    state.interestDebt = penaltyRound(
+        state.interestDebt - interestPart
+    );
+
+    paid.excess = penaltyRound(
+        amount - principalPart - interestPart
+    );
+
+    return paid;
+}
+
+function calcPenalty() {
+    const resultDiv = document.getElementById('penalty-result');
+    const resultBody = document.getElementById('penalty-result-tbody');
+
+    const dueDateValue = document.getElementById(
+        'penalty-due-date'
+    ).value;
+
+    const endDateValue = document.getElementById(
+        'penalty-end'
+    ).value;
+
+    const startRule = document.getElementById(
+        'penalty-start-rule'
+    ).value;
+
+    const principalDebt = Number(document.getElementById(
+        'penalty-principal-debt'
+    ).value);
+
+    const interestDebt = Number(document.getElementById(
+        'penalty-interest-debt'
+    ).value);
+
+    const principalRate = Number(document.getElementById(
+        'penalty-principal-rate'
+    ).value);
+
+    const interestRate = Number(document.getElementById(
+        'penalty-interest-rate'
+    ).value);
+
+    const rateType = document.getElementById(
+        'penalty-rate-type'
+    ).value;
+
+    const yearBase = document.getElementById(
+        'penalty-year-base'
+    ).value;
+
+    const penaltyLimit = Number(document.getElementById(
+        'penalty-limit'
+    ).value) || 0;
+
+    if (!dueDateValue || !endDateValue) {
+        resultDiv.className = 'result-box error';
+        resultDiv.textContent =
+            'Укажите дату исполнения обязательства и дату расчёта.';
+        resultBody.innerHTML = '';
+        return;
+    }
+
+    if (
+        !Number.isFinite(principalDebt) ||
+        principalDebt < 0 ||
+        !Number.isFinite(interestDebt) ||
+        interestDebt < 0 ||
+        !Number.isFinite(principalRate) ||
+        principalRate < 0 ||
+        !Number.isFinite(interestRate) ||
+        interestRate < 0
+    ) {
+        resultDiv.className = 'result-box error';
+        resultDiv.textContent =
+            'Проверьте суммы задолженности и ставки неустойки.';
+        resultBody.innerHTML = '';
+        return;
+    }
+
+    if (principalDebt + interestDebt <= 0) {
+        resultDiv.className = 'result-box error';
+        resultDiv.textContent =
+            'Укажите сумму просроченного основного долга или процентов.';
+        resultBody.innerHTML = '';
+        return;
+    }
+
+    const dueDate = parseDate(dueDateValue);
+    const endDate = parseDate(endDateValue);
+
+    const startDate = startRule === 'next-day'
+        ? penaltyAddDays(dueDate, 1)
+        : new Date(dueDate);
+
+    if (endDate < startDate) {
+        resultDiv.className = 'result-box error';
+        resultDiv.textContent =
+            'Дата расчёта не может быть раньше первого дня начисления.';
+        resultBody.innerHTML = '';
+        return;
+    }
+
+    const payments = penaltyGetPayments(startDate, endDate);
+
+    const state = {
+        principalDebt: penaltyRound(principalDebt),
+        interestDebt: penaltyRound(interestDebt)
+    };
+
+    const rows = [];
+    let totalPrincipalPenalty = 0;
+    let totalInterestPenalty = 0;
+    let totalPayments = 0;
+    let totalPrincipalPaid = 0;
+    let totalInterestPaid = 0;
+    let excessPayments = 0;
+    let currentDate = new Date(startDate);
+
+    function addPeriod(endExclusive) {
+        if (endExclusive <= currentDate) {
+            return;
         }
+
+        const days = penaltyDaysBetween(
+            currentDate,
+            endExclusive
+        );
+
+        const principalPenalty = penaltyCalculateForPeriod(
+            state.principalDebt,
+            principalRate,
+            rateType,
+            yearBase,
+            currentDate,
+            endExclusive
+        );
+
+        const interestPenalty = penaltyCalculateForPeriod(
+            state.interestDebt,
+            interestRate,
+            rateType,
+            yearBase,
+            currentDate,
+            endExclusive
+        );
+
+        const rawPeriodPenalty =
+            principalPenalty + interestPenalty;
+
+        let periodPenalty = rawPeriodPenalty;
+
+        /*
+           Ограничение применяется к сумме всей начисленной неустойки.
+        */
+        if (penaltyLimit > 0) {
+            const alreadyAccrued =
+                totalPrincipalPenalty + totalInterestPenalty;
+
+            periodPenalty = Math.min(
+                rawPeriodPenalty,
+                Math.max(0, penaltyLimit - alreadyAccrued)
+            );
+        }
+
+        let limitedPrincipalPenalty = principalPenalty;
+        let limitedInterestPenalty = interestPenalty;
+
+        if (
+            rawPeriodPenalty > 0 &&
+            periodPenalty < rawPeriodPenalty
+        ) {
+            const ratio = periodPenalty / rawPeriodPenalty;
+
+            limitedPrincipalPenalty = principalPenalty * ratio;
+            limitedInterestPenalty = interestPenalty * ratio;
+        }
+
+        totalPrincipalPenalty += limitedPrincipalPenalty;
+        totalInterestPenalty += limitedInterestPenalty;
+
+        rows.push({
+            startDate: new Date(currentDate),
+            endDate: penaltyAddDays(endExclusive, -1),
+            days,
+            principalDebt: state.principalDebt,
+            interestDebt: state.interestDebt,
+            principalPenalty: limitedPrincipalPenalty,
+            interestPenalty: limitedInterestPenalty,
+            totalPenalty:
+                limitedPrincipalPenalty + limitedInterestPenalty
+        });
+
+        currentDate = new Date(endExclusive);
+    }
+
+    payments.forEach(payment => {
+        /*
+           До дня платежа включительно неустойка не начисляется:
+           период заканчивается датой платежа как исключающей границей.
+        */
+        addPeriod(payment.date);
+
+        const allocation = penaltyApplyPayment(state, payment);
+
+        totalPayments = penaltyRound(
+            totalPayments + payment.amount
+        );
+
+        totalPrincipalPaid = penaltyRound(
+            totalPrincipalPaid + allocation.principal
+        );
+
+        totalInterestPaid = penaltyRound(
+            totalInterestPaid + allocation.interest
+        );
+
+        excessPayments = penaltyRound(
+            excessPayments + allocation.excess
+        );
     });
-    payments.sort((a, b) => a.date - b.date);
 
-    let totalPenalty = 0;
-    let details = [];
-    let currentDebt = debt;
-    let currentDate = new Date(start);
+    /*
+       Конечная дата расчёта включается в начисление:
+       исключающая граница — следующий календарный день.
+    */
+    addPeriod(penaltyAddDays(endDate, 1));
 
-    function calcPeriodPenalty(amount, fromDate, toDate) {
-        if (amount <= 0 || fromDate > toDate) return 0;
-        const days = daysBothInclusive(fromDate, toDate);
-        if (days === 0) return 0;
-        let penalty = 0;
-        if (percentType === 'daily') {
-            const dailyRate = percentVal / 100;
-            penalty = amount * dailyRate * days;
-        } else {
-            let current = new Date(fromDate);
-            while (current <= toDate) {
-                const year = current.getFullYear();
-                const dInYear = daysInYear(year);
-                const nextYear = new Date(year + 1, 0, 1);
-                const segmentEnd = nextYear <= toDate ? new Date(nextYear.getTime() - 1) : toDate;
-                if (current > segmentEnd) break;
-                const segDays = daysBothInclusive(current, segmentEnd);
-                if (segDays === 0) break;
-                const yearRate = percentVal / 100;
-                penalty += amount * yearRate * (segDays / dInYear);
-                current = new Date(year + 1, 0, 1);
-            }
-        }
-        return penalty;
-    }
+    totalPrincipalPenalty = penaltyRound(totalPrincipalPenalty);
+    totalInterestPenalty = penaltyRound(totalInterestPenalty);
 
-    let lastDate = new Date(start);
-    for (let i = 0; i <= payments.length; i++) {
-        let nextDate;
-        if (i < payments.length) {
-            nextDate = new Date(payments[i].date);
-        } else {
-            nextDate = new Date(end);
-        }
-        if (nextDate >= lastDate) {
-            const periodPenalty = calcPeriodPenalty(currentDebt, lastDate, nextDate);
-            totalPenalty += periodPenalty;
-            if (periodPenalty > 0) {
-                details.push(`Период с ${formatDate(lastDate)} по ${formatDate(nextDate)}: долг ${currentDebt.toFixed(2)} руб. → ${periodPenalty.toFixed(2)} руб.`);
-            }
-        }
-        if (i < payments.length) {
-            const paySum = payments[i].sum;
-            if (paySum > currentDebt) {
-                details.push(`⚠️ Платёж ${formatDate(payments[i].date)} на ${paySum.toFixed(2)} руб. превышает остаток долга (${currentDebt.toFixed(2)} руб.). Учитываем только ${currentDebt.toFixed(2)} руб.`);
-                currentDebt = 0;
-            } else {
-                currentDebt -= paySum;
-                details.push(`Платёж ${formatDate(payments[i].date)} на ${paySum.toFixed(2)} руб. Остаток долга: ${currentDebt.toFixed(2)} руб.`);
-            }
-            lastDate = new Date(nextDate);
-            lastDate.setDate(lastDate.getDate() + 1);
-        }
-    }
+    const totalPenalty = penaltyRound(
+        totalPrincipalPenalty + totalInterestPenalty
+    );
 
-    if (limitPercent > 0) {
-        const maxPenalty = debt * (limitPercent / 100);
-        if (totalPenalty > maxPenalty) {
-            totalPenalty = maxPenalty;
-            details.push(`Ограничение: не более ${limitPercent}% от суммы долга (${maxPenalty.toFixed(2)} руб.)`);
-        }
-    }
+    resultBody.innerHTML = rows.map(row => `
+        <tr>
+            <td>
+                ${formatDate(row.startDate)} —
+                ${formatDate(row.endDate)}
+            </td>
+            <td>${row.days}</td>
+            <td>${penaltyMoney(row.principalDebt)}</td>
+            <td>${penaltyMoney(row.interestDebt)}</td>
+            <td>${penaltyMoney(row.principalPenalty)}</td>
+            <td>${penaltyMoney(row.interestPenalty)}</td>
+            <td>${penaltyMoney(row.totalPenalty)}</td>
+        </tr>
+    `).join('');
 
-    const summary = `Итоговая неустойка: ${totalPenalty.toFixed(2)} руб.\n\nДетали расчёта:\n${details.join('\n')}`;
+    const rateDescription = rateType === 'daily'
+        ? 'процент в день'
+        : `процент годовых, база: ${yearBase === 'actual'
+            ? 'фактическое число дней в году'
+            : yearBase + ' дней'
+        }`;
+
     resultDiv.className = 'result-box';
-    resultDiv.textContent = summary;
+    resultDiv.textContent =
+        `РАСЧЁТ ДОГОВОРНОЙ НЕУСТОЙКИ\n\n` +
+        `Дата исполнения обязательства: ${formatDate(dueDate)}\n` +
+        `Первый день начисления: ${formatDate(startDate)}\n` +
+        `Дата расчёта включительно: ${formatDate(endDate)}\n` +
+        `Тип ставки: ${rateDescription}\n\n` +
+
+        `НАЧАЛЬНАЯ ПРОСРОЧЕННАЯ ЗАДОЛЖЕННОСТЬ\n` +
+        `Основной долг: ${penaltyMoney(principalDebt)} руб.\n` +
+        `Проценты: ${penaltyMoney(interestDebt)} руб.\n\n` +
+
+        `НЕУСТОЙКА\n` +
+        `На основной долг: ${penaltyMoney(totalPrincipalPenalty)} руб.\n` +
+        `На проценты: ${penaltyMoney(totalInterestPenalty)} руб.\n` +
+        `Всего неустойка: ${penaltyMoney(totalPenalty)} руб.\n\n` +
+
+        `ПЛАТЕЖИ В ПЕРИОДЕ\n` +
+        `Всего платежей: ${penaltyMoney(totalPayments)} руб.\n` +
+        `Погашено основного долга: ${penaltyMoney(totalPrincipalPaid)} руб.\n` +
+        `Погашено процентов: ${penaltyMoney(totalInterestPaid)} руб.\n` +
+        `Платежи сверх указанной задолженности: ` +
+        `${penaltyMoney(excessPayments)} руб.\n\n` +
+
+        `ОСТАТОК ПРОСРОЧЕННОЙ ЗАДОЛЖЕННОСТИ\n` +
+        `Основной долг: ${penaltyMoney(state.principalDebt)} руб.\n` +
+        `Проценты: ${penaltyMoney(state.interestDebt)} руб.\n\n` +
+
+        `Лимит неустойки: ${
+            penaltyLimit > 0
+                ? penaltyMoney(penaltyLimit) + ' руб.'
+                : 'не установлен'
+        }\n\n` +
+
+        `Важно: расчёт не применяет возможное снижение неустойки ` +
+        `судом по статье 333 ГК РФ и не заменяет проверку условий договора.`;
 }
 
 // ============================================================
@@ -1585,7 +2274,7 @@ function calcCreditCard() {
 }
 
 // ============================================================
-// 5. СРОК ИСКОВОЙ ДАВНОСТИ (НОВАЯ ВЕРСИЯ)
+// 5. СРОК ИСКОВОЙ ДАВНОСТИ
 // ============================================================
 
 function limitationAddDays(date, days) {
@@ -2052,7 +2741,7 @@ function calcLimitation() {
 }
 
 // ============================================================
-// СТ. 395 ГК РФ (НОВАЯ ВЕРСИЯ)
+// СТ. 395 ГК РФ
 // ============================================================
 const GK395_KEY_RATES = [
     { from: '2016-08-01', rate: 10.50 },
