@@ -202,6 +202,426 @@ table input { width: 100%; padding: 6px 8px; border: 1px solid #cfd8dc; border-r
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 15px;
+} 
+/* ==========================================================
+   АДАПТИВНЫЙ ИНТЕРФЕЙС ДЛЯ ANDROID И МОБИЛЬНЫХ УСТРОЙСТВ
+   Вставить в конце <style>, перед </style>
+   ========================================================== */
+
+html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+body {
+    min-width: 320px;
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+button,
+.tab-btn,
+.btn,
+.add-row-btn,
+.danger-btn,
+.copy-btn {
+    touch-action: manipulation;
+}
+
+/* Удобное горизонтальное переключение между многочисленными вкладками */
+.tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scroll-snap-type: x proximity;
+}
+
+.tabs::-webkit-scrollbar {
+    height: 5px;
+}
+
+.tabs::-webkit-scrollbar-thumb {
+    background: #9fa8da;
+    border-radius: 10px;
+}
+
+.tab-btn {
+    flex: 0 0 auto;
+    min-height: 48px;
+    scroll-snap-align: start;
+}
+
+/* Предотвращает обрезание широких таблиц и графиков */
+.table-wrapper,
+.scroll-table {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+}
+
+.table-wrapper table,
+.scroll-table table {
+    min-width: 640px;
+}
+
+/* Не ломает колонки во вкладке с госпошлиной и в прочих сетках */
+.grid,
+.inline-group {
+    width: 100%;
+}
+
+/* Безопасная ширина результата и длинных строк */
+.result-box,
+.note,
+.muted,
+pre {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+/* Кнопки на телефоне не должны быть слишком маленькими */
+.add-row-btn,
+.danger-btn,
+.copy-btn {
+    min-height: 42px;
+}
+
+.copy-toast {
+    max-width: calc(100vw - 32px);
+    text-align: center;
+}
+
+/* Планшеты и небольшие ноутбуки */
+@media (max-width: 900px) {
+    body {
+        padding: 12px;
+    }
+
+    .container {
+        max-width: 100%;
+    }
+
+    .tab-content {
+        padding: 20px;
+    }
+
+    .inline-group .form-group {
+        min-width: 220px;
+    }
+
+    .grid {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
+}
+
+/* Android-смартфоны */
+@media (max-width: 600px) {
+    body {
+        padding: 0;
+        background: #ffffff;
+        font-size: 16px;
+    }
+
+    .container {
+        width: 100%;
+        min-height: 100vh;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    h1 {
+        padding: 16px;
+        font-size: 21px;
+        line-height: 1.3;
+    }
+
+    h2 {
+        font-size: 19px;
+        line-height: 1.35;
+        margin-bottom: 16px;
+    }
+
+    .tabs {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    }
+
+    .tab-btn {
+        min-width: max-content;
+        padding: 12px 14px;
+        font-size: 14px;
+        border-bottom-width: 3px;
+    }
+
+    .tab-content {
+        padding: 16px 14px 28px;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .inline-group {
+        display: block;
+    }
+
+    .inline-group .form-group {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    label {
+        font-size: 14px;
+        line-height: 1.35;
+    }
+
+    input,
+    select {
+        min-height: 48px;
+        padding: 11px 12px;
+        font-size: 16px;
+        border-radius: 8px;
+    }
+
+    input[type="date"] {
+        min-width: 0;
+    }
+
+    .radio-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .radio-group label {
+        min-height: 44px;
+        padding: 8px 10px;
+        background: #f3f4f6;
+        border-radius: 7px;
+    }
+
+    .payment-block {
+        padding: 14px;
+        margin-top: 14px;
+        border-radius: 8px;
+    }
+
+    .note {
+        padding: 12px;
+        margin: 12px 0 16px;
+        font-size: 14px;
+    }
+
+    .muted {
+        font-size: 13px;
+        line-height: 1.45;
+    }
+
+    .btn {
+        min-height: 50px;
+        padding: 13px 16px;
+        font-size: 16px;
+        border-radius: 8px;
+    }
+
+    .add-row-btn,
+    .danger-btn,
+    .copy-btn {
+        min-height: 44px;
+        padding: 9px 12px;
+        font-size: 14px;
+        border-radius: 7px;
+    }
+
+    .copy-btn {
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .result-wrapper,
+    .result-box {
+        margin-top: 16px;
+    }
+
+    .result-box {
+        max-height: none;
+        padding: 14px;
+        border-left-width: 4px;
+        font-size: 14px;
+        line-height: 1.55;
+        white-space: pre-wrap;
+    }
+
+    .table-wrapper,
+    .scroll-table {
+        margin: 12px 0;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        background: #ffffff;
+    }
+
+    .table-wrapper table,
+    .scroll-table table {
+        min-width: 580px;
+        font-size: 13px;
+    }
+
+    table th {
+        padding: 10px 8px;
+        white-space: nowrap;
+    }
+
+    table td {
+        padding: 8px 6px;
+    }
+
+    table input {
+        min-width: 126px;
+        min-height: 40px;
+        padding: 7px 8px;
+        font-size: 16px;
+    }
+
+    .scroll-table {
+        max-height: 65vh;
+    }
+
+    .scroll-table table th {
+        top: 0;
+    }
+
+    .copy-toast {
+        bottom: calc(18px + env(safe-area-inset-bottom));
+        font-size: 14px;
+        padding: 11px 16px;
+    }
+}
+
+/* Компактные Android-устройства: 320–390 px */
+@media (max-width: 390px) {
+    h1 {
+        font-size: 19px;
+    }
+
+    h2 {
+        font-size: 18px;
+    }
+
+    .tab-content {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    .payment-block {
+        padding: 12px;
+    }
+
+    .radio-group {
+        grid-template-columns: 1fr;
+    }
+
+    .tab-btn {
+        font-size: 13px;
+        padding: 11px 12px;
+    }
+
+    .result-box {
+        font-size: 13px;
+    }
+}
+
+/* Тёмная тема Android: сохраняет читаемость, если система её включила */
+@media (prefers-color-scheme: dark) {
+    body {
+        background: #121212;
+        color: #e5e7eb;
+    }
+
+    .container {
+        background: #1e1e1e;
+    }
+
+    .tabs,
+    .tab-btn.active {
+        background: #252b42;
+    }
+
+    .tab-btn {
+        color: #bfc8ff;
+    }
+
+    .tab-btn.active {
+        color: #ffffff;
+        border-bottom-color: #9fa8ff;
+    }
+
+    input,
+    select,
+    table input {
+        background: #262626;
+        color: #f3f4f6;
+        border-color: #4b5563;
+    }
+
+    label {
+        color: #e5e7eb;
+    }
+
+    .payment-block {
+        background: #282828;
+    }
+
+    .note {
+        background: #172554;
+        color: #dbeafe;
+    }
+
+    .muted {
+        color: #cbd5e1;
+    }
+
+    table th,
+    .scroll-table table th {
+        background: #2d334d;
+        color: #f3f4f6;
+    }
+
+    table td {
+        border-bottom-color: #3f3f46;
+    }
+
+    .table-wrapper,
+    .scroll-table {
+        background: #1e1e1e;
+        border-color: #444;
+    }
+
+    .result-box {
+        background: #153d28;
+        color: #dcfce7;
+    }
+
+    .result-box.error {
+        background: #4a1d1d;
+        color: #fecaca;
+    }
 }
 </style>
 </head>
