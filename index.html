@@ -1881,7 +1881,7 @@ ${warnings.join('\n')}` : '');
 }
 
 // ============================================================
-// ВКЛАДКА 7: ЗАДОЛЖЕННОСТЬ ПО КРЕДИТУ (НОВАЯ ВЕРСИЯ)
+// ВКЛАДКА 7: ЗАДОЛЖЕННОСТЬ ПО КРЕДИТУ (С ДОСРОЧНЫМ ПОГАШЕНИЕМ)
 // ============================================================
 document.addEventListener('DOMContentLoaded', function () {
     const tabs = document.getElementById('tabs');
@@ -2193,7 +2193,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
             <p class="muted">
                 Вносите платежи в хронологическом порядке либо оставьте таблицу
-                пустой, если платежей не было.
+                пустой, если платежей не было. Для досрочного погашения выберите
+                соответствующий вид платежа и способ пересчёта графика.
             </p>
 
             <div class="table-wrapper">
@@ -2202,6 +2203,8 @@ document.addEventListener('DOMContentLoaded', function () {
                         <tr>
                             <th>Дата платежа</th>
                             <th>Сумма, руб.</th>
+                            <th>Вид платежа</th>
+                            <th>Пересчёт графика</th>
                             <th>Действие</th>
                         </tr>
                     </thead>
@@ -2209,10 +2212,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     <tbody id="credit-debt-payment-tbody">
                         <tr>
                             <td>
-                                <input
-                                    type="date"
-                                    class="credit-debt-pay-date"
-                                >
+                                <input type="date" class="credit-debt-pay-date">
                             </td>
 
                             <td>
@@ -2222,6 +2222,20 @@ document.addEventListener('DOMContentLoaded', function () {
                                     min="0.01"
                                     step="0.01"
                                 >
+                            </td>
+
+                            <td>
+                                <select class="credit-debt-pay-type">
+                                    <option value="regular">Обычный платёж</option>
+                                    <option value="early">Досрочное погашение</option>
+                                </select>
+                            </td>
+
+                            <td>
+                                <select class="credit-debt-early-mode">
+                                    <option value="term">Уменьшить срок</option>
+                                    <option value="payment">Уменьшить платёж</option>
+                                </select>
                             </td>
 
                             <td>
@@ -2401,56 +2415,8 @@ function creditDebtTogglePriorityFields() {
     ).style.display = mode === 'contract' ? 'block' : 'none';
 }
 
-function creditDebtAddPaymentRow() {
-    const tbody = document.getElementById('credit-debt-payment-tbody');
-
-    const row = document.createElement('tr');
-
-    row.innerHTML = `
-        <td>
-            <input type="date" class="credit-debt-pay-date">
-        </td>
-
-        <td>
-            <input
-                type="number"
-                class="credit-debt-pay-sum"
-                min="0.01"
-                step="0.01"
-            >
-        </td>
-
-        <td>
-            <button
-                type="button"
-                class="danger-btn"
-                onclick="creditDebtRemovePaymentRow(this)"
-            >
-                Удалить
-            </button>
-        </td>
-    `;
-
-    tbody.appendChild(row);
-}
-
-function creditDebtRemovePaymentRow(button) {
-    const tbody = document.getElementById('credit-debt-payment-tbody');
-    const row = button.closest('tr');
-
-    if (tbody.rows.length > 1) {
-        row.remove();
-        return;
-    }
-
-    row.querySelector('.credit-debt-pay-date').value = '';
-    row.querySelector('.credit-debt-pay-sum').value = '';
-}
-
-function creditDebtClearPayments() {
-    const tbody = document.getElementById('credit-debt-payment-tbody');
-
-    tbody.innerHTML = `
+function creditDebtPaymentRowHtml() {
+    return `
         <tr>
             <td>
                 <input type="date" class="credit-debt-pay-date">
@@ -2466,6 +2432,20 @@ function creditDebtClearPayments() {
             </td>
 
             <td>
+                <select class="credit-debt-pay-type">
+                    <option value="regular">Обычный платёж</option>
+                    <option value="early">Досрочное погашение</option>
+                </select>
+            </td>
+
+            <td>
+                <select class="credit-debt-early-mode">
+                    <option value="term">Уменьшить срок</option>
+                    <option value="payment">Уменьшить платёж</option>
+                </select>
+            </td>
+
+            <td>
                 <button
                     type="button"
                     class="danger-btn"
@@ -2476,6 +2456,36 @@ function creditDebtClearPayments() {
             </td>
         </tr>
     `;
+}
+
+function creditDebtAddPaymentRow() {
+    const tbody = document.getElementById('credit-debt-payment-tbody');
+
+    tbody.insertAdjacentHTML(
+        'beforeend',
+        creditDebtPaymentRowHtml()
+    );
+}
+
+function creditDebtRemovePaymentRow(button) {
+    const tbody = document.getElementById('credit-debt-payment-tbody');
+    const row = button.closest('tr');
+
+    if (tbody.rows.length > 1) {
+        row.remove();
+        return;
+    }
+
+    row.querySelector('.credit-debt-pay-date').value = '';
+    row.querySelector('.credit-debt-pay-sum').value = '';
+    row.querySelector('.credit-debt-pay-type').value = 'regular';
+    row.querySelector('.credit-debt-early-mode').value = 'term';
+}
+
+function creditDebtClearPayments() {
+    const tbody = document.getElementById('credit-debt-payment-tbody');
+
+    tbody.innerHTML = creditDebtPaymentRowHtml();
 }
 
 function creditDebtGetPayments(startDate, calculationDate) {
@@ -2492,6 +2502,14 @@ function creditDebtGetPayments(startDate, calculationDate) {
                 '.credit-debt-pay-sum'
             ).value);
 
+            const type = row.querySelector(
+                '.credit-debt-pay-type'
+            ).value;
+
+            const earlyMode = row.querySelector(
+                '.credit-debt-early-mode'
+            ).value;
+
             if (
                 !dateValue ||
                 !Number.isFinite(amount) ||
@@ -2505,7 +2523,9 @@ function creditDebtGetPayments(startDate, calculationDate) {
             if (date >= startDate && date <= calculationDate) {
                 payments.push({
                     date,
-                    amount: creditDebtRound(amount)
+                    amount: creditDebtRound(amount),
+                    type,
+                    earlyMode
                 });
             }
         });
@@ -2620,6 +2640,239 @@ function creditDebtCreateSchedule(data) {
     }
 
     return schedule;
+}
+
+
+/* =========================================================
+   ПЕРЕСЧЁТ ГРАФИКА ПРИ ДОСРОЧНОМ ПОГАШЕНИИ
+   ========================================================= */
+
+function creditDebtGetUnpaidPrincipal(schedule) {
+    return creditDebtRound(
+        schedule.reduce((sum, item) => {
+            return sum + item.unpaidPrincipal;
+        }, 0)
+    );
+}
+
+function creditDebtGetFutureItems(schedule, date) {
+    return schedule.filter(item => item.dueDate > date);
+}
+
+function creditDebtBuildFutureSchedule(
+    futureItems,
+    remainingPrincipal,
+    term,
+    annuityPayment,
+    data
+) {
+    const result = [];
+    const monthlyRate = data.rate / 100 / 12;
+
+    let balance = creditDebtRound(remainingPrincipal);
+
+    for (let index = 0; index < term; index += 1) {
+        const item = futureItems[index];
+
+        const previousDate = index === 0
+            ? item.dueDate
+            : futureItems[index - 1].dueDate;
+
+        let interest = 0;
+
+        if (data.interestMethod === 'monthly') {
+            interest = balance * monthlyRate;
+        } else {
+            const days = index === 0
+                ? creditDebtDaysBetween(
+                    data.startDate,
+                    item.dueDate
+                )
+                : creditDebtDaysBetween(
+                    futureItems[index - 1].dueDate,
+                    item.dueDate
+                );
+
+            interest =
+                balance *
+                data.rate / 100 *
+                days /
+                creditDebtYearBase(previousDate, data.base);
+        }
+
+        interest = creditDebtRound(interest);
+
+        let principal;
+        let payment;
+
+        if (data.type === 'annuity') {
+            payment = index === term - 1
+                ? creditDebtRound(balance + interest)
+                : creditDebtRound(annuityPayment);
+
+            principal = creditDebtRound(payment - interest);
+
+            if (principal > balance || index === term - 1) {
+                principal = balance;
+                payment = creditDebtRound(principal + interest);
+            }
+        } else {
+            principal = index === term - 1
+                ? balance
+                : creditDebtRound(remainingPrincipal / term);
+
+            payment = creditDebtRound(principal + interest);
+        }
+
+        balance = creditDebtRound(
+            Math.max(0, balance - principal)
+        );
+
+        result.push({
+            payment,
+            interest,
+            principal
+        });
+    }
+
+    return result;
+}
+
+function creditDebtRecalculateFutureSchedule(
+    state,
+    data,
+    earlyPaymentDate,
+    method
+) {
+    const futureItems = creditDebtGetFutureItems(
+        state.schedule,
+        earlyPaymentDate
+    );
+
+    const remainingPrincipal = creditDebtGetUnpaidPrincipal(futureItems);
+
+    if (futureItems.length === 0 || remainingPrincipal <= 0.01) {
+        return {
+            oldTerm: futureItems.length,
+            newTerm: 0,
+            newPayment: 0,
+            message: 'Кредит погашен полностью.'
+        };
+    }
+
+    const oldTerm = futureItems.length;
+    const monthlyRate = data.rate / 100 / 12;
+
+    // Режим «уменьшить срок» (только для аннуитета)
+    if (method === 'term' && data.type === 'annuity') {
+        const oldPayment = futureItems[0].payment;
+
+        let newTerm = oldTerm;
+
+        if (monthlyRate === 0) {
+            newTerm = Math.ceil(remainingPrincipal / oldPayment);
+        } else {
+            const ratio = 1 - (
+                remainingPrincipal * monthlyRate / oldPayment
+            );
+
+            if (ratio > 0 && ratio < 1) {
+                newTerm = Math.ceil(
+                    -Math.log(ratio) / Math.log(1 + monthlyRate)
+                );
+            }
+        }
+
+        newTerm = Math.max(1, Math.min(oldTerm, newTerm));
+
+        const updated = creditDebtBuildFutureSchedule(
+            futureItems,
+            remainingPrincipal,
+            newTerm,
+            oldPayment,
+            data
+        );
+
+        futureItems.forEach((item, index) => {
+            if (index < updated.length) {
+                item.payment = updated[index].payment;
+                item.interest = updated[index].interest;
+                item.principal = updated[index].principal;
+                item.unpaidInterest = updated[index].interest;
+                item.unpaidPrincipal = updated[index].principal;
+                item.overdueInterest = 0;
+                item.overduePrincipal = 0;
+            } else {
+                item.payment = 0;
+                item.interest = 0;
+                item.principal = 0;
+                item.unpaidInterest = 0;
+                item.unpaidPrincipal = 0;
+                item.overdueInterest = 0;
+                item.overduePrincipal = 0;
+            }
+        });
+
+        return {
+            oldTerm,
+            newTerm,
+            newPayment: oldPayment,
+            message:
+                `Досрочное погашение уменьшило срок: ` +
+                `с ${oldTerm} до ${newTerm} мес.`
+        };
+    }
+
+    // Режим «уменьшить платёж» (для обоих типов графика)
+    const newTerm = oldTerm;
+
+    let newPayment = 0;
+
+    if (data.type === 'annuity') {
+        if (monthlyRate === 0) {
+            newPayment = remainingPrincipal / newTerm;
+        } else {
+            newPayment =
+                remainingPrincipal *
+                (
+                    monthlyRate *
+                    Math.pow(1 + monthlyRate, newTerm)
+                ) /
+                (
+                    Math.pow(1 + monthlyRate, newTerm) - 1
+                );
+        }
+    }
+
+    const updated = creditDebtBuildFutureSchedule(
+        futureItems,
+        remainingPrincipal,
+        newTerm,
+        newPayment,
+        data
+    );
+
+    futureItems.forEach((item, index) => {
+        item.payment = updated[index].payment;
+        item.interest = updated[index].interest;
+        item.principal = updated[index].principal;
+        item.unpaidInterest = updated[index].interest;
+        item.unpaidPrincipal = updated[index].principal;
+        item.overdueInterest = 0;
+        item.overduePrincipal = 0;
+    });
+
+    return {
+        oldTerm,
+        newTerm,
+        newPayment,
+        message:
+            data.type === 'annuity'
+                ? `Досрочное погашение уменьшило будущий платёж до ` +
+                  `${creditDebtMoney(newPayment)} руб.`
+                : `Досрочное погашение уменьшило размер будущих частей ` +
+                  `основного долга.`
+    };
 }
 
 
@@ -3008,9 +3261,81 @@ function calcCreditDebt() {
                 state.totalPaid + event.payment.amount
             );
 
+            let eventTitle = 'Фактический платёж';
+
+            // Если это досрочный платёж и осталась сумма после распределения,
+            // направляем её на будущий основной долг и пересчитываем график
+            if (
+                event.payment.type === 'early' &&
+                allocation.overpayment > 0.01
+            ) {
+                let earlyAmount = allocation.overpayment;
+
+                const futureItems = state.schedule.filter(item => {
+                    return !item.isDue && item.unpaidPrincipal > 0;
+                });
+
+                for (const item of futureItems) {
+                    if (earlyAmount <= 0) {
+                        break;
+                    }
+
+                    const paidPrincipal = Math.min(
+                        earlyAmount,
+                        item.unpaidPrincipal
+                    );
+
+                    item.unpaidPrincipal = creditDebtRound(
+                        item.unpaidPrincipal - paidPrincipal
+                    );
+
+                    earlyAmount = creditDebtRound(
+                        earlyAmount - paidPrincipal
+                    );
+
+                    allocation.principal = creditDebtRound(
+                        allocation.principal + paidPrincipal
+                    );
+
+                    state.totalPrincipalPaid = creditDebtRound(
+                        state.totalPrincipalPaid + paidPrincipal
+                    );
+                }
+
+                const actuallyEarlyPaid = creditDebtRound(
+                    allocation.overpayment - earlyAmount
+                );
+
+                allocation.overpayment = earlyAmount;
+
+                if (actuallyEarlyPaid > 0) {
+                    const recalculation =
+                        creditDebtRecalculateFutureSchedule(
+                            state,
+                            data,
+                            event.date,
+                            event.payment.earlyMode
+                        );
+
+                    eventTitle =
+                        event.payment.earlyMode === 'term'
+                            ? 'Досрочное погашение: уменьшение срока'
+                            : 'Досрочное погашение: уменьшение платежа';
+
+                    eventTitle += ` (${recalculation.message})`;
+                }
+            }
+
+            if (allocation.overpayment > 0.01) {
+                eventTitle +=
+                    `; переплата ${creditDebtMoney(
+                        allocation.overpayment
+                    )} руб.`;
+            }
+
             resultRows.push({
                 date: event.date,
-                event: 'Фактический платёж',
+                event: eventTitle,
                 scheduled: 0,
                 actual: event.payment.amount,
                 interestPaid: allocation.interest,
