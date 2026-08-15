@@ -978,35 +978,408 @@ pre {
         </div>
     </div>
 
-    <!-- ========== ВКЛАДКА 4 (КРЕДИТНАЯ КАРТА) ========== -->
+    <!-- ========== ВКЛАДКА 4 (НОВАЯ: КРЕДИТНАЯ КАРТА) ========== -->
     <div id="tab4" class="tab-content">
-        <h2>Кредитная карта (расчёт с минимальными платежами)</h2>
-        <div class="form-group"><label>Лимит кредитования (руб.)</label><input type="number" id="card-limit" value="100000" step="any"></div>
-        <div class="form-group"><label>Полученная сумма (руб.)</label><input type="number" id="card-amount" value="30000" step="any"></div>
-        <div class="form-group"><label>Дата получения (ДД-ММ-ГГГГ)</label><input type="date" id="card-date" value="2023-01-18"></div>
-        <div class="form-group"><label>Годовая ставка (% годовых, например 25)</label><input type="number" id="card-rate-percent" value="25" step="0.01"></div>
-        <div class="inline-group">
-            <div class="form-group"><label>Минимальный платёж (% от баланса, например 5)</label><input type="number" id="card-min-percent" value="5" step="0.1"></div>
-            <div class="form-group"><label>Фиксированный минимум (руб.)</label><input type="number" id="card-min-fixed" value="500" step="any"></div>
+        <h2>Калькулятор задолженности по кредитной карте</h2>
+
+        <div class="note">
+            Расчёт ведётся по фактическим датам операций и платежей.
+            Проценты начисляются ежедневно на остаток основного долга.
+            Льготный период применяется только в пределах настроенных условий.
         </div>
-        <div class="form-group"><label>Фиксированный платёж (опционально, если указан – заменяет расчётный минимум)</label><input type="number" id="card-fixed-payment" value="" step="any" placeholder="Например, 3000"></div>
+
         <div class="payment-block">
-            <label><strong>Внесённые суммы в счёт погашения (фактические платежи)</strong></label>
+            <label><strong>Основные условия</strong></label>
+
+            <div class="inline-group">
+                <div class="form-group">
+                    <label>Кредитный лимит, руб.</label>
+                    <input
+                        type="number"
+                        id="card-limit"
+                        value="100000"
+                        min="0"
+                        step="0.01"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label>Процентная ставка, % годовых</label>
+                    <input
+                        type="number"
+                        id="card-rate-percent"
+                        value="25"
+                        min="0"
+                        step="0.001"
+                    >
+                </div>
+            </div>
+
+            <div class="inline-group">
+                <div class="form-group">
+                    <label>Дата расчёта</label>
+                    <input
+                        type="date"
+                        id="card-calc-date"
+                        value="2024-06-30"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label>База дней</label>
+                    <select id="card-year-base">
+                        <option value="actual">
+                            Фактическое число дней в году
+                        </option>
+                        <option value="365">365 дней</option>
+                        <option value="366">366 дней</option>
+                        <option value="360">360 дней</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="payment-block">
+            <label><strong>Льготный период</strong></label>
+
+            <div class="form-group">
+                <label>Применять льготный период?</label>
+
+                <select
+                    id="card-grace-used"
+                    onchange="toggleCardGraceFields()"
+                >
+                    <option value="no">Нет</option>
+                    <option value="yes">Да</option>
+                </select>
+            </div>
+
+            <div id="card-grace-fields" style="display: none;">
+                <div class="inline-group">
+                    <div class="form-group">
+                        <label>Продолжительность, дней</label>
+                        <input
+                            type="number"
+                            id="card-grace-days"
+                            value="55"
+                            min="1"
+                            step="1"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label>Условие сохранения льготы</label>
+                        <select id="card-grace-rule">
+                            <option value="full-repayment">
+                                Полностью погасить покупки до окончания периода
+                            </option>
+                            <option value="automatic">
+                                Не начислять проценты до окончания периода
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <p class="muted">
+                    Для режима «полностью погасить» льгота по операции сохраняется,
+                    если к дате окончания льготного периода эта операция полностью
+                    погашена. При непогашении проценты начисляются с даты операции.
+                </p>
+            </div>
+        </div>
+
+        <div class="payment-block">
+            <label><strong>Минимальный платёж</strong></label>
+
+            <div class="inline-group">
+                <div class="form-group">
+                    <label>День ежемесячного платежа</label>
+                    <input
+                        type="number"
+                        id="card-payment-day"
+                        value="25"
+                        min="1"
+                        max="31"
+                        step="1"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label>Минимальный платёж, % от долга</label>
+                    <input
+                        type="number"
+                        id="card-min-percent"
+                        value="5"
+                        min="0"
+                        step="0.1"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label>Минимальная фиксированная сумма, руб.</label>
+                    <input
+                        type="number"
+                        id="card-min-fixed"
+                        value="500"
+                        min="0"
+                        step="0.01"
+                    >
+                </div>
+            </div>
+
+            <p class="muted">
+                Минимальный платёж показывается как справочная величина. Просрочка
+                определяется, если до даты очередного платежа внесено меньше
+                рассчитанного минимального платежа.
+            </p>
+        </div>
+
+        <div class="payment-block">
+            <label><strong>Порядок распределения платежа</strong></label>
+
+            <div class="form-group">
+                <label>Правило погашения</label>
+
+                <select
+                    id="card-priority-mode"
+                    onchange="toggleCardPriorityFields()"
+                >
+                    <option value="standard">
+                        Комиссии → проценты → основной долг
+                    </option>
+                    <option value="contract">
+                        Очередность по договору
+                    </option>
+                </select>
+            </div>
+
+            <div id="card-contract-priority-fields" style="display: none;">
+                <div class="inline-group">
+                    <div class="form-group">
+                        <label>1-я очередь</label>
+                        <select id="card-priority-1">
+                            <option value="fees">Комиссии</option>
+                            <option value="interest">Проценты</option>
+                            <option value="principal">Основной долг</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>2-я очередь</label>
+                        <select id="card-priority-2">
+                            <option value="interest">Проценты</option>
+                            <option value="fees">Комиссии</option>
+                            <option value="principal">Основной долг</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>3-я очередь</label>
+                        <select id="card-priority-3">
+                            <option value="principal">Основной долг</option>
+                            <option value="interest">Проценты</option>
+                            <option value="fees">Комиссии</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="payment-block">
+            <label><strong>Операции по карте</strong></label>
+
+            <p class="muted">
+                Укажите покупки, выдачу наличных, комиссии и иные операции,
+                увеличивающие задолженность. Комиссия может быть отдельной
+                операцией либо частью суммы операции.
+            </p>
+
             <div class="table-wrapper">
-                <table id="card-extra-payment-table">
-                    <thead><tr><th>Дата внесения (ДД-ММ-ГГГГ)</th><th>Сумма (руб.)</th><th></th></tr></thead>
-                    <tbody id="card-extra-payment-tbody">
-                        <tr><td><input type="date" class="card-extra-date" value="2023-02-16"></td><td><input type="number" class="card-extra-sum" value="12000" step="any"></td><td><button class="danger-btn" onclick="removeCardExtraRow(this)">Удалить</button></td></tr>
-                        <tr><td><input type="date" class="card-extra-date" value="2023-03-18"></td><td><input type="number" class="card-extra-sum" value="1500" step="any"></td><td><button class="danger-btn" onclick="removeCardExtraRow(this)">Удалить</button></td></tr>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Дата</th>
+                            <th>Тип операции</th>
+                            <th>Сумма, руб.</th>
+                            <th>Льгота</th>
+                            <th>Действие</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="card-operation-tbody">
+                        <tr>
+                            <td>
+                                <input
+                                    type="date"
+                                    class="card-operation-date"
+                                    value="2024-01-18"
+                                >
+                            </td>
+
+                            <td>
+                                <select class="card-operation-type">
+                                    <option value="purchase">Покупка</option>
+                                    <option value="cash">Снятие наличных</option>
+                                    <option value="fee">Комиссия</option>
+                                </select>
+                            </td>
+
+                            <td>
+                                <input
+                                    type="number"
+                                    class="card-operation-sum"
+                                    value="30000"
+                                    min="0.01"
+                                    step="0.01"
+                                >
+                            </td>
+
+                            <td>
+                                <select class="card-operation-grace">
+                                    <option value="yes">Применять</option>
+                                    <option value="no">Не применять</option>
+                                </select>
+                            </td>
+
+                            <td>
+                                <button
+                                    type="button"
+                                    class="danger-btn"
+                                    onclick="removeCardOperationRow(this)"
+                                >
+                                    Удалить
+                                </button>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
-            <button class="add-row-btn" onclick="addCardExtraRow()">➕ Добавить внесённую сумму</button>
+
+            <button
+                type="button"
+                class="add-row-btn"
+                onclick="addCardOperationRow()"
+            >
+                ➕ Добавить операцию
+            </button>
+
+            <button
+                type="button"
+                class="add-row-btn"
+                style="background: #6b7280; margin-left: 8px;"
+                onclick="clearCardOperations()"
+            >
+                🗑 Очистить операции
+            </button>
         </div>
-        <button class="btn" onclick="calcCreditCard()">Рассчитать график платежей</button>
+
+        <div class="payment-block">
+            <label><strong>Фактические платежи</strong></label>
+
+            <p class="muted">
+                Платёж учитывается в дату его зачисления. Сумма распределяется
+                по выбранной очередности.
+            </p>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Дата платежа</th>
+                            <th>Сумма, руб.</th>
+                            <th>Действие</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="card-payment-tbody">
+                        <tr>
+                            <td>
+                                <input
+                                    type="date"
+                                    class="card-payment-date"
+                                    value="2024-02-16"
+                                >
+                            </td>
+
+                            <td>
+                                <input
+                                    type="number"
+                                    class="card-payment-sum"
+                                    value="12000"
+                                    min="0.01"
+                                    step="0.01"
+                                >
+                            </td>
+
+                            <td>
+                                <button
+                                    type="button"
+                                    class="danger-btn"
+                                    onclick="removeCardPaymentRow(this)"
+                                >
+                                    Удалить
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <button
+                type="button"
+                class="add-row-btn"
+                onclick="addCardPaymentRow()"
+            >
+                ➕ Добавить платёж
+            </button>
+
+            <button
+                type="button"
+                class="add-row-btn"
+                style="background: #6b7280; margin-left: 8px;"
+                onclick="clearCardPayments()"
+            >
+                🗑 Очистить платежи
+            </button>
+        </div>
+
+        <button
+            type="button"
+            class="btn"
+            onclick="calcCreditCard()"
+        >
+            Рассчитать задолженность
+        </button>
+
         <div class="result-wrapper">
-            <div id="card-result" class="result-box">Результат появится здесь</div>
-            <button class="copy-btn" onclick="copyResult('card-result')">📋 Копировать результат</button>
+            <div id="card-result" class="result-box">
+                Укажите условия, операции и платежи, затем нажмите «Рассчитать задолженность».
+            </div>
+
+            <button class="copy-btn" onclick="copyResult('card-result')">
+                📋 Копировать результат
+            </button>
+        </div>
+
+        <div class="scroll-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Дата</th>
+                        <th>Событие</th>
+                        <th>Дней</th>
+                        <th>Долг на начало</th>
+                        <th>Проценты</th>
+                        <th>Операция</th>
+                        <th>Платёж</th>
+                        <th>В проценты</th>
+                        <th>В основной долг</th>
+                        <th>Остаток ОД</th>
+                    </tr>
+                </thead>
+
+                <tbody id="card-result-tbody"></tbody>
+            </table>
         </div>
     </div>
 
@@ -2979,156 +3352,939 @@ function calcFraction() {
 }
 
 // ============================================================
-// 4. Кредитная карта (без изменений)
+// 4. КРЕДИТНАЯ КАРТА (НОВАЯ ВЕРСИЯ)
 // ============================================================
-function addCardExtraRow() {
-    const tbody = document.getElementById('card-extra-payment-tbody');
-    const tr = document.createElement('tr');
-    const today = new Date().toISOString().slice(0,10);
-    tr.innerHTML = `
-        <td><input type="date" class="card-extra-date" value="${today}"></td>
-        <td><input type="number" class="card-extra-sum" value="1000" step="any"></td>
-        <td><button class="danger-btn" onclick="removeCardExtraRow(this)">Удалить</button></td>
+
+function cardRound(value) {
+    return Math.round((Number(value) + Number.EPSILON) * 100) / 100;
+}
+
+function cardMoney(value) {
+    return cardRound(value).toLocaleString('ru-RU', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+}
+
+function cardAddDays(date, days) {
+    const result = new Date(date);
+    result.setDate(result.getDate() + days);
+
+    return result;
+}
+
+function cardDaysBetween(firstDate, secondDate) {
+    return Math.round(
+        (secondDate.getTime() - firstDate.getTime()) / 86400000
+    );
+}
+
+function cardIsLeapYear(year) {
+    return (
+        (year % 4 === 0 && year % 100 !== 0) ||
+        year % 400 === 0
+    );
+}
+
+function cardYearBase(date, base) {
+    if (base === '360') return 360;
+    if (base === '365') return 365;
+    if (base === '366') return 366;
+
+    return cardIsLeapYear(date.getFullYear()) ? 366 : 365;
+}
+
+function cardLastDayOfMonth(year, month) {
+    return new Date(year, month + 1, 0).getDate();
+}
+
+function cardMonthlyDate(year, month, day) {
+    const actualDay = Math.min(
+        Number(day),
+        cardLastDayOfMonth(year, month)
+    );
+
+    return new Date(year, month, actualDay);
+}
+
+function toggleCardGraceFields() {
+    const used = document.getElementById('card-grace-used').value;
+
+    document.getElementById(
+        'card-grace-fields'
+    ).style.display = used === 'yes' ? 'block' : 'none';
+}
+
+function toggleCardPriorityFields() {
+    const mode = document.getElementById('card-priority-mode').value;
+
+    document.getElementById(
+        'card-contract-priority-fields'
+    ).style.display = mode === 'contract' ? 'block' : 'none';
+}
+
+function cardOperationRowHtml(
+    date = '',
+    type = 'purchase',
+    sum = '',
+    grace = 'yes'
+) {
+    return `
+        <tr>
+            <td>
+                <input
+                    type="date"
+                    class="card-operation-date"
+                    value="${date}"
+                >
+            </td>
+
+            <td>
+                <select class="card-operation-type">
+                    <option value="purchase" ${
+                        type === 'purchase' ? 'selected' : ''
+                    }>Покупка</option>
+
+                    <option value="cash" ${
+                        type === 'cash' ? 'selected' : ''
+                    }>Снятие наличных</option>
+
+                    <option value="fee" ${
+                        type === 'fee' ? 'selected' : ''
+                    }>Комиссия</option>
+                </select>
+            </td>
+
+            <td>
+                <input
+                    type="number"
+                    class="card-operation-sum"
+                    value="${sum}"
+                    min="0.01"
+                    step="0.01"
+                >
+            </td>
+
+            <td>
+                <select class="card-operation-grace">
+                    <option value="yes" ${
+                        grace === 'yes' ? 'selected' : ''
+                    }>Применять</option>
+
+                    <option value="no" ${
+                        grace === 'no' ? 'selected' : ''
+                    }>Не применять</option>
+                </select>
+            </td>
+
+            <td>
+                <button
+                    type="button"
+                    class="danger-btn"
+                    onclick="removeCardOperationRow(this)"
+                >
+                    Удалить
+                </button>
+            </td>
+        </tr>
     `;
-    tbody.appendChild(tr);
 }
-function removeCardExtraRow(btn) {
-    const tr = btn.closest('tr');
-    if (document.querySelectorAll('#card-extra-payment-tbody tr').length > 1) {
-        tr.remove();
-    } else {
-        alert('Должна быть хотя бы одна строка.');
+
+function cardPaymentRowHtml(date = '', sum = '') {
+    return `
+        <tr>
+            <td>
+                <input
+                    type="date"
+                    class="card-payment-date"
+                    value="${date}"
+                >
+            </td>
+
+            <td>
+                <input
+                    type="number"
+                    class="card-payment-sum"
+                    value="${sum}"
+                    min="0.01"
+                    step="0.01"
+                >
+            </td>
+
+            <td>
+                <button
+                    type="button"
+                    class="danger-btn"
+                    onclick="removeCardPaymentRow(this)"
+                >
+                    Удалить
+                </button>
+            </td>
+        </tr>
+    `;
+}
+
+function addCardOperationRow() {
+    document.getElementById('card-operation-tbody')
+        .insertAdjacentHTML('beforeend', cardOperationRowHtml());
+}
+
+function removeCardOperationRow(button) {
+    const tbody = document.getElementById('card-operation-tbody');
+    const row = button.closest('tr');
+
+    if (tbody.rows.length > 1) {
+        row.remove();
+        return;
     }
+
+    row.querySelector('.card-operation-date').value = '';
+    row.querySelector('.card-operation-sum').value = '';
 }
+
+function clearCardOperations() {
+    document.getElementById('card-operation-tbody').innerHTML =
+        cardOperationRowHtml();
+}
+
+function addCardPaymentRow() {
+    document.getElementById('card-payment-tbody')
+        .insertAdjacentHTML('beforeend', cardPaymentRowHtml());
+}
+
+function removeCardPaymentRow(button) {
+    const tbody = document.getElementById('card-payment-tbody');
+    const row = button.closest('tr');
+
+    if (tbody.rows.length > 1) {
+        row.remove();
+        return;
+    }
+
+    row.querySelector('.card-payment-date').value = '';
+    row.querySelector('.card-payment-sum').value = '';
+}
+
+function clearCardPayments() {
+    document.getElementById('card-payment-tbody').innerHTML =
+        cardPaymentRowHtml();
+}
+
+function cardGetOperations(calculationDate) {
+    const operations = [];
+
+    document.querySelectorAll('#card-operation-tbody tr').forEach(
+        (row, index) => {
+            const dateValue = row.querySelector(
+                '.card-operation-date'
+            ).value;
+
+            const type = row.querySelector(
+                '.card-operation-type'
+            ).value;
+
+            const amount = Number(row.querySelector(
+                '.card-operation-sum'
+            ).value);
+
+            const grace = row.querySelector(
+                '.card-operation-grace'
+            ).value;
+
+            if (!dateValue && !amount) {
+                return;
+            }
+
+            if (
+                !dateValue ||
+                !Number.isFinite(amount) ||
+                amount <= 0
+            ) {
+                throw new Error(
+                    `Проверьте операцию № ${index + 1}.`
+                );
+            }
+
+            const date = parseDate(dateValue);
+
+            if (date > calculationDate) {
+                throw new Error(
+                    `Дата операции № ${index + 1} позднее даты расчёта.`
+                );
+            }
+
+            operations.push({
+                id: index + 1,
+                date,
+                type,
+                amount: cardRound(amount),
+                grace: grace === 'yes'
+            });
+        }
+    );
+
+    if (operations.length === 0) {
+        throw new Error('Добавьте хотя бы одну операцию по карте.');
+    }
+
+    return operations.sort((first, second) => first.date - second.date);
+}
+
+function cardGetPayments(calculationDate) {
+    const payments = [];
+
+    document.querySelectorAll('#card-payment-tbody tr').forEach(
+        (row, index) => {
+            const dateValue = row.querySelector(
+                '.card-payment-date'
+            ).value;
+
+            const amount = Number(row.querySelector(
+                '.card-payment-sum'
+            ).value);
+
+            if (!dateValue && !amount) {
+                return;
+            }
+
+            if (
+                !dateValue ||
+                !Number.isFinite(amount) ||
+                amount <= 0
+            ) {
+                throw new Error(
+                    `Проверьте платёж № ${index + 1}.`
+                );
+            }
+
+            const date = parseDate(dateValue);
+
+            if (date > calculationDate) {
+                throw new Error(
+                    `Дата платежа № ${index + 1} позднее даты расчёта.`
+                );
+            }
+
+            payments.push({
+                id: index + 1,
+                date,
+                amount: cardRound(amount)
+            });
+        }
+    );
+
+    return payments.sort((first, second) => first.date - second.date);
+}
+
+function cardGetPriority() {
+    const mode = document.getElementById('card-priority-mode').value;
+
+    if (mode === 'standard') {
+        return ['fees', 'interest', 'principal'];
+    }
+
+    const priority = [
+        document.getElementById('card-priority-1').value,
+        document.getElementById('card-priority-2').value,
+        document.getElementById('card-priority-3').value
+    ];
+
+    if (new Set(priority).size !== 3) {
+        throw new Error(
+            'В договорной очередности каждая категория должна быть выбрана один раз.'
+        );
+    }
+
+    return priority;
+}
+
+function cardAllocatePayment(state, amount, priority) {
+    let rest = cardRound(amount);
+
+    const allocation = {
+        fees: 0,
+        interest: 0,
+        principal: 0,
+        overpayment: 0
+    };
+
+    priority.forEach(category => {
+        if (rest <= 0) return;
+
+        if (category === 'fees') {
+            const part = Math.min(rest, state.fees);
+
+            state.fees = cardRound(state.fees - part);
+            rest = cardRound(rest - part);
+            allocation.fees = cardRound(allocation.fees + part);
+        }
+
+        if (category === 'interest') {
+            const part = Math.min(rest, state.interest);
+
+            state.interest = cardRound(state.interest - part);
+            rest = cardRound(rest - part);
+            allocation.interest = cardRound(
+                allocation.interest + part
+            );
+        }
+
+        if (category === 'principal') {
+            let part = Math.min(rest, state.principal);
+
+            state.principal = cardRound(state.principal - part);
+            rest = cardRound(rest - part);
+            allocation.principal = cardRound(
+                allocation.principal + part
+            );
+        }
+    });
+
+    allocation.overpayment = rest;
+
+    return allocation;
+}
+
+function cardDetermineGrace(operation, data, payments) {
+    if (
+        !data.graceUsed ||
+        !operation.grace ||
+        operation.type !== 'purchase'
+    ) {
+        return {
+            eligible: false,
+            applied: false,
+            graceEnd: null
+        };
+    }
+
+    const graceEnd = cardAddDays(operation.date, data.graceDays);
+
+    if (data.graceRule === 'automatic') {
+        return {
+            eligible: true,
+            applied: true,
+            graceEnd
+        };
+    }
+
+    let paidForPrincipal = 0;
+
+    payments.forEach(payment => {
+        if (payment.date <= graceEnd) {
+            paidForPrincipal += payment.amount;
+        }
+    });
+
+    return {
+        eligible: true,
+        applied: paidForPrincipal >= operation.amount,
+        graceEnd
+    };
+}
+
 function calcCreditCard() {
-    const limit = parseFloat(document.getElementById('card-limit').value) || 0;
-    const amount = parseFloat(document.getElementById('card-amount').value);
-    const dateStr = document.getElementById('card-date').value;
-    const ratePercent = parseFloat(document.getElementById('card-rate-percent').value);
-    const minPercentInput = parseFloat(document.getElementById('card-min-percent').value) || 0;
-    const minPercent = minPercentInput / 100;
-    const minFixed = parseFloat(document.getElementById('card-min-fixed').value) || 0;
-    const fixedPayment = parseFloat(document.getElementById('card-fixed-payment').value) || null;
     const resultDiv = document.getElementById('card-result');
-    if (isNaN(amount) || amount <= 0) {
+    const resultBody = document.getElementById('card-result-tbody');
+
+    const limit = Number(document.getElementById('card-limit').value);
+    const annualRate = Number(
+        document.getElementById('card-rate-percent').value
+    );
+
+    const calculationValue = document.getElementById(
+        'card-calc-date'
+    ).value;
+
+    const base = document.getElementById('card-year-base').value;
+    const graceUsed = document.getElementById('card-grace-used').value === 'yes';
+    const graceDays = Number(
+        document.getElementById('card-grace-days').value
+    );
+
+    const graceRule = document.getElementById(
+        'card-grace-rule'
+    ).value;
+
+    const paymentDay = Number(
+        document.getElementById('card-payment-day').value
+    );
+
+    const minPercent = Number(
+        document.getElementById('card-min-percent').value
+    );
+
+    const minFixed = Number(
+        document.getElementById('card-min-fixed').value
+    );
+
+    if (
+        !calculationValue ||
+        !Number.isFinite(limit) ||
+        limit < 0 ||
+        !Number.isFinite(annualRate) ||
+        annualRate < 0 ||
+        !Number.isInteger(paymentDay) ||
+        paymentDay < 1 ||
+        paymentDay > 31 ||
+        !Number.isFinite(minPercent) ||
+        minPercent < 0 ||
+        !Number.isFinite(minFixed) ||
+        minFixed < 0
+    ) {
         resultDiv.className = 'result-box error';
-        resultDiv.textContent = 'Введите корректную полученную сумму.';
+        resultDiv.textContent =
+            'Проверьте условия карты: лимит, ставку, дату и минимальный платёж.';
+        resultBody.innerHTML = '';
         return;
     }
-    if (!dateStr) {
+
+    if (graceUsed && (!Number.isInteger(graceDays) || graceDays < 1)) {
         resultDiv.className = 'result-box error';
-        resultDiv.textContent = 'Укажите дату получения.';
+        resultDiv.textContent =
+            'Укажите продолжительность льготного периода в днях.';
+        resultBody.innerHTML = '';
         return;
     }
-    if (isNaN(ratePercent) || ratePercent < 0) {
+
+    const calculationDate = parseDate(calculationValue);
+
+    let operations;
+    let payments;
+    let priority;
+
+    try {
+        operations = cardGetOperations(calculationDate);
+        payments = cardGetPayments(calculationDate);
+        priority = cardGetPriority();
+    } catch (error) {
         resultDiv.className = 'result-box error';
-        resultDiv.textContent = 'Введите корректную годовую ставку.';
+        resultDiv.textContent = error.message;
+        resultBody.innerHTML = '';
         return;
     }
-    if (minPercentInput < 0 || minFixed < 0) {
+
+    const data = {
+        annualRate,
+        base,
+        graceUsed,
+        graceDays,
+        graceRule
+    };
+
+    const totalOperations = cardRound(
+        operations.reduce((sum, operation) => {
+            return sum + operation.amount;
+        }, 0)
+    );
+
+    if (limit > 0 && totalOperations > limit) {
         resultDiv.className = 'result-box error';
-        resultDiv.textContent = 'Процент и фиксированный минимум не могут быть отрицательными.';
+        resultDiv.textContent =
+            `Сумма операций (${cardMoney(totalOperations)} руб.) ` +
+            `превышает установленный кредитный лимит ` +
+            `(${cardMoney(limit)} руб.).`;
+
+        resultBody.innerHTML = '';
         return;
     }
-    if (fixedPayment !== null && fixedPayment < 0) {
-        resultDiv.className = 'result-box error';
-        resultDiv.textContent = 'Фиксированный платёж не может быть отрицательным.';
-        return;
-    }
-    const startDate = parseDate(dateStr);
-    const monthlyRate = ratePercent / 100 / 12;
-    const extraRows = document.querySelectorAll('#card-extra-payment-tbody tr');
-    let extraPayments = [];
-    extraRows.forEach(tr => {
-        const d = tr.querySelector('.card-extra-date').value;
-        const s = tr.querySelector('.card-extra-sum').value;
-        if (d && s) {
-            const dt = parseDate(d);
-            if (dt >= startDate) {
-                extraPayments.push({ date: dt, sum: parseFloat(s) });
-            }
-        }
-    });
-    extraPayments.sort((a, b) => a.date - b.date);
-    let extraByMonth = {};
-    extraPayments.forEach(p => {
-        const key = formatDate(new Date(p.date.getFullYear(), p.date.getMonth(), 1));
-        if (!extraByMonth[key]) extraByMonth[key] = 0;
-        extraByMonth[key] += p.sum;
-    });
-    let balance = amount;
-    let monthIndex = 1;
-    let schedule = [];
-    let totalInterest = 0;
-    let totalPaid = 0;
-    const MAX_MONTHS = 600;
-    while (monthIndex <= MAX_MONTHS) {
-        const currentDate = addMonths(startDate, monthIndex);
-        let paymentDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), startDate.getDate());
-        if (paymentDate.getMonth() !== currentDate.getMonth()) {
-            paymentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
-        }
-        const interest = balance * monthlyRate;
-        totalInterest += interest;
-        let requiredPayment;
-        if (fixedPayment !== null) {
-            requiredPayment = Math.min(fixedPayment, balance + interest);
-        } else {
-            let minPayment = Math.max(balance * minPercent, minFixed);
-            requiredPayment = Math.min(minPayment, balance + interest);
-        }
-        const monthKey = formatDate(new Date(paymentDate.getFullYear(), paymentDate.getMonth(), 1));
-        let actualPayment = 0;
-        let extraPayment = 0;
-        if (extraByMonth[monthKey] !== undefined && extraByMonth[monthKey] > 0) {
-            actualPayment = extraByMonth[monthKey];
-            extraPayment = actualPayment;
-            if (actualPayment > balance + interest) {
-                actualPayment = balance + interest;
-                extraPayment = actualPayment;
-            }
-        } else {
-            actualPayment = 0;
-            extraPayment = 0;
-        }
-        const principalPaid = actualPayment - interest;
-        const newBalance = balance - principalPaid;
-        balance = Math.max(0, newBalance);
-        schedule.push({
-            month: monthIndex,
-            date: formatDate(paymentDate),
-            requiredPayment: requiredPayment,
-            extraPayment: extraPayment,
-            totalPayment: actualPayment,
-            interest: interest,
-            principal: principalPaid,
-            balance: balance
+
+    const state = {
+        principal: 0,
+        interest: 0,
+        fees: 0
+    };
+
+    const rows = [];
+    const purchaseBalances = new Map();
+
+    let totalInterestAccrued = 0;
+    let totalFees = 0;
+    let totalPayments = 0;
+    let totalInterestPaid = 0;
+    let totalPrincipalPaid = 0;
+    let totalFeesPaid = 0;
+    let totalOverpayment = 0;
+
+    const events = [];
+
+    operations.forEach(operation => {
+        events.push({
+            type: 'operation',
+            date: operation.date,
+            operation
         });
-        totalPaid += actualPayment;
-        monthIndex++;
-        if (balance < 0.01) break;
-    }
-    const isRepaid = balance < 0.01;
-    const totalMonths = schedule.length;
-    const finalPaymentDate = isRepaid ? schedule[schedule.length-1].date : '— (не погашен)';
-    const totalPaidFormatted = totalPaid.toFixed(2);
-    let tableHtml = `<table><thead><tr><th>№</th><th>Дата платежа</th><th>Обязательный платёж (расчётный)</th><th>Внесённая сумма</th><th>Итого платёж</th><th>Проценты</th><th>Погашение ОД</th><th>Остаток долга</th></tr></thead><tbody>`;
-    schedule.forEach(row => {
-        tableHtml += `<tr><td>${row.month}</td><td>${row.date}</td><td>${row.requiredPayment.toFixed(2)}</td><td>${row.extraPayment.toFixed(2)}</td><td>${row.totalPayment.toFixed(2)}</td><td>${row.interest.toFixed(2)}</td><td>${row.principal.toFixed(2)}</td><td>${row.balance.toFixed(2)}</td></tr>`;
     });
-    tableHtml += `</tbody></table>`;
-    const summary =
-        `Лимит: ${limit.toFixed(2)} руб. | Получено: ${amount.toFixed(2)} руб.\n` +
-        `Дата получения: ${formatDate(startDate)}\n` +
-        `Годовая ставка: ${ratePercent}%\n` +
-        `Минимальный платёж: ${minPercentInput}% от баланса, но не менее ${minFixed.toFixed(2)} руб.` +
-        (fixedPayment !== null ? `\nФиксированный платёж (заменяет расчётный): ${fixedPayment.toFixed(2)} руб.` : '') +
-        `\n\nКоличество месяцев: ${totalMonths}` +
-        `\nСтатус погашения: ${isRepaid ? 'Погашен' : 'Не погашен (превышен лимит месяцев)'}` +
-        `\nДата полного погашения: ${finalPaymentDate}` +
-        `\nВсего выплачено: ${totalPaidFormatted} руб.`;
+
+    payments.forEach(payment => {
+        events.push({
+            type: 'payment',
+            date: payment.date,
+            payment
+        });
+    });
+
+    const earliestDate = operations.reduce((earliest, operation) => {
+        return operation.date < earliest ? operation.date : earliest;
+    }, operations[0].date);
+
+    let monthCursor = new Date(
+        earliestDate.getFullYear(),
+        earliestDate.getMonth(),
+        1
+    );
+
+    const endMonth = new Date(
+        calculationDate.getFullYear(),
+        calculationDate.getMonth(),
+        1
+    );
+
+    while (monthCursor <= endMonth) {
+        const dueDate = cardMonthlyDate(
+            monthCursor.getFullYear(),
+            monthCursor.getMonth(),
+            paymentDay
+        );
+
+        if (
+            dueDate >= earliestDate &&
+            dueDate <= calculationDate
+        ) {
+            events.push({
+                type: 'minimum-payment',
+                date: dueDate
+            });
+        }
+
+        monthCursor = new Date(
+            monthCursor.getFullYear(),
+            monthCursor.getMonth() + 1,
+            1
+        );
+    }
+
+    events.push({
+        type: 'calculation',
+        date: cardAddDays(calculationDate, 1)
+    });
+
+    const eventOrder = {
+        operation: 1,
+        payment: 2,
+        'minimum-payment': 3,
+        calculation: 4
+    };
+
+    events.sort((first, second) => {
+        const difference = first.date - second.date;
+
+        if (difference !== 0) return difference;
+
+        return eventOrder[first.type] - eventOrder[second.type];
+    });
+
+    let currentDate = new Date(earliestDate);
+    let paidInCurrentMonth = 0;
+    let currentMonthKey =
+        `${currentDate.getFullYear()}-${currentDate.getMonth()}`;
+
+    function isPurchaseGraceActive(item, date) {
+        if (!item.graceApplied) return false;
+        return date <= item.graceEnd;
+    }
+
+    function getInterestBearingPrincipal(date) {
+        let amount = 0;
+
+        purchaseBalances.forEach(item => {
+            if (
+                item.balance > 0 &&
+                !isPurchaseGraceActive(item, date)
+            ) {
+                amount += item.balance;
+            }
+        });
+
+        return cardRound(amount);
+    }
+
+    function accrueInterestUntil(targetDate) {
+        if (targetDate <= currentDate) return;
+
+        const days = cardDaysBetween(currentDate, targetDate);
+        const interestPrincipal = getInterestBearingPrincipal(currentDate);
+
+        const interest = cardRound(
+            interestPrincipal *
+            annualRate / 100 *
+            days /
+            cardYearBase(currentDate, base)
+        );
+
+        state.interest = cardRound(state.interest + interest);
+        totalInterestAccrued = cardRound(
+            totalInterestAccrued + interest
+        );
+
+        rows.push({
+            date: `${formatDate(currentDate)} — ${formatDate(
+                cardAddDays(targetDate, -1)
+            )}`,
+            event: 'Начисление процентов',
+            days,
+            principalStart: state.principal,
+            interest,
+            operation: 0,
+            payment: 0,
+            interestPaid: 0,
+            principalPaid: 0,
+            principalEnd: state.principal
+        });
+
+        currentDate = new Date(targetDate);
+    }
+
+    function reducePurchaseBalances(amount) {
+        let rest = cardRound(amount);
+
+        const sortedPurchases = [...purchaseBalances.values()]
+            .sort((first, second) => first.date - second.date);
+
+        sortedPurchases.forEach(item => {
+            if (rest <= 0) return;
+
+            const part = Math.min(rest, item.balance);
+
+            item.balance = cardRound(item.balance - part);
+            rest = cardRound(rest - part);
+        });
+    }
+
+    events.forEach(event => {
+        accrueInterestUntil(event.date);
+
+        const eventMonthKey =
+            `${event.date.getFullYear()}-${event.date.getMonth()}`;
+
+        if (eventMonthKey !== currentMonthKey) {
+            paidInCurrentMonth = 0;
+            currentMonthKey = eventMonthKey;
+        }
+
+        if (event.type === 'operation') {
+            const operation = event.operation;
+
+            if (operation.type === 'fee') {
+                state.fees = cardRound(state.fees + operation.amount);
+                totalFees = cardRound(totalFees + operation.amount);
+            } else {
+                state.principal = cardRound(
+                    state.principal + operation.amount
+                );
+
+                const graceInfo = cardDetermineGrace(
+                    operation,
+                    data,
+                    payments
+                );
+
+                purchaseBalances.set(operation.id, {
+                    id: operation.id,
+                    date: operation.date,
+                    balance: operation.amount,
+                    graceApplied: graceInfo.applied,
+                    graceEnd: graceInfo.graceEnd
+                });
+            }
+
+            rows.push({
+                date: formatDate(event.date),
+                event: operation.type === 'purchase'
+                    ? 'Покупка'
+                    : operation.type === 'cash'
+                        ? 'Снятие наличных'
+                        : 'Комиссия',
+                days: 0,
+                principalStart: state.principal,
+                interest: 0,
+                operation: operation.amount,
+                payment: 0,
+                interestPaid: 0,
+                principalPaid: 0,
+                principalEnd: state.principal
+            });
+        }
+
+        if (event.type === 'payment') {
+            const allocation = cardAllocatePayment(
+                state,
+                event.payment.amount,
+                priority
+            );
+
+            reducePurchaseBalances(allocation.principal);
+
+            totalPayments = cardRound(
+                totalPayments + event.payment.amount
+            );
+
+            totalFeesPaid = cardRound(
+                totalFeesPaid + allocation.fees
+            );
+
+            totalInterestPaid = cardRound(
+                totalInterestPaid + allocation.interest
+            );
+
+            totalPrincipalPaid = cardRound(
+                totalPrincipalPaid + allocation.principal
+            );
+
+            totalOverpayment = cardRound(
+                totalOverpayment + allocation.overpayment
+            );
+
+            paidInCurrentMonth = cardRound(
+                paidInCurrentMonth + event.payment.amount
+            );
+
+            rows.push({
+                date: formatDate(event.date),
+                event: allocation.overpayment > 0
+                    ? 'Платёж, есть переплата'
+                    : 'Платёж',
+                days: 0,
+                principalStart: state.principal,
+                interest: 0,
+                operation: 0,
+                payment: event.payment.amount,
+                interestPaid: allocation.interest,
+                principalPaid: allocation.principal,
+                principalEnd: state.principal
+            });
+        }
+
+        if (event.type === 'minimum-payment') {
+            const totalDebt = cardRound(
+                state.principal + state.interest + state.fees
+            );
+
+            const minimumPayment = totalDebt > 0
+                ? Math.min(
+                    totalDebt,
+                    Math.max(
+                        totalDebt * minPercent / 100,
+                        minFixed
+                    )
+                )
+                : 0;
+
+            const shortage = Math.max(
+                0,
+                cardRound(minimumPayment - paidInCurrentMonth)
+            );
+
+            rows.push({
+                date: formatDate(event.date),
+                event: shortage > 0
+                    ? `Минимальный платёж: недоплата ${cardMoney(shortage)} руб.`
+                    : 'Минимальный платёж выполнен',
+                days: 0,
+                principalStart: state.principal,
+                interest: 0,
+                operation: 0,
+                payment: 0,
+                interestPaid: 0,
+                principalPaid: 0,
+                principalEnd: state.principal,
+                minimumPayment,
+                shortage
+            });
+        }
+    });
+
+    const totalDebt = cardRound(
+        state.principal + state.interest + state.fees
+    );
+
+    const totalMinimumShortage = cardRound(
+        rows.reduce((sum, row) => {
+            return sum + (row.shortage || 0);
+        }, 0)
+    );
+
+    resultBody.innerHTML = rows.map(row => `
+        <tr>
+            <td>${row.date}</td>
+            <td>${row.event}</td>
+            <td>${row.days || '—'}</td>
+            <td>${cardMoney(row.principalStart)}</td>
+            <td>${row.interest ? cardMoney(row.interest) : '—'}</td>
+            <td>${row.operation ? cardMoney(row.operation) : '—'}</td>
+            <td>${row.payment ? cardMoney(row.payment) : '—'}</td>
+            <td>${row.interestPaid ? cardMoney(row.interestPaid) : '—'}</td>
+            <td>${row.principalPaid ? cardMoney(row.principalPaid) : '—'}</td>
+            <td>${cardMoney(row.principalEnd)}</td>
+        </tr>
+    `).join('');
+
+    const baseText = base === 'actual'
+        ? 'фактическое число дней в году'
+        : `${base} дней`;
+
+    const priorityNames = {
+        fees: 'комиссии',
+        interest: 'проценты',
+        principal: 'основной долг'
+    };
+
+    const priorityText = priority.map(item => {
+        return priorityNames[item];
+    }).join(' → ');
+
     resultDiv.className = 'result-box';
-    resultDiv.innerHTML = `<pre>${summary}</pre>\n<div class="scroll-table">${tableHtml}</div>`;
+    resultDiv.textContent =
+        `РАСЧЁТ ЗАДОЛЖЕННОСТИ ПО КРЕДИТНОЙ КАРТЕ\n\n` +
+        `Дата расчёта: ${formatDate(calculationDate)}\n` +
+        `Кредитный лимит: ${cardMoney(limit)} руб.\n` +
+        `Сумма операций: ${cardMoney(totalOperations)} руб.\n` +
+        `Процентная ставка: ${annualRate}% годовых\n` +
+        `База дней: ${baseText}\n` +
+        `Льготный период: ${
+            graceUsed
+                ? `${graceDays} дн., ${
+                    graceRule === 'full-repayment'
+                        ? 'с сохранением при полном погашении'
+                        : 'без начисления до окончания периода'
+                }`
+                : 'не применяется'
+        }\n` +
+        `Очередность платежа: ${priorityText}\n\n` +
+
+        `НАЧИСЛЕНО И ОПЛАЧЕНО\n` +
+        `Начислено процентов: ${cardMoney(totalInterestAccrued)} руб.\n` +
+        `Начислено комиссий: ${cardMoney(totalFees)} руб.\n` +
+        `Всего внесено: ${cardMoney(totalPayments)} руб.\n` +
+        `Погашено комиссий: ${cardMoney(totalFeesPaid)} руб.\n` +
+        `Погашено процентов: ${cardMoney(totalInterestPaid)} руб.\n` +
+        `Погашено основного долга: ${cardMoney(totalPrincipalPaid)} руб.\n` +
+        `Переплата сверх долга: ${cardMoney(totalOverpayment)} руб.\n\n` +
+
+        `ОСТАТОК НА ДАТУ РАСЧЁТА\n` +
+        `Основной долг: ${cardMoney(state.principal)} руб.\n` +
+        `Проценты: ${cardMoney(state.interest)} руб.\n` +
+        `Комиссии: ${cardMoney(state.fees)} руб.\n` +
+        `Итого задолженность: ${cardMoney(totalDebt)} руб.\n\n` +
+
+        `Минимальный платёж: ${minPercent}% от долга, ` +
+        `но не менее ${cardMoney(minFixed)} руб.\n` +
+        `Суммарная расчётная недоплата по минимальным платежам: ` +
+        `${cardMoney(totalMinimumShortage)} руб.\n\n` +
+
+        `Важно: этот раздел не начисляет штрафы, неустойку или проценты ` +
+        `за просрочку. Их следует рассчитывать отдельно по условиям ` +
+        `договора и в соответствующем разделе калькулятора.`;
 }
 
 // ============================================================
