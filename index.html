@@ -619,7 +619,7 @@ pre {
         </div>
 
         <div class="scroll-table">
-            <table>
+            <table id="loan-result-table">
                 <thead>
                     <tr>
                         <th>Период</th>
@@ -637,6 +637,12 @@ pre {
                 <tbody id="loan-result-tbody"></tbody>
             </table>
         </div>
+
+            <button type="button" class="add-row-btn" onclick="copyTable('loan-result-table')">📋 Копировать таблицу</button>
+
+            <div id="loan-formulas" class="result-box" style="display:none; white-space: pre-wrap; margin-top: 10px;"></div>
+
+            <button type="button" class="add-row-btn" style="background:#6b7280" onclick="copyFormulas('loan-formulas')">🧮 Копировать формулы расчёта</button>
     </div>
 
     <!-- ========== ВКЛАДКА 2 (ДОГОВОРНАЯ НЕУСТОЙКА) ========== -->
@@ -939,7 +945,7 @@ pre {
         </div>
 
         <div class="scroll-table">
-            <table>
+            <table id="penalty-result-table">
                 <thead>
                     <tr>
                         <th>Период</th>
@@ -955,6 +961,12 @@ pre {
                 <tbody id="penalty-result-tbody"></tbody>
             </table>
         </div>
+
+            <button type="button" class="add-row-btn" onclick="copyTable('penalty-result-table')">📋 Копировать таблицу</button>
+
+            <div id="penalty-formulas" class="result-box" style="display:none; white-space: pre-wrap; margin-top: 10px;"></div>
+
+            <button type="button" class="add-row-btn" style="background:#6b7280" onclick="copyFormulas('penalty-formulas')">🧮 Копировать формулы расчёта</button>
     </div>
 
     <!-- ========== ВКЛАДКА 3 (ПРОСТЫЕ ДРОБИ) ========== -->
@@ -1362,7 +1374,7 @@ pre {
         </div>
 
         <div class="scroll-table">
-            <table>
+            <table id="card-result-table">
                 <thead>
                     <tr>
                         <th>Дата</th>
@@ -1381,6 +1393,12 @@ pre {
                 <tbody id="card-result-tbody"></tbody>
             </table>
         </div>
+
+            <button type="button" class="add-row-btn" onclick="copyTable('card-result-table')">📋 Копировать таблицу</button>
+
+            <div id="card-formulas" class="result-box" style="display:none; white-space: pre-wrap; margin-top: 10px;"></div>
+
+            <button type="button" class="add-row-btn" style="background:#6b7280" onclick="copyFormulas('card-formulas')">🧮 Копировать формулы расчёта</button>
     </div>
 
     <!-- ========== ВКЛАДКА 5 (СРОК ИСКОВОЙ ДАВНОСТИ) ========== -->
@@ -1670,7 +1688,7 @@ pre {
         </div>
 
         <div class="scroll-table">
-            <table>
+            <table id="lim-result-table">
                 <thead>
                     <tr>
                         <th>№</th>
@@ -1685,6 +1703,12 @@ pre {
                 <tbody id="lim-result-tbody"></tbody>
             </table>
         </div>
+
+            <button type="button" class="add-row-btn" onclick="copyTable('lim-result-table')">📋 Копировать таблицу</button>
+
+            <div id="lim-formulas" class="result-box" style="display:none; white-space: pre-wrap; margin-top: 10px;"></div>
+
+            <button type="button" class="add-row-btn" style="background:#6b7280" onclick="copyFormulas('lim-formulas')">🧮 Копировать формулы расчёта</button>
     </div>
 
     <!-- ========== ВКЛАДКА 6 (СТ. 395 ГК РФ) ========== -->
@@ -1864,7 +1888,7 @@ pre {
         </div>
 
         <div class="scroll-table">
-            <table>
+            <table id="gk395-result-table">
                 <thead>
                     <tr>
                         <th>Период</th>
@@ -1879,6 +1903,12 @@ pre {
                 <tbody id="gk395-result-tbody"></tbody>
             </table>
         </div>
+
+            <button type="button" class="add-row-btn" onclick="copyTable('gk395-result-table')">📋 Копировать таблицу</button>
+
+            <div id="gk395-formulas" class="result-box" style="display:none; white-space: pre-wrap; margin-top: 10px;"></div>
+
+            <button type="button" class="add-row-btn" style="background:#6b7280" onclick="copyFormulas('gk395-formulas')">🧮 Копировать формулы расчёта</button>
     </div>
 </div>
 
@@ -1934,6 +1964,52 @@ function showToast(message) {
         }, 300);
     }, 2000);
 }
+
+function copyTable(tableId) {
+    const table = document.getElementById(tableId);
+    if (!table) return;
+    const rows = table.querySelectorAll('tr');
+    if (!rows.length) {
+        alert('Нет данных для копирования. Сначала выполните расчёт.');
+        return;
+    }
+    const lines = [];
+    rows.forEach((row) => {
+        const cells = row.querySelectorAll('th, td');
+        const values = Array.from(cells).map((cell) => cell.textContent.trim());
+        lines.push(values.join('\t'));
+    });
+    const text = lines.join('\n');
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+            showToast('✅ Таблица скопирована!');
+        }).catch(() => {
+            fallbackCopy(text);
+        });
+    } else {
+        fallbackCopy(text);
+    }
+}
+
+function copyFormulas(blockId) {
+    const block = document.getElementById(blockId);
+    if (!block) return;
+    const text = block.innerText || block.textContent;
+    if (!text || text.trim() === '') {
+        alert('Нет данных для копирования. Сначала выполните расчёт.');
+        return;
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text.trim()).then(() => {
+            showToast('✅ Формулы расчёта скопированы!');
+        }).catch(() => {
+            fallbackCopy(text);
+        });
+    } else {
+        fallbackCopy(text);
+    }
+}
+
 
 // ============================================================
 // Вкладки
@@ -2495,6 +2571,23 @@ function calcLoanInterest() {
             <td>${loanMoney(row.principalEnd)}</td>
         </tr>
     `).join('');
+
+    const loanFormulasBlock = document.getElementById('loan-formulas');
+    if (loanFormulasBlock) {
+        const formulaLines = rows
+            .filter(row => row.days > 0)
+            .map(row => {
+                const yearBase = base === 'actual' ? loanYearBase(row.startDate, base) : Number(base);
+                return `${formatDate(row.startDate)} — ${formatDate(row.endDate)}: `
+                    + `${loanMoney(row.principalStart)} руб. x ${annualRate.toFixed(2)}% / ${yearBase} дн. x ${row.days} дн. `
+                    + `= ${loanMoney(row.interestAccrued)} руб.`;
+            });
+        const totalFormulaLine = `ИТОГО начислено процентов: ${loanMoney(totalInterestAccrued)} руб.`;
+        loanFormulasBlock.style.display = formulaLines.length ? 'block' : 'none';
+        loanFormulasBlock.textContent = formulaLines.length
+            ? ['РАСЧЁТ ПРОЦЕНТОВ ПО ПЕРИОДАМ (сумма x ставка / база x дни = проценты):', '', ...formulaLines, '', totalFormulaLine].join('\n')
+            : '';
+    }
 
     const baseText = base === 'actual'
         ? 'фактическое число дней в году'
@@ -3358,6 +3451,28 @@ function calcPenalty() {
             <td>${penaltyMoney(row.totalPenalty)}</td>
         </tr>
     `).join('');
+
+    const penaltyFormulasBlock = document.getElementById('penalty-formulas');
+    if (penaltyFormulasBlock) {
+        const rateUnit = rateType === 'daily' ? '% в день' : '% годовых';
+        const formulaLines = rows
+            .filter(row => row.days > 0 && (row.principalPenalty > 0 || row.interestPenalty > 0))
+            .map(row => {
+                const parts = [];
+                if (row.principalPenalty > 0) {
+                    parts.push(`${penaltyMoney(row.principalDebt)} руб. (осн. долг) x ${principalRate}${rateUnit} x ${row.days} дн. = ${penaltyMoney(row.principalPenalty)} руб.`);
+                }
+                if (row.interestPenalty > 0) {
+                    parts.push(`${penaltyMoney(row.interestDebt)} руб. (проценты) x ${interestRate}${rateUnit} x ${row.days} дн. = ${penaltyMoney(row.interestPenalty)} руб.`);
+                }
+                return `${formatDate(row.startDate)} — ${formatDate(row.endDate)}: ${parts.join('; ')}`;
+            });
+        const totalFormulaLine = `ИТОГО неустойка: ${penaltyMoney(totalPenalty)} руб.`;
+        penaltyFormulasBlock.style.display = formulaLines.length ? 'block' : 'none';
+        penaltyFormulasBlock.textContent = formulaLines.length
+            ? ['РАСЧЁТ НЕУСТОЙКИ ПО ПЕРИОДАМ:', '', ...formulaLines, '', totalFormulaLine].join('\n')
+            : '';
+    }
 
     const rateDescription = rateType === 'daily'
         ? 'процент в день'
@@ -4330,6 +4445,21 @@ function calcCreditCard() {
         </tr>
     `).join('');
 
+    const cardFormulasBlock = document.getElementById('card-formulas');
+    if (cardFormulasBlock) {
+        const interestRows = rows.filter(row => row.event === 'Начисление процентов' && row.interest > 0);
+        const formulaLines = interestRows.map(row => {
+            const days = row.days || 0;
+            const yearBase = base === 'actual' ? cardYearBase(new Date(), base) : Number(base);
+            return `${row.date}: ${cardMoney(row.principalStart)} руб. x ${annualRate}% / ${yearBase} дн. x ${days} дн. = ${cardMoney(row.interest)} руб.`;
+        });
+        const totalFormulaLine = `ИТОГО начислено процентов: ${cardMoney(totalInterestAccrued)} руб.`;
+        cardFormulasBlock.style.display = formulaLines.length ? 'block' : 'none';
+        cardFormulasBlock.textContent = formulaLines.length
+            ? ['РАСЧЁТ ПРОЦЕНТОВ ПО ПЕРИОДАМ (задолженность x ставка / база x дни = проценты):', '', ...formulaLines, '', totalFormulaLine].join('\n')
+            : '';
+    }
+
     const baseText = base === 'actual'
         ? 'фактическое число дней в году'
         : `${base} дней`;
@@ -4914,6 +5044,24 @@ function calcLimitation() {
         `;
     }).join('');
 
+    const limFormulasBlock = document.getElementById('lim-formulas');
+    if (limFormulasBlock) {
+        const formulaLines = rows.map((row, index) => {
+            const startText = row.limitationStart ? limitationDateText(row.limitationStart) : 'не определено';
+            const endText = row.limitationEnd ? limitationDateText(row.limitationEnd) : 'не определено';
+            const base = `Платёж №${index + 1} от ${limitationDateText(row.dueDate)} на сумму ${limitationMoney(row.sum)} руб.: `
+                + `срок начинается ${startText} (день, следующий за датой платежа по графику) `
+                + `и заканчивается ${endText} (через 3 года по ст. 196 ГК РФ, с учётом приостановлений/перерывов). `
+                + `Дата иска: ${limitationDateText(claimDate)}. Статус: ${row.statusText}.`;
+            return base;
+        });
+        const summaryLine = `Основания изменения срока: ${suspensionPeriods.length ? 'приостановление/перерыв учтены (см. таблицу оснований ниже)' : 'не применялись'}.`;
+        limFormulasBlock.style.display = formulaLines.length ? 'block' : 'none';
+        limFormulasBlock.textContent = formulaLines.length
+            ? ['ПРАВОВОЕ ОБОСНОВАНИЕ СРОКА ИСКОВОЙ ДАВНОСТИ ПО КАЖДОМУ ПЛАТЕЖУ:', '', ...formulaLines, '', summaryLine].join('\n')
+            : '';
+    }
+
     const suspensionText = suspensionPeriods.length
         ? suspensionPeriods.map(period => {
             return `${period.type}: ${limitationDateText(period.start)} — ` +
@@ -5348,6 +5496,7 @@ function calcGK395() {
             days,
             rate: rateInfo.rate,
             source: rateInfo.source,
+            denominator,
             debt: balance,
             interest: gk395Round(interest)
         });
@@ -5363,6 +5512,20 @@ function calcGK395() {
             <td>${gk395Money(row.interest)} руб.</td>
         </tr>
     `).join('');
+
+    const gk395FormulasBlock = document.getElementById('gk395-formulas');
+    if (gk395FormulasBlock) {
+        const formulaLines = rows.map(row => {
+            return `${gk395FormatDate(row.from)} — ${gk395FormatDate(row.to)}: `
+                + `${gk395Money(row.debt)} руб. x ${row.rate.toFixed(2)}% / ${row.denominator} дн. x ${row.days} дн. `
+                + `= ${gk395Money(row.interest)} руб. (${row.source})`;
+        });
+        const totalFormulaLine = `ИТОГО процентов по ст. 395 ГК РФ: ${gk395Money(totalInterest)} руб.`;
+        gk395FormulasBlock.style.display = formulaLines.length ? 'block' : 'none';
+        gk395FormulasBlock.textContent = formulaLines.length
+            ? ['РАСЧЁТ ПРОЦЕНТОВ ПО ПЕРИОДАМ (долг x ставка / база x дни = проценты):', '', ...formulaLines, '', totalFormulaLine].join('\n')
+            : '';
+    }
 
     const currentRateInfo = gk395GetRateInfoWithMode(effectiveEndDate, region, rateMode, manualRates);
     const endRuleText = endRule === 'include' ? 'включена' : 'не включена';
@@ -5826,7 +5989,7 @@ document.addEventListener('DOMContentLoaded', function () {
         </div>
 
         <div class="scroll-table">
-            <table>
+            <table id="credit-debt-result-table">
                 <thead>
                     <tr>
                         <th>Дата</th>
@@ -5844,6 +6007,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 <tbody id="credit-debt-result-tbody"></tbody>
             </table>
         </div>
+
+        <button type="button" class="add-row-btn" onclick="copyTable('credit-debt-result-table')">📋 Копировать таблицу</button>
+
+        <div id="credit-debt-formulas" class="result-box" style="display:none; white-space: pre-wrap; margin-top: 10px;"></div>
+
+        <button type="button" class="add-row-btn" style="background:#6b7280" onclick="copyFormulas('credit-debt-formulas')">🧮 Копировать формулы расчёта</button>
     `;
 
     const scriptElement = document.querySelector('script');
@@ -6979,6 +7148,25 @@ function calcCreditDebt() {
             <td>${creditDebtMoney(row.penalty)}</td>
         </tr>
     `).join('');
+
+    const creditDebtFormulasBlock = document.getElementById('credit-debt-formulas');
+    if (creditDebtFormulasBlock) {
+        const formulaLines = resultRows
+            .filter(row => row.interestPaid > 0 || row.principalPaid > 0 || row.penalty > 0 || row.overdueInterest > 0 || row.overduePrincipal > 0)
+            .map(row => {
+                const parts = [];
+                if (row.interestPaid > 0) parts.push(`погашено процентов ${creditDebtMoney(row.interestPaid)} руб.`);
+                if (row.principalPaid > 0) parts.push(`погашено основного долга ${creditDebtMoney(row.principalPaid)} руб.`);
+                if (row.overdueInterest > 0) parts.push(`просроченные проценты ${creditDebtMoney(row.overdueInterest)} руб.`);
+                if (row.overduePrincipal > 0) parts.push(`просроченный основной долг ${creditDebtMoney(row.overduePrincipal)} руб.`);
+                if (row.penalty > 0) parts.push(`неустойка (нарастающим итогом) ${creditDebtMoney(row.penalty)} руб.`);
+                return `${creditDebtFormatDate(row.date)} (${row.event}): ${parts.join('; ')}.`;
+            });
+        creditDebtFormulasBlock.style.display = formulaLines.length ? 'block' : 'none';
+        creditDebtFormulasBlock.textContent = formulaLines.length
+            ? ['РАСШИФРОВКА ДВИЖЕНИЯ ЗАДОЛЖЕННОСТИ ПО СОБЫТИЯМ:', '', ...formulaLines].join('\n')
+            : '';
+    }
 
     const insuranceText = insuranceUsed
         ? (insuranceMode === 'included'
