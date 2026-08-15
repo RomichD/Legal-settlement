@@ -460,16 +460,9 @@ pre {
         <div class="payment-block">
             <label><strong>Период расчёта</strong></label>
 
-            <div class="inline-group">
-                <div class="form-group">
-                    <label>Дата, когда обязательство должно быть исполнено</label>
-                    <input type="date" id="penalty-due-date" value="2023-09-13">
-                </div>
-
-                <div class="form-group">
-                    <label>Дата расчёта включительно</label>
-                    <input type="date" id="penalty-end" value="2024-03-06">
-                </div>
+            <div class="form-group">
+                <label>Дата расчёта включительно</label>
+                <input type="date" id="penalty-end" value="2024-03-06">
             </div>
 
             <div class="form-group">
@@ -488,38 +481,86 @@ pre {
         </div>
 
         <div class="payment-block">
-            <label><strong>Просроченная задолженность</strong></label>
-
-            <div class="inline-group">
-                <div class="form-group">
-                    <label>Просроченный основной долг, руб.</label>
-                    <input
-                        type="number"
-                        id="penalty-principal-debt"
-                        value="45000"
-                        min="0"
-                        step="0.01"
-                    >
-                </div>
-
-                <div class="form-group">
-                    <label>Просроченные проценты, руб.</label>
-                    <input
-                        type="number"
-                        id="penalty-interest-debt"
-                        value="0"
-                        min="0"
-                        step="0.01"
-                    >
-                </div>
-            </div>
+            <label><strong>Просроченные обязательства</strong></label>
 
             <p class="muted">
-                Укажите суммы, которые уже стали просроченными на дату начала
-                начисления. Для нескольких платежей по графику с разными датами
-                просрочки расчёт выполняйте отдельно либо добавляйте их
-                отдельными расчётами.
+                Добавьте каждую сумму отдельно: укажите дату, когда платёж должен был
+                быть внесён, а также просроченные основной долг и проценты. Неустойка
+                начнёт начисляться по каждой строке только после наступления её
+                собственной даты просрочки.
             </p>
+
+            <div class="table-wrapper">
+                <table id="penalty-obligation-table">
+                    <thead>
+                        <tr>
+                            <th>Дата платежа по графику</th>
+                            <th>Основной долг, руб.</th>
+                            <th>Проценты, руб.</th>
+                            <th>Действие</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="penalty-obligation-tbody">
+                        <tr>
+                            <td>
+                                <input
+                                    type="date"
+                                    class="penalty-obligation-due-date"
+                                    value="2023-09-13"
+                                >
+                            </td>
+
+                            <td>
+                                <input
+                                    type="number"
+                                    class="penalty-obligation-principal"
+                                    value="45000"
+                                    min="0"
+                                    step="0.01"
+                                >
+                            </td>
+
+                            <td>
+                                <input
+                                    type="number"
+                                    class="penalty-obligation-interest"
+                                    value="0"
+                                    min="0"
+                                    step="0.01"
+                                >
+                            </td>
+
+                            <td>
+                                <button
+                                    type="button"
+                                    class="danger-btn"
+                                    onclick="removePenaltyObligationRow(this)"
+                                >
+                                    Удалить
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <button
+                type="button"
+                class="add-row-btn"
+                onclick="addPenaltyObligationRow()"
+            >
+                ➕ Добавить просроченное обязательство
+            </button>
+
+            <button
+                type="button"
+                class="add-row-btn"
+                style="background: #6b7280; margin-left: 8px;"
+                onclick="clearPenaltyObligationRows()"
+            >
+                🗑 Очистить обязательства
+            </button>
         </div>
 
         <div class="payment-block">
@@ -1492,7 +1533,7 @@ function calcLoanInterest() {
 }
 
 // ============================================================
-// 2. ДОГОВОРНАЯ НЕУСТОЙКА (НОВАЯ ВЕРСИЯ)
+// 2. ДОГОВОРНАЯ НЕУСТОЙКА (С НЕСКОЛЬКИМИ ДАТАМИ ПРОСРОЧКИ)
 // ============================================================
 
 function penaltyRound(value) {
@@ -1721,85 +1762,161 @@ function penaltyCalculateForPeriod(
     return result;
 }
 
-function penaltyApplyPayment(state, payment) {
-    let amount = penaltyRound(payment.amount);
+// --- Функции для таблицы обязательств ---
 
-    const paid = {
-        principal: 0,
-        interest: 0,
-        excess: 0
-    };
+function penaltyObligationRowHtml(
+    dueDate = '',
+    principal = '',
+    interest = ''
+) {
+    return `
+        <tr>
+            <td>
+                <input
+                    type="date"
+                    class="penalty-obligation-due-date"
+                    value="${dueDate}"
+                >
+            </td>
 
-    if (payment.target === 'principal') {
-        paid.principal = Math.min(amount, state.principalDebt);
-        state.principalDebt = penaltyRound(
-            state.principalDebt - paid.principal
-        );
+            <td>
+                <input
+                    type="number"
+                    class="penalty-obligation-principal"
+                    value="${principal}"
+                    min="0"
+                    step="0.01"
+                >
+            </td>
 
-        amount = penaltyRound(amount - paid.principal);
-        paid.excess = amount;
+            <td>
+                <input
+                    type="number"
+                    class="penalty-obligation-interest"
+                    value="${interest}"
+                    min="0"
+                    step="0.01"
+                >
+            </td>
 
-        return paid;
-    }
-
-    if (payment.target === 'interest') {
-        paid.interest = Math.min(amount, state.interestDebt);
-        state.interestDebt = penaltyRound(
-            state.interestDebt - paid.interest
-        );
-
-        amount = penaltyRound(amount - paid.interest);
-        paid.excess = amount;
-
-        return paid;
-    }
-
-    const totalDebt = state.principalDebt + state.interestDebt;
-
-    if (totalDebt <= 0) {
-        paid.excess = amount;
-        return paid;
-    }
-
-    const principalPart = penaltyRound(
-        Math.min(
-            state.principalDebt,
-            amount * state.principalDebt / totalDebt
-        )
-    );
-
-    const interestPart = penaltyRound(
-        Math.min(
-            state.interestDebt,
-            amount - principalPart
-        )
-    );
-
-    paid.principal = principalPart;
-    paid.interest = interestPart;
-
-    state.principalDebt = penaltyRound(
-        state.principalDebt - principalPart
-    );
-
-    state.interestDebt = penaltyRound(
-        state.interestDebt - interestPart
-    );
-
-    paid.excess = penaltyRound(
-        amount - principalPart - interestPart
-    );
-
-    return paid;
+            <td>
+                <button
+                    type="button"
+                    class="danger-btn"
+                    onclick="removePenaltyObligationRow(this)"
+                >
+                    Удалить
+                </button>
+            </td>
+        </tr>
+    `;
 }
+
+function addPenaltyObligationRow() {
+    const tbody = document.getElementById(
+        'penalty-obligation-tbody'
+    );
+
+    tbody.insertAdjacentHTML(
+        'beforeend',
+        penaltyObligationRowHtml()
+    );
+}
+
+function removePenaltyObligationRow(button) {
+    const tbody = document.getElementById(
+        'penalty-obligation-tbody'
+    );
+
+    const row = button.closest('tr');
+
+    if (tbody.rows.length > 1) {
+        row.remove();
+        return;
+    }
+
+    row.querySelector(
+        '.penalty-obligation-due-date'
+    ).value = '';
+
+    row.querySelector(
+        '.penalty-obligation-principal'
+    ).value = '';
+
+    row.querySelector(
+        '.penalty-obligation-interest'
+    ).value = '';
+}
+
+function clearPenaltyObligationRows() {
+    const tbody = document.getElementById(
+        'penalty-obligation-tbody'
+    );
+
+    tbody.innerHTML = penaltyObligationRowHtml();
+}
+
+function penaltyGetObligations() {
+    const obligations = [];
+
+    document
+        .querySelectorAll('#penalty-obligation-tbody tr')
+        .forEach((row, index) => {
+            const dueDateValue = row.querySelector(
+                '.penalty-obligation-due-date'
+            ).value;
+
+            const principal = Number(row.querySelector(
+                '.penalty-obligation-principal'
+            ).value) || 0;
+
+            const interest = Number(row.querySelector(
+                '.penalty-obligation-interest'
+            ).value) || 0;
+
+            if (!dueDateValue) {
+                return;
+            }
+
+            if (principal < 0 || interest < 0) {
+                throw new Error(
+                    `В строке № ${index + 1} указана отрицательная сумма.`
+                );
+            }
+
+            if (principal + interest <= 0) {
+                return;
+            }
+
+            obligations.push({
+                id: index + 1,
+                dueDate: parseDate(dueDateValue),
+                principal: penaltyRound(principal),
+                interest: penaltyRound(interest),
+                active: false,
+                principalBalance: penaltyRound(principal),
+                interestBalance: penaltyRound(interest)
+            });
+        });
+
+    if (obligations.length === 0) {
+        throw new Error(
+            'Добавьте хотя бы одно просроченное обязательство.'
+        );
+    }
+
+    return obligations.sort((first, second) => {
+        return first.dueDate - second.dueDate;
+    });
+}
+
+// ============================================================
+// ОСНОВНАЯ ФУНКЦИЯ РАСЧЁТА НЕУСТОЙКИ
+// ============================================================
 
 function calcPenalty() {
     const resultDiv = document.getElementById('penalty-result');
     const resultBody = document.getElementById('penalty-result-tbody');
-
-    const dueDateValue = document.getElementById(
-        'penalty-due-date'
-    ).value;
 
     const endDateValue = document.getElementById(
         'penalty-end'
@@ -1808,14 +1925,6 @@ function calcPenalty() {
     const startRule = document.getElementById(
         'penalty-start-rule'
     ).value;
-
-    const principalDebt = Number(document.getElementById(
-        'penalty-principal-debt'
-    ).value);
-
-    const interestDebt = Number(document.getElementById(
-        'penalty-interest-debt'
-    ).value);
 
     const principalRate = Number(document.getElementById(
         'penalty-principal-rate'
@@ -1837,19 +1946,14 @@ function calcPenalty() {
         'penalty-limit'
     ).value) || 0;
 
-    if (!dueDateValue || !endDateValue) {
+    if (!endDateValue) {
         resultDiv.className = 'result-box error';
-        resultDiv.textContent =
-            'Укажите дату исполнения обязательства и дату расчёта.';
+        resultDiv.textContent = 'Укажите дату расчёта.';
         resultBody.innerHTML = '';
         return;
     }
 
     if (
-        !Number.isFinite(principalDebt) ||
-        principalDebt < 0 ||
-        !Number.isFinite(interestDebt) ||
-        interestDebt < 0 ||
         !Number.isFinite(principalRate) ||
         principalRate < 0 ||
         !Number.isFinite(interestRate) ||
@@ -1857,62 +1961,136 @@ function calcPenalty() {
     ) {
         resultDiv.className = 'result-box error';
         resultDiv.textContent =
-            'Проверьте суммы задолженности и ставки неустойки.';
+            'Проверьте ставки неустойки.';
         resultBody.innerHTML = '';
         return;
     }
 
-    if (principalDebt + interestDebt <= 0) {
+    let obligations;
+
+    try {
+        obligations = penaltyGetObligations();
+    } catch (error) {
         resultDiv.className = 'result-box error';
-        resultDiv.textContent =
-            'Укажите сумму просроченного основного долга или процентов.';
+        resultDiv.textContent = error.message;
         resultBody.innerHTML = '';
         return;
     }
 
-    const dueDate = parseDate(dueDateValue);
     const endDate = parseDate(endDateValue);
 
-    const startDate = startRule === 'next-day'
-        ? penaltyAddDays(dueDate, 1)
-        : new Date(dueDate);
+    const payments = penaltyGetPayments(
+        new Date(1900, 0, 1),
+        endDate
+    );
 
-    if (endDate < startDate) {
-        resultDiv.className = 'result-box error';
-        resultDiv.textContent =
-            'Дата расчёта не может быть раньше первого дня начисления.';
-        resultBody.innerHTML = '';
-        return;
-    }
+    /*
+       События обрабатываются в такой последовательности:
+       1. Наступает дата платежа по графику.
+       2. На следующий день (или в эту дату, если выбрано пользователем)
+          соответствующее обязательство становится просроченным.
+       3. Фактические платежи уменьшают долги.
+       4. На дату расчёта начисляется неустойка включительно.
+    */
+    const events = [];
 
-    const payments = penaltyGetPayments(startDate, endDate);
+    obligations.forEach(obligation => {
+        const startDate = startRule === 'next-day'
+            ? penaltyAddDays(obligation.dueDate, 1)
+            : new Date(obligation.dueDate);
 
-    const state = {
-        principalDebt: penaltyRound(principalDebt),
-        interestDebt: penaltyRound(interestDebt)
+        if (startDate <= endDate) {
+            events.push({
+                type: 'obligation',
+                date: startDate,
+                obligation
+            });
+        }
+    });
+
+    payments.forEach(payment => {
+        if (payment.date <= endDate) {
+            events.push({
+                type: 'payment',
+                date: payment.date,
+                payment
+            });
+        }
+    });
+
+    /*
+       Конечная дата используется как исключающая граница.
+       Поэтому добавляем один день: так дата расчёта включается в начисление.
+    */
+    events.push({
+        type: 'calculation',
+        date: penaltyAddDays(endDate, 1)
+    });
+
+    const eventOrder = {
+        obligation: 1,
+        payment: 2,
+        calculation: 3
     };
 
-    const rows = [];
+    events.sort((first, second) => {
+        const difference = first.date - second.date;
+
+        if (difference !== 0) {
+            return difference;
+        }
+
+        return eventOrder[first.type] - eventOrder[second.type];
+    });
+
+    let currentDate = events[0]
+        ? new Date(events[0].date)
+        : new Date(endDate);
+
     let totalPrincipalPenalty = 0;
     let totalInterestPenalty = 0;
     let totalPayments = 0;
     let totalPrincipalPaid = 0;
     let totalInterestPaid = 0;
     let excessPayments = 0;
-    let currentDate = new Date(startDate);
+
+    const rows = [];
+
+    function activePrincipalDebt() {
+        return penaltyRound(
+            obligations.reduce((sum, obligation) => {
+                return sum + (
+                    obligation.active
+                        ? obligation.principalBalance
+                        : 0
+                );
+            }, 0)
+        );
+    }
+
+    function activeInterestDebt() {
+        return penaltyRound(
+            obligations.reduce((sum, obligation) => {
+                return sum + (
+                    obligation.active
+                        ? obligation.interestBalance
+                        : 0
+                );
+            }, 0)
+        );
+    }
 
     function addPeriod(endExclusive) {
         if (endExclusive <= currentDate) {
             return;
         }
 
-        const days = penaltyDaysBetween(
-            currentDate,
-            endExclusive
-        );
+        const principalDebt = activePrincipalDebt();
+        const interestDebt = activeInterestDebt();
+        const days = penaltyDaysBetween(currentDate, endExclusive);
 
-        const principalPenalty = penaltyCalculateForPeriod(
-            state.principalDebt,
+        const rawPrincipalPenalty = penaltyCalculateForPeriod(
+            principalDebt,
             principalRate,
             rateType,
             yearBase,
@@ -1920,8 +2098,8 @@ function calcPenalty() {
             endExclusive
         );
 
-        const interestPenalty = penaltyCalculateForPeriod(
-            state.interestDebt,
+        const rawInterestPenalty = penaltyCalculateForPeriod(
+            interestDebt,
             interestRate,
             rateType,
             yearBase,
@@ -1929,92 +2107,226 @@ function calcPenalty() {
             endExclusive
         );
 
-        const rawPeriodPenalty =
-            principalPenalty + interestPenalty;
+        const rawTotalPenalty =
+            rawPrincipalPenalty + rawInterestPenalty;
 
-        let periodPenalty = rawPeriodPenalty;
+        let allowedPenalty = rawTotalPenalty;
 
-        /*
-           Ограничение применяется к сумме всей начисленной неустойки.
-        */
         if (penaltyLimit > 0) {
             const alreadyAccrued =
                 totalPrincipalPenalty + totalInterestPenalty;
 
-            periodPenalty = Math.min(
-                rawPeriodPenalty,
+            allowedPenalty = Math.min(
+                rawTotalPenalty,
                 Math.max(0, penaltyLimit - alreadyAccrued)
             );
         }
 
-        let limitedPrincipalPenalty = principalPenalty;
-        let limitedInterestPenalty = interestPenalty;
+        let principalPenalty = rawPrincipalPenalty;
+        let interestPenalty = rawInterestPenalty;
 
         if (
-            rawPeriodPenalty > 0 &&
-            periodPenalty < rawPeriodPenalty
+            rawTotalPenalty > 0 &&
+            allowedPenalty < rawTotalPenalty
         ) {
-            const ratio = periodPenalty / rawPeriodPenalty;
+            const ratio = allowedPenalty / rawTotalPenalty;
 
-            limitedPrincipalPenalty = principalPenalty * ratio;
-            limitedInterestPenalty = interestPenalty * ratio;
+            principalPenalty = rawPrincipalPenalty * ratio;
+            interestPenalty = rawInterestPenalty * ratio;
         }
 
-        totalPrincipalPenalty += limitedPrincipalPenalty;
-        totalInterestPenalty += limitedInterestPenalty;
+        principalPenalty = penaltyRound(principalPenalty);
+        interestPenalty = penaltyRound(interestPenalty);
 
-        rows.push({
-            startDate: new Date(currentDate),
-            endDate: penaltyAddDays(endExclusive, -1),
-            days,
-            principalDebt: state.principalDebt,
-            interestDebt: state.interestDebt,
-            principalPenalty: limitedPrincipalPenalty,
-            interestPenalty: limitedInterestPenalty,
-            totalPenalty:
-                limitedPrincipalPenalty + limitedInterestPenalty
-        });
+        totalPrincipalPenalty = penaltyRound(
+            totalPrincipalPenalty + principalPenalty
+        );
+
+        totalInterestPenalty = penaltyRound(
+            totalInterestPenalty + interestPenalty
+        );
+
+        if (days > 0 && (principalDebt > 0 || interestDebt > 0)) {
+            rows.push({
+                startDate: new Date(currentDate),
+                endDate: penaltyAddDays(endExclusive, -1),
+                days,
+                principalDebt,
+                interestDebt,
+                principalPenalty,
+                interestPenalty,
+                totalPenalty: penaltyRound(
+                    principalPenalty + interestPenalty
+                )
+            });
+        }
 
         currentDate = new Date(endExclusive);
     }
 
-    payments.forEach(payment => {
+    function applyPayment(payment) {
+        let amount = penaltyRound(payment.amount);
+
+        const paid = {
+            principal: 0,
+            interest: 0,
+            excess: 0
+        };
+
+        const activeObligations = obligations.filter(
+            obligation => obligation.active
+        );
+
         /*
-           До дня платежа включительно неустойка не начисляется:
-           период заканчивается датой платежа как исключающей границей.
+           Погашение в рамках каждой категории — от самой ранней
+           просрочки к более поздней.
         */
-        addPeriod(payment.date);
+        function payPrincipal() {
+            activeObligations.forEach(obligation => {
+                if (amount <= 0) {
+                    return;
+                }
 
-        const allocation = penaltyApplyPayment(state, payment);
+                const part = Math.min(
+                    amount,
+                    obligation.principalBalance
+                );
 
-        totalPayments = penaltyRound(
-            totalPayments + payment.amount
-        );
+                obligation.principalBalance = penaltyRound(
+                    obligation.principalBalance - part
+                );
 
-        totalPrincipalPaid = penaltyRound(
-            totalPrincipalPaid + allocation.principal
-        );
+                amount = penaltyRound(amount - part);
+                paid.principal = penaltyRound(
+                    paid.principal + part
+                );
+            });
+        }
 
-        totalInterestPaid = penaltyRound(
-            totalInterestPaid + allocation.interest
-        );
+        function payInterest() {
+            activeObligations.forEach(obligation => {
+                if (amount <= 0) {
+                    return;
+                }
 
-        excessPayments = penaltyRound(
-            excessPayments + allocation.excess
-        );
+                const part = Math.min(
+                    amount,
+                    obligation.interestBalance
+                );
+
+                obligation.interestBalance = penaltyRound(
+                    obligation.interestBalance - part
+                );
+
+                amount = penaltyRound(amount - part);
+                paid.interest = penaltyRound(
+                    paid.interest + part
+                );
+            });
+        }
+
+        if (payment.target === 'principal') {
+            payPrincipal();
+        } else if (payment.target === 'interest') {
+            payInterest();
+        } else {
+            const principalDebt = activePrincipalDebt();
+            const interestDebt = activeInterestDebt();
+            const debt = principalDebt + interestDebt;
+
+            if (debt > 0) {
+                const principalAmount = penaltyRound(
+                    amount * principalDebt / debt
+                );
+
+                const interestAmount = penaltyRound(
+                    amount - principalAmount
+                );
+
+                const principalPayment = {
+                    ...payment,
+                    amount: principalAmount,
+                    target: 'principal'
+                };
+
+                const interestPayment = {
+                    ...payment,
+                    amount: interestAmount,
+                    target: 'interest'
+                };
+
+                const principalPaid = applyPayment(principalPayment);
+                const interestPaid = applyPayment(interestPayment);
+
+                paid.principal = penaltyRound(
+                    principalPaid.principal +
+                    interestPaid.principal
+                );
+
+                paid.interest = penaltyRound(
+                    principalPaid.interest +
+                    interestPaid.interest
+                );
+
+                paid.excess = penaltyRound(
+                    principalPaid.excess +
+                    interestPaid.excess
+                );
+
+                return paid;
+            }
+        }
+
+        paid.excess = amount;
+
+        return paid;
+    }
+
+    events.forEach(event => {
+        addPeriod(event.date);
+
+        if (event.type === 'obligation') {
+            event.obligation.active = true;
+        }
+
+        if (event.type === 'payment') {
+            const allocation = applyPayment(event.payment);
+
+            totalPayments = penaltyRound(
+                totalPayments + event.payment.amount
+            );
+
+            totalPrincipalPaid = penaltyRound(
+                totalPrincipalPaid + allocation.principal
+            );
+
+            totalInterestPaid = penaltyRound(
+                totalInterestPaid + allocation.interest
+            );
+
+            excessPayments = penaltyRound(
+                excessPayments + allocation.excess
+            );
+        }
     });
 
-    /*
-       Конечная дата расчёта включается в начисление:
-       исключающая граница — следующий календарный день.
-    */
-    addPeriod(penaltyAddDays(endDate, 1));
-
-    totalPrincipalPenalty = penaltyRound(totalPrincipalPenalty);
-    totalInterestPenalty = penaltyRound(totalInterestPenalty);
+    const remainingPrincipal = activePrincipalDebt();
+    const remainingInterest = activeInterestDebt();
 
     const totalPenalty = penaltyRound(
         totalPrincipalPenalty + totalInterestPenalty
+    );
+
+    const totalInitialPrincipal = penaltyRound(
+        obligations.reduce((sum, obligation) => {
+            return sum + obligation.principal;
+        }, 0)
+    );
+
+    const totalInitialInterest = penaltyRound(
+        obligations.reduce((sum, obligation) => {
+            return sum + obligation.interest;
+        }, 0)
     );
 
     resultBody.innerHTML = rows.map(row => `
@@ -2034,38 +2346,42 @@ function calcPenalty() {
 
     const rateDescription = rateType === 'daily'
         ? 'процент в день'
-        : `процент годовых, база: ${yearBase === 'actual'
-            ? 'фактическое число дней в году'
-            : yearBase + ' дней'
+        : `процент годовых, база: ${
+            yearBase === 'actual'
+                ? 'фактическое число дней в году'
+                : yearBase + ' дней'
         }`;
 
     resultDiv.className = 'result-box';
     resultDiv.textContent =
         `РАСЧЁТ ДОГОВОРНОЙ НЕУСТОЙКИ\n\n` +
-        `Дата исполнения обязательства: ${formatDate(dueDate)}\n` +
-        `Первый день начисления: ${formatDate(startDate)}\n` +
         `Дата расчёта включительно: ${formatDate(endDate)}\n` +
-        `Тип ставки: ${rateDescription}\n\n` +
+        `Первый день начисления: ${
+            startRule === 'next-day'
+                ? 'следующий день после даты платежа'
+                : 'дата платежа'
+        }\n` +
+        `Тип ставки: ${rateDescription}\n` +
+        `Просроченных обязательств: ${obligations.length}\n\n` +
 
-        `НАЧАЛЬНАЯ ПРОСРОЧЕННАЯ ЗАДОЛЖЕННОСТЬ\n` +
-        `Основной долг: ${penaltyMoney(principalDebt)} руб.\n` +
-        `Проценты: ${penaltyMoney(interestDebt)} руб.\n\n` +
+        `ЗАДОЛЖЕННОСТЬ НА НАЧАЛО РАСЧЁТА\n` +
+        `Основной долг: ${penaltyMoney(totalInitialPrincipal)} руб.\n` +
+        `Проценты: ${penaltyMoney(totalInitialInterest)} руб.\n\n` +
 
         `НЕУСТОЙКА\n` +
         `На основной долг: ${penaltyMoney(totalPrincipalPenalty)} руб.\n` +
         `На проценты: ${penaltyMoney(totalInterestPenalty)} руб.\n` +
         `Всего неустойка: ${penaltyMoney(totalPenalty)} руб.\n\n` +
 
-        `ПЛАТЕЖИ В ПЕРИОДЕ\n` +
+        `ПЛАТЕЖИ\n` +
         `Всего платежей: ${penaltyMoney(totalPayments)} руб.\n` +
         `Погашено основного долга: ${penaltyMoney(totalPrincipalPaid)} руб.\n` +
         `Погашено процентов: ${penaltyMoney(totalInterestPaid)} руб.\n` +
-        `Платежи сверх указанной задолженности: ` +
-        `${penaltyMoney(excessPayments)} руб.\n\n` +
+        `Излишек платежей: ${penaltyMoney(excessPayments)} руб.\n\n` +
 
         `ОСТАТОК ПРОСРОЧЕННОЙ ЗАДОЛЖЕННОСТИ\n` +
-        `Основной долг: ${penaltyMoney(state.principalDebt)} руб.\n` +
-        `Проценты: ${penaltyMoney(state.interestDebt)} руб.\n\n` +
+        `Основной долг: ${penaltyMoney(remainingPrincipal)} руб.\n` +
+        `Проценты: ${penaltyMoney(remainingInterest)} руб.\n\n` +
 
         `Лимит неустойки: ${
             penaltyLimit > 0
@@ -2073,8 +2389,9 @@ function calcPenalty() {
                 : 'не установлен'
         }\n\n` +
 
-        `Важно: расчёт не применяет возможное снижение неустойки ` +
-        `судом по статье 333 ГК РФ и не заменяет проверку условий договора.`;
+        `Важно: расчёт не учитывает судебное уменьшение неустойки ` +
+        `по статье 333 ГК РФ и требует сверки с договором, графиком ` +
+        `и выпиской о платежах.`;
 }
 
 // ============================================================
@@ -4677,11 +4994,7 @@ function calcCreditDebt() {
     summary.textContent =
         `РАСЧЁТ ЗАДОЛЖЕННОСТИ ПО КРЕДИТНОМУ ДОГОВОРУ\n\n` +
         `Дата расчёта: ${creditDebtFormatDate(data.calculationDate)}\n` +
-        `Вид графика: ${
-            data.type === 'annuity'
-                ? 'аннуитетный'
-                : 'дифференцированный'
-        }\n` +
+        `Вид графика: ${data.type === 'annuity' ? 'аннуитетный' : 'дифференцированный'}\n` +
         `Очередность погашения: ${priorityText}\n\n` +
 
         `ОСНОВНОЙ ДОЛГ\n` +
