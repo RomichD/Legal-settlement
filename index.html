@@ -1749,6 +1749,41 @@ pre {
                     <option value="crimea">Крымский</option>
                 </select>
             </div>
+
+            <div class="form-group">
+                <label for="gk395-end-rule">Включать дату окончания в период?</label>
+                <select id="gk395-end-rule">
+                    <option value="include">Включать (по умолчанию)</option>
+                    <option value="exclude">Не включать</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="gk395-rate-mode">Применяемая ставка</label>
+                <select id="gk395-rate-mode" onchange="toggleGk395ManualRates()">
+                    <option value="legal">По закону (средние ставки до 01.08.2016, далее ключевая)</option>
+                    <option value="key-only">Только ключевая ставка Банка России за весь период</option>
+                    <option value="manual">Ручной ввод ставок по периодам</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="gk395-manual-rates-block" class="payment-block" style="display:none">
+            <label><strong>Ручные ставки по периодам</strong></label>
+            <p class="muted">Укажите дату начала действия каждой ставки. Ставка действует до даты начала следующей строки.</p>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>Дата начала действия ставки</th><th>Ставка, % годовых</th><th>Действие</th></tr></thead>
+                    <tbody id="gk395-manual-rate-tbody">
+                        <tr>
+                            <td><input type="date" class="gk395-manual-rate-date"></td>
+                            <td><input type="number" class="gk395-manual-rate-value" min="0" step="0.01"></td>
+                            <td><button type="button" class="danger-btn" onclick="removeGk395ManualRateRow(this)">Удалить</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <button type="button" class="add-row-btn" onclick="addGk395ManualRateRow()">Добавить ставку</button>
         </div>
 
         <div class="payment-block">
@@ -1835,6 +1870,7 @@ pre {
                         <th>Период</th>
                         <th>Дней</th>
                         <th>Ставка</th>
+                        <th>Основание ставки</th>
                         <th>Долг</th>
                         <th>Проценты</th>
                     </tr>
@@ -2044,6 +2080,16 @@ function toggleLoanPriorityFields() {
     document.getElementById(
         'loan-contract-priority-fields'
     ).style.display = mode === 'contract' ? 'block' : 'none';
+}
+
+function toggleCreditDebtInsuranceFields() {
+    const used = document.getElementById(
+        'credit-debt-insurance-used'
+    ).value === 'yes';
+
+    document.getElementById(
+        'credit-debt-insurance-fields'
+    ).style.display = used ? 'block' : 'none';
 }
 
 function loanPaymentRowHtml(date = '', sum = '') {
@@ -5088,6 +5134,48 @@ function gk395GetRateInfo(date, region) {
     };
 }
 
+function toggleGk395ManualRates() {
+    const mode = document.getElementById('gk395-rate-mode').value;
+    document.getElementById('gk395-manual-rates-block').style.display = mode === 'manual' ? 'block' : 'none';
+}
+
+function addGk395ManualRateRow() {
+    document.getElementById('gk395-manual-rate-tbody').insertAdjacentHTML('beforeend',
+        `<tr><td><input type="date" class="gk395-manual-rate-date"></td><td><input type="number" class="gk395-manual-rate-value" min="0" step="0.01"></td><td><button type="button" class="danger-btn" onclick="removeGk395ManualRateRow(this)">Удалить</button></td></tr>`
+    );
+}
+
+function removeGk395ManualRateRow(button) {
+    const tbody = document.getElementById('gk395-manual-rate-tbody');
+    if (tbody.rows.length > 1) button.closest('tr').remove();
+}
+
+function gk395GetManualRates() {
+    const rates = [];
+    document.querySelectorAll('#gk395-manual-rate-tbody tr').forEach(row => {
+        const dateValue = row.querySelector('.gk395-manual-rate-date').value;
+        const rateValue = Number(row.querySelector('.gk395-manual-rate-value').value);
+        if (!dateValue || !Number.isFinite(rateValue) || rateValue < 0) return;
+        rates.push({ from: gk395ParseDate(dateValue), rate: rateValue });
+    });
+    return rates.sort((a, b) => a.from - b.from);
+}
+
+function gk395GetRateInfoWithMode(date, region, mode, manualRates) {
+    if (mode === 'key-only') {
+        return { rate: gk395GetKeyRate(date), source: 'Ключевая ставка Банка России (режим «только ключевая ставка»)' };
+    }
+    if (mode === 'manual') {
+        let rate = null;
+        for (const item of manualRates) {
+            if (item.from <= date) rate = item.rate;
+            else break;
+        }
+        return { rate, source: 'Ставка задана вручную пользователем' };
+    }
+    return gk395GetRateInfo(date, region);
+}
+
 function addGk395Row() {
     const tbody = document.getElementById('gk395-payment-tbody');
     const row = document.createElement('tr');
@@ -5149,11 +5237,13 @@ function gk395GetPayments(startDate, endDate) {
 function calcGK395() {
     const resultDiv = document.getElementById('gk395-result');
     const resultBody = document.getElementById('gk395-result-tbody');
-
     const debt = parseFloat(document.getElementById('gk395-debt').value);
     const startDate = gk395ParseDate(document.getElementById('gk395-start').value);
     const endDate = gk395ParseDate(document.getElementById('gk395-end').value);
     const region = document.getElementById('gk395-region').value;
+    const rateMode = document.getElementById('gk395-rate-mode').value;
+    const endRule = document.getElementById('gk395-end-rule').value;
+    const manualRates = rateMode === 'manual' ? gk395GetManualRates() : [];
 
     if (!Number.isFinite(debt) || debt <= 0 || !startDate || !endDate) {
         resultDiv.className = 'result-box error';
@@ -5161,117 +5251,103 @@ function calcGK395() {
         resultBody.innerHTML = '';
         return;
     }
-
     if (endDate < startDate) {
         resultDiv.className = 'result-box error';
         resultDiv.textContent = 'Последний день начисления не может быть раньше первого дня.';
         resultBody.innerHTML = '';
         return;
     }
-
-    const lastKnownRateDate = gk395LastKnownRateDate();
-    if (endDate > lastKnownRateDate) {
+    if (rateMode === 'manual' && manualRates.length === 0) {
         resultDiv.className = 'result-box error';
-        resultDiv.textContent =
-            `В таблице ставок нет подтверждённых данных для периода после ` +
-            `${gk395FormatDate(lastKnownRateDate)}.\n\nОбновите массив GK395_KEY_RATES по официальным решениям Банка России и повторите расчёт.`;
+        resultDiv.textContent = 'Добавьте хотя бы одну ставку в таблицу ручного ввода.';
         resultBody.innerHTML = '';
         return;
     }
 
-    const payments = gk395GetPayments(startDate, endDate);
+    const effectiveEndDate = endRule === 'exclude' ? gk395AddDays(endDate, -1) : endDate;
+    if (effectiveEndDate < startDate) {
+        resultDiv.className = 'result-box error';
+        resultDiv.textContent = 'При исключении даты окончания период расчёта становится пустым. Проверьте даты.';
+        resultBody.innerHTML = '';
+        return;
+    }
 
+    if (rateMode !== 'manual') {
+        const lastKnownRateDate = gk395LastKnownRateDate();
+        if (effectiveEndDate > lastKnownRateDate) {
+            resultDiv.className = 'result-box error';
+            resultDiv.textContent = `В таблице ставок нет подтверждённых данных для периода после ${gk395FormatDate(lastKnownRateDate)}.\n\nОбновите массив GK395_KEY_RATES по официальным решениям Банка России и повторите расчёт.`;
+            resultBody.innerHTML = '';
+            return;
+        }
+    }
+
+    const payments = gk395GetPayments(startDate, effectiveEndDate);
     const events = new Map();
-
     function addEvent(date, event) {
         const key = gk395DateKey(date);
-        if (!events.has(key)) {
-            events.set(key, {
-                date: new Date(date),
-                payments: [],
-                rateChange: false
-            });
-        }
-        if (event.type === 'payment') {
-            events.get(key).payments.push(event);
-        }
-        if (event.type === 'rate') {
-            events.get(key).rateChange = true;
-        }
+        if (!events.has(key)) events.set(key, { date: new Date(date), payments: [] });
+        if (event.type === 'payment') events.get(key).payments.push(event);
     }
 
     addEvent(startDate, { type: 'start' });
-    addEvent(gk395AddDays(endDate, 1), { type: 'end' });
+    addEvent(gk395AddDays(effectiveEndDate, 1), { type: 'end' });
+    payments.forEach(payment => addEvent(payment.date, { type: 'payment', amount: payment.amount }));
 
-    payments.forEach(payment => {
-        addEvent(payment.date, {
-            type: 'payment',
-            amount: payment.amount
+    if (rateMode === 'manual') {
+        manualRates.forEach(item => {
+            if (item.from > startDate && item.from <= effectiveEndDate) addEvent(item.from, { type: 'rate' });
         });
-    });
+    } else {
+        GK395_KEY_RATES.forEach(item => {
+            const date = gk395ParseDate(item.from);
+            if (date > startDate && date <= effectiveEndDate) addEvent(date, { type: 'rate' });
+        });
+    }
 
-    GK395_KEY_RATES.forEach(item => {
-        const date = gk395ParseDate(item.from);
-        if (date > startDate && date <= endDate) {
-            addEvent(date, { type: 'rate' });
-        }
-    });
-
-    for (let year = startDate.getFullYear() + 1; year <= endDate.getFullYear(); year += 1) {
+    for (let year = startDate.getFullYear() + 1; year <= effectiveEndDate.getFullYear(); year += 1) {
         const newYear = new Date(year, 0, 1);
-        if (newYear > startDate && newYear <= endDate) {
-            addEvent(newYear, { type: 'year' });
-        }
+        if (newYear > startDate && newYear <= effectiveEndDate) addEvent(newYear, { type: 'year' });
     }
 
     const timeline = Array.from(events.values()).sort((a, b) => a.date - b.date);
-
     let balance = gk395Round(debt);
     let totalInterest = 0;
     let totalPaid = 0;
-
     const rows = [];
     const warnings = [];
 
-    if (startDate < new Date(2016, 7, 1)) {
-        warnings.push(
-            'Период до 01.08.2016 рассчитан предварительно: для судебного расчёта требуется заменить временные ставки полной исторической таблицей Банка России.'
-        );
+    if (rateMode === 'legal' && startDate < new Date(2016, 7, 1)) {
+        warnings.push('Период до 01.08.2016 рассчитан предварительно: для судебного расчёта замените временные ставки полной исторической таблицей Банка России.');
     }
 
     for (let index = 0; index < timeline.length - 1; index += 1) {
         const currentEvent = timeline[index];
         const nextEvent = timeline[index + 1];
-
-        // Применяем платежи в начале дня
         currentEvent.payments.forEach(payment => {
             const applied = Math.min(payment.amount, balance);
             balance = gk395Round(balance - applied);
             totalPaid = gk395Round(totalPaid + applied);
         });
-
         const days = gk395DaysBetween(currentEvent.date, nextEvent.date);
-        if (days <= 0 || balance <= 0) {
-            continue;
-        }
+        if (days <= 0 || balance <= 0) continue;
 
-        const rateInfo = gk395GetRateInfo(currentEvent.date, region);
+        const rateInfo = gk395GetRateInfoWithMode(currentEvent.date, region, rateMode, manualRates);
         if (!Number.isFinite(rateInfo.rate)) {
             resultDiv.className = 'result-box error';
-            resultDiv.textContent = `Не найдена ставка для даты ${gk395FormatDate(currentEvent.date)}.`;
+            resultDiv.textContent = `Не найдена ставка для даты ${gk395FormatDate(currentEvent.date)}. Для ручного режима первая ставка должна действовать не позднее первого дня расчёта.`;
             resultBody.innerHTML = '';
             return;
         }
-
         const denominator = gk395DaysInYear(currentEvent.date);
         const interest = balance * (rateInfo.rate / 100) * days / denominator;
         totalInterest = gk395Round(totalInterest + interest);
-
         rows.push({
             from: new Date(currentEvent.date),
             to: gk395AddDays(nextEvent.date, -1),
             days,
             rate: rateInfo.rate,
+            source: rateInfo.source,
             debt: balance,
             interest: gk395Round(interest)
         });
@@ -5282,39 +5358,29 @@ function calcGK395() {
             <td>${gk395FormatDate(row.from)} — ${gk395FormatDate(row.to)}</td>
             <td>${row.days}</td>
             <td>${row.rate.toFixed(2)}%</td>
+            <td>${row.source}</td>
             <td>${gk395Money(row.debt)} руб.</td>
             <td>${gk395Money(row.interest)} руб.</td>
         </tr>
     `).join('');
 
-    const currentRateInfo = gk395GetRateInfo(endDate, region);
+    const currentRateInfo = gk395GetRateInfoWithMode(effectiveEndDate, region, rateMode, manualRates);
+    const endRuleText = endRule === 'include' ? 'включена' : 'не включена';
+    const rateModeText = rateMode === 'legal' ? 'по закону' : rateMode === 'key-only' ? 'только ключевая ставка Банка России' : 'ручной ввод ставок';
 
     resultDiv.className = 'result-box';
     resultDiv.textContent =
-        `РАСЧЁТ ПРОЦЕНТОВ ПО СТ. 395 ГК РФ
-
-` +
-        `Первый день начисления: ${gk395FormatDate(startDate)}
-` +
-        `Последний день начисления: ${gk395FormatDate(endDate)}
-` +
-        `Начальная сумма долга: ${gk395Money(debt)} руб.
-` +
-        `Учтено платежей: ${gk395Money(totalPaid)} руб.
-` +
-        `Остаток основного долга: ${gk395Money(balance)} руб.
-` +
-        `Ставка на последний день расчёта: ${currentRateInfo.rate.toFixed(2)}% годовых
-
-` +
-        `ИТОГО ПРОЦЕНТЫ: ${gk395Money(totalInterest)} руб.
-
-` +
-        `Правило расчёта: платёж уменьшает основной долг в день его внесения; за дату платежа проценты начисляются на уменьшенный остаток.` +
-        (warnings.length ? `
-
-ВНИМАНИЕ:
-${warnings.join('\n')}` : '');
+        `РАСЧЁТ ПРОЦЕНТОВ ПО СТ. 395 ГК РФ\n\n` +
+        `Первый день начисления: ${gk395FormatDate(startDate)}\n` +
+        `Указанная конечная дата: ${gk395FormatDate(endDate)}\n` +
+        `Дата окончания ${endRuleText}.\n` +
+        `Режим ставки: ${rateModeText}.\n` +
+        `Ставка на последний учитываемый день: ${currentRateInfo.rate.toFixed(2)}% (${currentRateInfo.source}).\n\n` +
+        `Сумма основного долга на начало: ${gk395Money(debt)} руб.\n` +
+        `Учтено платежей: ${gk395Money(totalPaid)} руб.\n` +
+        `Остаток долга: ${gk395Money(balance)} руб.\n` +
+        `Всего процентов: ${gk395Money(totalInterest)} руб.` +
+        (warnings.length ? `\n\nПредупреждение: ${warnings.join(' ')}` : '');
 }
 
 // ============================================================
@@ -5571,6 +5637,36 @@ document.addEventListener('DOMContentLoaded', function () {
                     min="0"
                     step="0.01"
                 >
+            </div>
+        </div>
+
+        <div class="payment-block">
+            <label><strong>Страхование</strong></label>
+            <div class="inline-group">
+                <div class="form-group">
+                    <label for="credit-debt-insurance-used">Страховая премия предусмотрена?</label>
+                    <select id="credit-debt-insurance-used" onchange="toggleCreditDebtInsuranceFields()">
+                        <option value="no">Нет</option>
+                        <option value="yes">Да</option>
+                    </select>
+                </div>
+            </div>
+            <div id="credit-debt-insurance-fields" style="display:none">
+                <div class="inline-group">
+                    <div class="form-group">
+                        <label for="credit-debt-insurance-sum">Сумма премии, руб.</label>
+                        <input type="number" id="credit-debt-insurance-sum" value="0" min="0.01" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label for="credit-debt-insurance-mode">Способ уплаты премии</label>
+                        <select id="credit-debt-insurance-mode">
+                            <option value="separate">Оплачена отдельно (не входит в тело кредита)</option>
+                            <option value="withheld">Удержана при выдаче (тело кредита не увеличивается)</option>
+                            <option value="included">Включена в сумму кредита (увеличивает основной долг)</option>
+                        </select>
+                    </div>
+                </div>
+                <p class="muted">При выборе «включена в сумму кредита» основной долг для расчёта графика и процентов увеличивается на сумму премии. При выборе «удержана при выдаче» заёмщик фактически получает сумму за вычетом премии, но график строится от полной суммы кредита. При выборе «оплачена отдельно» премия не участвует в кредитном расчёте.</p>
             </div>
         </div>
 
@@ -6555,6 +6651,23 @@ function calcCreditDebt() {
         return;
     }
 
+    const insuranceUsed = document.getElementById('credit-debt-insurance-used').value === 'yes';
+    const insuranceMode = document.getElementById('credit-debt-insurance-mode').value;
+    const insuranceSum = Number(document.getElementById('credit-debt-insurance-sum').value) || 0;
+
+    if (insuranceUsed && (!Number.isFinite(insuranceSum) || insuranceSum <= 0)) {
+        summary.className = 'result-box error';
+        summary.textContent = 'Укажите корректную сумму страховой премии.';
+        resultBody.innerHTML = '';
+        return;
+    }
+
+    let insuranceIncludedInDebt = 0;
+    if (insuranceUsed && insuranceMode === 'included') {
+        insuranceIncludedInDebt = creditDebtRound(insuranceSum);
+        data.amount = creditDebtRound(data.amount + insuranceIncludedInDebt);
+    }
+
     let priority;
 
     try {
@@ -6867,12 +6980,21 @@ function calcCreditDebt() {
         </tr>
     `).join('');
 
+    const insuranceText = insuranceUsed
+        ? (insuranceMode === 'included'
+            ? `Страхование: премия ${creditDebtMoney(insuranceIncludedInDebt)} руб. включена в тело кредита и увеличивает основной долг и начисляемые проценты.`
+            : insuranceMode === 'withheld'
+                ? `Страхование: премия ${creditDebtMoney(insuranceSum)} руб. удержана при выдаче; тело кредита в расчёте не увеличено.`
+                : `Страхование: премия ${creditDebtMoney(insuranceSum)} руб. оплачена отдельно и не участвует в кредитном расчёте.`)
+        : 'Страхование: премия по договору не предусмотрена.';
+
     summary.className = 'result-box';
     summary.textContent =
         `РАСЧЁТ ЗАДОЛЖЕННОСТИ ПО КРЕДИТНОМУ ДОГОВОРУ\n\n` +
         `Дата расчёта: ${creditDebtFormatDate(data.calculationDate)}\n` +
         `Вид графика: ${data.type === 'annuity' ? 'аннуитетный' : 'дифференцированный'}\n` +
-        `Очередность погашения: ${priorityText}\n\n` +
+        `Очередность погашения: ${priorityText}\n` +
+        `${insuranceText}\n\n` +
 
         `ОСНОВНОЙ ДОЛГ\n` +
         `Текущий основной долг: ${creditDebtMoney(currentPrincipal)} руб.\n` +
