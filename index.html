@@ -1719,6 +1719,15 @@ pre {
             Проценты начисляются за каждый день просрочки по ключевой ставке
             Банка России, действовавшей в соответствующий период. Частичный
             платёж уменьшает основной долг с даты его внесения.
+            <br><br>
+            Встроенная таблица ставок обновляется вручную и может не содержать
+            самых последних решений Банка России. Если расчёт упирается в
+            ошибку «нет данных после такой-то даты», уточните действующую
+            ключевую ставку на официальном сайте Банка России
+            (<strong>cbr.ru</strong>, раздел «Ключевая ставка»), на
+            <strong>КонсультантПлюс</strong> или <strong>Гаранте</strong>, и
+            добавьте её в таблицу «Ручные ставки по периодам» ниже — калькулятор
+            учтёт её автоматически вместе со встроенными данными.
         </div>
 
         <div class="grid">
@@ -1794,7 +1803,7 @@ pre {
 
         <div id="gk395-manual-rates-block" class="payment-block" style="display:none">
             <label><strong>Ручные ставки по периодам</strong></label>
-            <p class="muted">Укажите дату начала действия каждой ставки. Ставка действует до даты начала следующей строки.</p>
+            <p class="muted">Укажите дату начала действия каждой ставки. Ставка действует до даты начала следующей строки. Используйте этот режим, если в таблице встроенных ставок пока нет данных для нужной даты (например, самое недавнее решение Банка России).</p>
             <div class="table-wrapper">
                 <table>
                     <thead><tr><th>Дата начала действия ставки</th><th>Ставка, % годовых</th><th>Действие</th></tr></thead>
@@ -5309,9 +5318,23 @@ function gk395GetManualRates() {
     return rates.sort((a, b) => a.from - b.from);
 }
 
+function gk395GetCombinedRates(manualRates) {
+    const combined = GK395_KEY_RATES.map(item => ({ from: gk395ParseDate(item.from), rate: item.rate, source: 'Ключевая ставка Банка России' }));
+    manualRates.forEach(item => {
+        combined.push({ from: item.from, rate: item.rate, source: 'Ставка добавлена пользователем вручную' });
+    });
+    return combined.sort((a, b) => a.from - b.from);
+}
+
 function gk395GetRateInfoWithMode(date, region, mode, manualRates) {
     if (mode === 'key-only') {
-        return { rate: gk395GetKeyRate(date), source: 'Ключевая ставка Банка России (режим «только ключевая ставка»)' };
+        const combined = gk395GetCombinedRates(manualRates);
+        let found = null;
+        for (const item of combined) {
+            if (item.from <= date) found = item;
+            else break;
+        }
+        return found ? { rate: found.rate, source: found.source } : { rate: null, source: '' };
     }
     if (mode === 'manual') {
         let rate = null;
@@ -5321,7 +5344,18 @@ function gk395GetRateInfoWithMode(date, region, mode, manualRates) {
         }
         return { rate, source: 'Ставка задана вручную пользователем' };
     }
-    return gk395GetRateInfo(date, region);
+    const legalInfo = gk395GetRateInfo(date, region);
+    if (manualRates.length > 0) {
+        let manualOverride = null;
+        for (const item of manualRates) {
+            if (item.from <= date) manualOverride = item;
+            else break;
+        }
+        if (manualOverride && (!GK395_KEY_RATES.length || manualOverride.from >= gk395ParseDate(GK395_KEY_RATES[GK395_KEY_RATES.length - 1].from))) {
+            return { rate: manualOverride.rate, source: 'Ставка добавлена пользователем вручную (уточнение после последней встроенной даты)' };
+        }
+    }
+    return legalInfo;
 }
 
 function addGk395Row() {
@@ -5391,7 +5425,7 @@ function calcGK395() {
     const region = document.getElementById('gk395-region').value;
     const rateMode = document.getElementById('gk395-rate-mode').value;
     const endRule = document.getElementById('gk395-end-rule').value;
-    const manualRates = rateMode === 'manual' ? gk395GetManualRates() : [];
+    const manualRates = gk395GetManualRates();
 
     if (!Number.isFinite(debt) || debt <= 0 || !startDate || !endDate) {
         resultDiv.className = 'result-box error';
@@ -5420,14 +5454,21 @@ function calcGK395() {
         return;
     }
 
-    if (rateMode !== 'manual') {
-        const lastKnownRateDate = gk395LastKnownRateDate();
-        if (effectiveEndDate > lastKnownRateDate) {
-            resultDiv.className = 'result-box error';
-            resultDiv.textContent = `В таблице ставок нет подтверждённых данных для периода после ${gk395FormatDate(lastKnownRateDate)}.\n\nОбновите массив GK395_KEY_RATES по официальным решениям Банка России и повторите расчёт.`;
-            resultBody.innerHTML = '';
-            return;
-        }
+    const lastKnownRateDate = gk395LastKnownRateDate();
+    const needsManualExtension = rateMode !== 'manual' && effectiveEndDate > lastKnownRateDate;
+    const lastManualRateDate = manualRates.length ? manualRates[manualRates.length - 1].from : null;
+
+    if (needsManualExtension && (!lastManualRateDate || lastManualRateDate <= lastKnownRateDate)) {
+        resultDiv.className = 'result-box error';
+        resultDiv.textContent =
+            `В таблице встроенных ставок нет данных после ${gk395FormatDate(lastKnownRateDate)}.\n\n` +
+            `Чтобы рассчитать проценты на более позднюю дату (например, ${gk395FormatDate(effectiveEndDate)}), ` +
+            `откройте официальный сайт Банка России (cbr.ru, раздел «Ключевая ставка»), КонсультантПлюс или Гарант, ` +
+            `узнайте актуальную ключевую ставку на нужную дату и добавьте её в таблицу «Ручные ставки по периодам» выше ` +
+            `(укажите дату начала действия ставки). После этого повторите расчёт — калькулятор автоматически ` +
+            `объединит встроенные и добавленные вручную ставки.`;
+        resultBody.innerHTML = '';
+        return;
     }
 
     const payments = gk395GetPayments(startDate, effectiveEndDate);
@@ -5447,9 +5488,9 @@ function calcGK395() {
             if (item.from > startDate && item.from <= effectiveEndDate) addEvent(item.from, { type: 'rate' });
         });
     } else {
-        GK395_KEY_RATES.forEach(item => {
-            const date = gk395ParseDate(item.from);
-            if (date > startDate && date <= effectiveEndDate) addEvent(date, { type: 'rate' });
+        const combinedRates = gk395GetCombinedRates(manualRates);
+        combinedRates.forEach(item => {
+            if (item.from > startDate && item.from <= effectiveEndDate) addEvent(item.from, { type: 'rate' });
         });
     }
 
@@ -5468,6 +5509,9 @@ function calcGK395() {
     if (rateMode === 'legal' && startDate < new Date(2016, 7, 1)) {
         warnings.push('Период до 01.08.2016 рассчитан предварительно: для судебного расчёта замените временные ставки полной исторической таблицей Банка России.');
     }
+    if (needsManualExtension) {
+        warnings.push(`Часть периода (после ${gk395FormatDate(lastKnownRateDate)}) рассчитана по ставке, добавленной вами вручную. Проверьте её актуальность на сайте cbr.ru, КонсультантПлюс или Гарант перед использованием расчёта в суде.`);
+    }
 
     for (let index = 0; index < timeline.length - 1; index += 1) {
         const currentEvent = timeline[index];
@@ -5483,7 +5527,7 @@ function calcGK395() {
         const rateInfo = gk395GetRateInfoWithMode(currentEvent.date, region, rateMode, manualRates);
         if (!Number.isFinite(rateInfo.rate)) {
             resultDiv.className = 'result-box error';
-            resultDiv.textContent = `Не найдена ставка для даты ${gk395FormatDate(currentEvent.date)}. Для ручного режима первая ставка должна действовать не позднее первого дня расчёта.`;
+            resultDiv.textContent = `Не найдена ставка для даты ${gk395FormatDate(currentEvent.date)}. Добавьте ставку на эту дату в таблицу «Ручные ставки по периодам» (данные можно взять с сайта cbr.ru, КонсультантПлюс или Гарант).`;
             resultBody.innerHTML = '';
             return;
         }
