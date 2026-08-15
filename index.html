@@ -619,7 +619,7 @@ pre {
         </div>
 
         <div class="scroll-table">
-            <table id="loan-result-table">
+            <table>
                 <thead>
                     <tr>
                         <th>Период</th>
@@ -637,12 +637,6 @@ pre {
                 <tbody id="loan-result-tbody"></tbody>
             </table>
         </div>
-
-            <button type="button" class="add-row-btn" onclick="copyTable('loan-result-table')">📋 Копировать таблицу</button>
-
-            <div id="loan-formulas" class="result-box" style="display:none; white-space: pre-wrap; margin-top: 10px;"></div>
-
-            <button type="button" class="add-row-btn" style="background:#6b7280" onclick="copyFormulas('loan-formulas')">🧮 Копировать формулы расчёта</button>
     </div>
 
     <!-- ========== ВКЛАДКА 2 (ДОГОВОРНАЯ НЕУСТОЙКА) ========== -->
@@ -945,7 +939,7 @@ pre {
         </div>
 
         <div class="scroll-table">
-            <table id="penalty-result-table">
+            <table>
                 <thead>
                     <tr>
                         <th>Период</th>
@@ -961,12 +955,6 @@ pre {
                 <tbody id="penalty-result-tbody"></tbody>
             </table>
         </div>
-
-            <button type="button" class="add-row-btn" onclick="copyTable('penalty-result-table')">📋 Копировать таблицу</button>
-
-            <div id="penalty-formulas" class="result-box" style="display:none; white-space: pre-wrap; margin-top: 10px;"></div>
-
-            <button type="button" class="add-row-btn" style="background:#6b7280" onclick="copyFormulas('penalty-formulas')">🧮 Копировать формулы расчёта</button>
     </div>
 
     <!-- ========== ВКЛАДКА 3 (ПРОСТЫЕ ДРОБИ) ========== -->
@@ -1374,7 +1362,7 @@ pre {
         </div>
 
         <div class="scroll-table">
-            <table id="card-result-table">
+            <table>
                 <thead>
                     <tr>
                         <th>Дата</th>
@@ -1393,12 +1381,6 @@ pre {
                 <tbody id="card-result-tbody"></tbody>
             </table>
         </div>
-
-            <button type="button" class="add-row-btn" onclick="copyTable('card-result-table')">📋 Копировать таблицу</button>
-
-            <div id="card-formulas" class="result-box" style="display:none; white-space: pre-wrap; margin-top: 10px;"></div>
-
-            <button type="button" class="add-row-btn" style="background:#6b7280" onclick="copyFormulas('card-formulas')">🧮 Копировать формулы расчёта</button>
     </div>
 
     <!-- ========== ВКЛАДКА 5 (СРОК ИСКОВОЙ ДАВНОСТИ) ========== -->
@@ -1688,7 +1670,7 @@ pre {
         </div>
 
         <div class="scroll-table">
-            <table id="lim-result-table">
+            <table>
                 <thead>
                     <tr>
                         <th>№</th>
@@ -1703,12 +1685,6 @@ pre {
                 <tbody id="lim-result-tbody"></tbody>
             </table>
         </div>
-
-            <button type="button" class="add-row-btn" onclick="copyTable('lim-result-table')">📋 Копировать таблицу</button>
-
-            <div id="lim-formulas" class="result-box" style="display:none; white-space: pre-wrap; margin-top: 10px;"></div>
-
-            <button type="button" class="add-row-btn" style="background:#6b7280" onclick="copyFormulas('lim-formulas')">🧮 Копировать формулы расчёта</button>
     </div>
 
     <!-- ========== ВКЛАДКА 6 (СТ. 395 ГК РФ) ========== -->
@@ -1719,15 +1695,6 @@ pre {
             Проценты начисляются за каждый день просрочки по ключевой ставке
             Банка России, действовавшей в соответствующий период. Частичный
             платёж уменьшает основной долг с даты его внесения.
-            <br><br>
-            Встроенная таблица ставок обновляется вручную и может не содержать
-            самых последних решений Банка России. Если расчёт упирается в
-            ошибку «нет данных после такой-то даты», уточните действующую
-            ключевую ставку на официальном сайте Банка России
-            (<strong>cbr.ru</strong>, раздел «Ключевая ставка»), на
-            <strong>КонсультантПлюс</strong> или <strong>Гаранте</strong>, и
-            добавьте её в таблицу «Ручные ставки по периодам» ниже — калькулятор
-            учтёт её автоматически вместе со встроенными данными.
         </div>
 
         <div class="grid">
@@ -1782,41 +1749,6 @@ pre {
                     <option value="crimea">Крымский</option>
                 </select>
             </div>
-
-            <div class="form-group">
-                <label for="gk395-end-rule">Включать дату окончания в период?</label>
-                <select id="gk395-end-rule">
-                    <option value="include">Включать (по умолчанию)</option>
-                    <option value="exclude">Не включать</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="gk395-rate-mode">Применяемая ставка</label>
-                <select id="gk395-rate-mode" onchange="toggleGk395ManualRates()">
-                    <option value="legal">По закону (средние ставки до 01.08.2016, далее ключевая)</option>
-                    <option value="key-only">Только ключевая ставка Банка России за весь период</option>
-                    <option value="manual">Ручной ввод ставок по периодам</option>
-                </select>
-            </div>
-        </div>
-
-        <div id="gk395-manual-rates-block" class="payment-block" style="display:none">
-            <label><strong>Ручные ставки по периодам</strong></label>
-            <p class="muted">Укажите дату начала действия каждой ставки. Ставка действует до даты начала следующей строки. Используйте этот режим, если в таблице встроенных ставок пока нет данных для нужной даты (например, самое недавнее решение Банка России).</p>
-            <div class="table-wrapper">
-                <table>
-                    <thead><tr><th>Дата начала действия ставки</th><th>Ставка, % годовых</th><th>Действие</th></tr></thead>
-                    <tbody id="gk395-manual-rate-tbody">
-                        <tr>
-                            <td><input type="date" class="gk395-manual-rate-date"></td>
-                            <td><input type="number" class="gk395-manual-rate-value" min="0" step="0.01"></td>
-                            <td><button type="button" class="danger-btn" onclick="removeGk395ManualRateRow(this)">Удалить</button></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <button type="button" class="add-row-btn" onclick="addGk395ManualRateRow()">Добавить ставку</button>
         </div>
 
         <div class="payment-block">
@@ -1897,13 +1829,12 @@ pre {
         </div>
 
         <div class="scroll-table">
-            <table id="gk395-result-table">
+            <table>
                 <thead>
                     <tr>
                         <th>Период</th>
                         <th>Дней</th>
                         <th>Ставка</th>
-                        <th>Основание ставки</th>
                         <th>Долг</th>
                         <th>Проценты</th>
                     </tr>
@@ -1912,12 +1843,6 @@ pre {
                 <tbody id="gk395-result-tbody"></tbody>
             </table>
         </div>
-
-            <button type="button" class="add-row-btn" onclick="copyTable('gk395-result-table')">📋 Копировать таблицу</button>
-
-            <div id="gk395-formulas" class="result-box" style="display:none; white-space: pre-wrap; margin-top: 10px;"></div>
-
-            <button type="button" class="add-row-btn" style="background:#6b7280" onclick="copyFormulas('gk395-formulas')">🧮 Копировать формулы расчёта</button>
     </div>
 </div>
 
@@ -1973,52 +1898,6 @@ function showToast(message) {
         }, 300);
     }, 2000);
 }
-
-function copyTable(tableId) {
-    const table = document.getElementById(tableId);
-    if (!table) return;
-    const rows = table.querySelectorAll('tr');
-    if (!rows.length) {
-        alert('Нет данных для копирования. Сначала выполните расчёт.');
-        return;
-    }
-    const lines = [];
-    rows.forEach((row) => {
-        const cells = row.querySelectorAll('th, td');
-        const values = Array.from(cells).map((cell) => cell.textContent.trim());
-        lines.push(values.join('\t'));
-    });
-    const text = lines.join('\n');
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(() => {
-            showToast('✅ Таблица скопирована!');
-        }).catch(() => {
-            fallbackCopy(text);
-        });
-    } else {
-        fallbackCopy(text);
-    }
-}
-
-function copyFormulas(blockId) {
-    const block = document.getElementById(blockId);
-    if (!block) return;
-    const text = block.innerText || block.textContent;
-    if (!text || text.trim() === '') {
-        alert('Нет данных для копирования. Сначала выполните расчёт.');
-        return;
-    }
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text.trim()).then(() => {
-            showToast('✅ Формулы расчёта скопированы!');
-        }).catch(() => {
-            fallbackCopy(text);
-        });
-    } else {
-        fallbackCopy(text);
-    }
-}
-
 
 // ============================================================
 // Вкладки
@@ -2165,16 +2044,6 @@ function toggleLoanPriorityFields() {
     document.getElementById(
         'loan-contract-priority-fields'
     ).style.display = mode === 'contract' ? 'block' : 'none';
-}
-
-function toggleCreditDebtInsuranceFields() {
-    const used = document.getElementById(
-        'credit-debt-insurance-used'
-    ).value === 'yes';
-
-    document.getElementById(
-        'credit-debt-insurance-fields'
-    ).style.display = used ? 'block' : 'none';
 }
 
 function loanPaymentRowHtml(date = '', sum = '') {
@@ -2580,23 +2449,6 @@ function calcLoanInterest() {
             <td>${loanMoney(row.principalEnd)}</td>
         </tr>
     `).join('');
-
-    const loanFormulasBlock = document.getElementById('loan-formulas');
-    if (loanFormulasBlock) {
-        const formulaLines = rows
-            .filter(row => row.days > 0)
-            .map(row => {
-                const yearBase = base === 'actual' ? loanYearBase(row.startDate, base) : Number(base);
-                return `${formatDate(row.startDate)} — ${formatDate(row.endDate)}: `
-                    + `${loanMoney(row.principalStart)} руб. x ${annualRate.toFixed(2)}% / ${yearBase} дн. x ${row.days} дн. `
-                    + `= ${loanMoney(row.interestAccrued)} руб.`;
-            });
-        const totalFormulaLine = `ИТОГО начислено процентов: ${loanMoney(totalInterestAccrued)} руб.`;
-        loanFormulasBlock.style.display = formulaLines.length ? 'block' : 'none';
-        loanFormulasBlock.textContent = formulaLines.length
-            ? ['РАСЧЁТ ПРОЦЕНТОВ ПО ПЕРИОДАМ (сумма x ставка / база x дни = проценты):', '', ...formulaLines, '', totalFormulaLine].join('\n')
-            : '';
-    }
 
     const baseText = base === 'actual'
         ? 'фактическое число дней в году'
@@ -3460,28 +3312,6 @@ function calcPenalty() {
             <td>${penaltyMoney(row.totalPenalty)}</td>
         </tr>
     `).join('');
-
-    const penaltyFormulasBlock = document.getElementById('penalty-formulas');
-    if (penaltyFormulasBlock) {
-        const rateUnit = rateType === 'daily' ? '% в день' : '% годовых';
-        const formulaLines = rows
-            .filter(row => row.days > 0 && (row.principalPenalty > 0 || row.interestPenalty > 0))
-            .map(row => {
-                const parts = [];
-                if (row.principalPenalty > 0) {
-                    parts.push(`${penaltyMoney(row.principalDebt)} руб. (осн. долг) x ${principalRate}${rateUnit} x ${row.days} дн. = ${penaltyMoney(row.principalPenalty)} руб.`);
-                }
-                if (row.interestPenalty > 0) {
-                    parts.push(`${penaltyMoney(row.interestDebt)} руб. (проценты) x ${interestRate}${rateUnit} x ${row.days} дн. = ${penaltyMoney(row.interestPenalty)} руб.`);
-                }
-                return `${formatDate(row.startDate)} — ${formatDate(row.endDate)}: ${parts.join('; ')}`;
-            });
-        const totalFormulaLine = `ИТОГО неустойка: ${penaltyMoney(totalPenalty)} руб.`;
-        penaltyFormulasBlock.style.display = formulaLines.length ? 'block' : 'none';
-        penaltyFormulasBlock.textContent = formulaLines.length
-            ? ['РАСЧЁТ НЕУСТОЙКИ ПО ПЕРИОДАМ:', '', ...formulaLines, '', totalFormulaLine].join('\n')
-            : '';
-    }
 
     const rateDescription = rateType === 'daily'
         ? 'процент в день'
@@ -4454,21 +4284,6 @@ function calcCreditCard() {
         </tr>
     `).join('');
 
-    const cardFormulasBlock = document.getElementById('card-formulas');
-    if (cardFormulasBlock) {
-        const interestRows = rows.filter(row => row.event === 'Начисление процентов' && row.interest > 0);
-        const formulaLines = interestRows.map(row => {
-            const days = row.days || 0;
-            const yearBase = base === 'actual' ? cardYearBase(new Date(), base) : Number(base);
-            return `${row.date}: ${cardMoney(row.principalStart)} руб. x ${annualRate}% / ${yearBase} дн. x ${days} дн. = ${cardMoney(row.interest)} руб.`;
-        });
-        const totalFormulaLine = `ИТОГО начислено процентов: ${cardMoney(totalInterestAccrued)} руб.`;
-        cardFormulasBlock.style.display = formulaLines.length ? 'block' : 'none';
-        cardFormulasBlock.textContent = formulaLines.length
-            ? ['РАСЧЁТ ПРОЦЕНТОВ ПО ПЕРИОДАМ (задолженность x ставка / база x дни = проценты):', '', ...formulaLines, '', totalFormulaLine].join('\n')
-            : '';
-    }
-
     const baseText = base === 'actual'
         ? 'фактическое число дней в году'
         : `${base} дней`;
@@ -5053,24 +4868,6 @@ function calcLimitation() {
         `;
     }).join('');
 
-    const limFormulasBlock = document.getElementById('lim-formulas');
-    if (limFormulasBlock) {
-        const formulaLines = rows.map((row, index) => {
-            const startText = row.limitationStart ? limitationDateText(row.limitationStart) : 'не определено';
-            const endText = row.limitationEnd ? limitationDateText(row.limitationEnd) : 'не определено';
-            const base = `Платёж №${index + 1} от ${limitationDateText(row.dueDate)} на сумму ${limitationMoney(row.sum)} руб.: `
-                + `срок начинается ${startText} (день, следующий за датой платежа по графику) `
-                + `и заканчивается ${endText} (через 3 года по ст. 196 ГК РФ, с учётом приостановлений/перерывов). `
-                + `Дата иска: ${limitationDateText(claimDate)}. Статус: ${row.statusText}.`;
-            return base;
-        });
-        const summaryLine = `Основания изменения срока: ${suspensionPeriods.length ? 'приостановление/перерыв учтены (см. таблицу оснований ниже)' : 'не применялись'}.`;
-        limFormulasBlock.style.display = formulaLines.length ? 'block' : 'none';
-        limFormulasBlock.textContent = formulaLines.length
-            ? ['ПРАВОВОЕ ОБОСНОВАНИЕ СРОКА ИСКОВОЙ ДАВНОСТИ ПО КАЖДОМУ ПЛАТЕЖУ:', '', ...formulaLines, '', summaryLine].join('\n')
-            : '';
-    }
-
     const suspensionText = suspensionPeriods.length
         ? suspensionPeriods.map(period => {
             return `${period.type}: ${limitationDateText(period.start)} — ` +
@@ -5291,73 +5088,6 @@ function gk395GetRateInfo(date, region) {
     };
 }
 
-function toggleGk395ManualRates() {
-    const mode = document.getElementById('gk395-rate-mode').value;
-    document.getElementById('gk395-manual-rates-block').style.display = mode === 'manual' ? 'block' : 'none';
-}
-
-function addGk395ManualRateRow() {
-    document.getElementById('gk395-manual-rate-tbody').insertAdjacentHTML('beforeend',
-        `<tr><td><input type="date" class="gk395-manual-rate-date"></td><td><input type="number" class="gk395-manual-rate-value" min="0" step="0.01"></td><td><button type="button" class="danger-btn" onclick="removeGk395ManualRateRow(this)">Удалить</button></td></tr>`
-    );
-}
-
-function removeGk395ManualRateRow(button) {
-    const tbody = document.getElementById('gk395-manual-rate-tbody');
-    if (tbody.rows.length > 1) button.closest('tr').remove();
-}
-
-function gk395GetManualRates() {
-    const rates = [];
-    document.querySelectorAll('#gk395-manual-rate-tbody tr').forEach(row => {
-        const dateValue = row.querySelector('.gk395-manual-rate-date').value;
-        const rateValue = Number(row.querySelector('.gk395-manual-rate-value').value);
-        if (!dateValue || !Number.isFinite(rateValue) || rateValue < 0) return;
-        rates.push({ from: gk395ParseDate(dateValue), rate: rateValue });
-    });
-    return rates.sort((a, b) => a.from - b.from);
-}
-
-function gk395GetCombinedRates(manualRates) {
-    const combined = GK395_KEY_RATES.map(item => ({ from: gk395ParseDate(item.from), rate: item.rate, source: 'Ключевая ставка Банка России' }));
-    manualRates.forEach(item => {
-        combined.push({ from: item.from, rate: item.rate, source: 'Ставка добавлена пользователем вручную' });
-    });
-    return combined.sort((a, b) => a.from - b.from);
-}
-
-function gk395GetRateInfoWithMode(date, region, mode, manualRates) {
-    if (mode === 'key-only') {
-        const combined = gk395GetCombinedRates(manualRates);
-        let found = null;
-        for (const item of combined) {
-            if (item.from <= date) found = item;
-            else break;
-        }
-        return found ? { rate: found.rate, source: found.source } : { rate: null, source: '' };
-    }
-    if (mode === 'manual') {
-        let rate = null;
-        for (const item of manualRates) {
-            if (item.from <= date) rate = item.rate;
-            else break;
-        }
-        return { rate, source: 'Ставка задана вручную пользователем' };
-    }
-    const legalInfo = gk395GetRateInfo(date, region);
-    if (manualRates.length > 0) {
-        let manualOverride = null;
-        for (const item of manualRates) {
-            if (item.from <= date) manualOverride = item;
-            else break;
-        }
-        if (manualOverride && (!GK395_KEY_RATES.length || manualOverride.from >= gk395ParseDate(GK395_KEY_RATES[GK395_KEY_RATES.length - 1].from))) {
-            return { rate: manualOverride.rate, source: 'Ставка добавлена пользователем вручную (уточнение после последней встроенной даты)' };
-        }
-    }
-    return legalInfo;
-}
-
 function addGk395Row() {
     const tbody = document.getElementById('gk395-payment-tbody');
     const row = document.createElement('tr');
@@ -5419,13 +5149,11 @@ function gk395GetPayments(startDate, endDate) {
 function calcGK395() {
     const resultDiv = document.getElementById('gk395-result');
     const resultBody = document.getElementById('gk395-result-tbody');
+
     const debt = parseFloat(document.getElementById('gk395-debt').value);
     const startDate = gk395ParseDate(document.getElementById('gk395-start').value);
     const endDate = gk395ParseDate(document.getElementById('gk395-end').value);
     const region = document.getElementById('gk395-region').value;
-    const rateMode = document.getElementById('gk395-rate-mode').value;
-    const endRule = document.getElementById('gk395-end-rule').value;
-    const manualRates = gk395GetManualRates();
 
     if (!Number.isFinite(debt) || debt <= 0 || !startDate || !endDate) {
         resultDiv.className = 'result-box error';
@@ -5433,114 +5161,117 @@ function calcGK395() {
         resultBody.innerHTML = '';
         return;
     }
+
     if (endDate < startDate) {
         resultDiv.className = 'result-box error';
         resultDiv.textContent = 'Последний день начисления не может быть раньше первого дня.';
         resultBody.innerHTML = '';
         return;
     }
-    if (rateMode === 'manual' && manualRates.length === 0) {
-        resultDiv.className = 'result-box error';
-        resultDiv.textContent = 'Добавьте хотя бы одну ставку в таблицу ручного ввода.';
-        resultBody.innerHTML = '';
-        return;
-    }
-
-    const effectiveEndDate = endRule === 'exclude' ? gk395AddDays(endDate, -1) : endDate;
-    if (effectiveEndDate < startDate) {
-        resultDiv.className = 'result-box error';
-        resultDiv.textContent = 'При исключении даты окончания период расчёта становится пустым. Проверьте даты.';
-        resultBody.innerHTML = '';
-        return;
-    }
 
     const lastKnownRateDate = gk395LastKnownRateDate();
-    const needsManualExtension = rateMode !== 'manual' && effectiveEndDate > lastKnownRateDate;
-    const lastManualRateDate = manualRates.length ? manualRates[manualRates.length - 1].from : null;
-
-    if (needsManualExtension && (!lastManualRateDate || lastManualRateDate <= lastKnownRateDate)) {
+    if (endDate > lastKnownRateDate) {
         resultDiv.className = 'result-box error';
         resultDiv.textContent =
-            `В таблице встроенных ставок нет данных после ${gk395FormatDate(lastKnownRateDate)}.\n\n` +
-            `Чтобы рассчитать проценты на более позднюю дату (например, ${gk395FormatDate(effectiveEndDate)}), ` +
-            `откройте официальный сайт Банка России (cbr.ru, раздел «Ключевая ставка»), КонсультантПлюс или Гарант, ` +
-            `узнайте актуальную ключевую ставку на нужную дату и добавьте её в таблицу «Ручные ставки по периодам» выше ` +
-            `(укажите дату начала действия ставки). После этого повторите расчёт — калькулятор автоматически ` +
-            `объединит встроенные и добавленные вручную ставки.`;
+            `В таблице ставок нет подтверждённых данных для периода после ` +
+            `${gk395FormatDate(lastKnownRateDate)}.\n\nОбновите массив GK395_KEY_RATES по официальным решениям Банка России и повторите расчёт.`;
         resultBody.innerHTML = '';
         return;
     }
 
-    const payments = gk395GetPayments(startDate, effectiveEndDate);
+    const payments = gk395GetPayments(startDate, endDate);
+
     const events = new Map();
+
     function addEvent(date, event) {
         const key = gk395DateKey(date);
-        if (!events.has(key)) events.set(key, { date: new Date(date), payments: [] });
-        if (event.type === 'payment') events.get(key).payments.push(event);
+        if (!events.has(key)) {
+            events.set(key, {
+                date: new Date(date),
+                payments: [],
+                rateChange: false
+            });
+        }
+        if (event.type === 'payment') {
+            events.get(key).payments.push(event);
+        }
+        if (event.type === 'rate') {
+            events.get(key).rateChange = true;
+        }
     }
 
     addEvent(startDate, { type: 'start' });
-    addEvent(gk395AddDays(effectiveEndDate, 1), { type: 'end' });
-    payments.forEach(payment => addEvent(payment.date, { type: 'payment', amount: payment.amount }));
+    addEvent(gk395AddDays(endDate, 1), { type: 'end' });
 
-    if (rateMode === 'manual') {
-        manualRates.forEach(item => {
-            if (item.from > startDate && item.from <= effectiveEndDate) addEvent(item.from, { type: 'rate' });
+    payments.forEach(payment => {
+        addEvent(payment.date, {
+            type: 'payment',
+            amount: payment.amount
         });
-    } else {
-        const combinedRates = gk395GetCombinedRates(manualRates);
-        combinedRates.forEach(item => {
-            if (item.from > startDate && item.from <= effectiveEndDate) addEvent(item.from, { type: 'rate' });
-        });
-    }
+    });
 
-    for (let year = startDate.getFullYear() + 1; year <= effectiveEndDate.getFullYear(); year += 1) {
+    GK395_KEY_RATES.forEach(item => {
+        const date = gk395ParseDate(item.from);
+        if (date > startDate && date <= endDate) {
+            addEvent(date, { type: 'rate' });
+        }
+    });
+
+    for (let year = startDate.getFullYear() + 1; year <= endDate.getFullYear(); year += 1) {
         const newYear = new Date(year, 0, 1);
-        if (newYear > startDate && newYear <= effectiveEndDate) addEvent(newYear, { type: 'year' });
+        if (newYear > startDate && newYear <= endDate) {
+            addEvent(newYear, { type: 'year' });
+        }
     }
 
     const timeline = Array.from(events.values()).sort((a, b) => a.date - b.date);
+
     let balance = gk395Round(debt);
     let totalInterest = 0;
     let totalPaid = 0;
+
     const rows = [];
     const warnings = [];
 
-    if (rateMode === 'legal' && startDate < new Date(2016, 7, 1)) {
-        warnings.push('Период до 01.08.2016 рассчитан предварительно: для судебного расчёта замените временные ставки полной исторической таблицей Банка России.');
-    }
-    if (needsManualExtension) {
-        warnings.push(`Часть периода (после ${gk395FormatDate(lastKnownRateDate)}) рассчитана по ставке, добавленной вами вручную. Проверьте её актуальность на сайте cbr.ru, КонсультантПлюс или Гарант перед использованием расчёта в суде.`);
+    if (startDate < new Date(2016, 7, 1)) {
+        warnings.push(
+            'Период до 01.08.2016 рассчитан предварительно: для судебного расчёта требуется заменить временные ставки полной исторической таблицей Банка России.'
+        );
     }
 
     for (let index = 0; index < timeline.length - 1; index += 1) {
         const currentEvent = timeline[index];
         const nextEvent = timeline[index + 1];
+
+        // Применяем платежи в начале дня
         currentEvent.payments.forEach(payment => {
             const applied = Math.min(payment.amount, balance);
             balance = gk395Round(balance - applied);
             totalPaid = gk395Round(totalPaid + applied);
         });
-        const days = gk395DaysBetween(currentEvent.date, nextEvent.date);
-        if (days <= 0 || balance <= 0) continue;
 
-        const rateInfo = gk395GetRateInfoWithMode(currentEvent.date, region, rateMode, manualRates);
+        const days = gk395DaysBetween(currentEvent.date, nextEvent.date);
+        if (days <= 0 || balance <= 0) {
+            continue;
+        }
+
+        const rateInfo = gk395GetRateInfo(currentEvent.date, region);
         if (!Number.isFinite(rateInfo.rate)) {
             resultDiv.className = 'result-box error';
-            resultDiv.textContent = `Не найдена ставка для даты ${gk395FormatDate(currentEvent.date)}. Добавьте ставку на эту дату в таблицу «Ручные ставки по периодам» (данные можно взять с сайта cbr.ru, КонсультантПлюс или Гарант).`;
+            resultDiv.textContent = `Не найдена ставка для даты ${gk395FormatDate(currentEvent.date)}.`;
             resultBody.innerHTML = '';
             return;
         }
+
         const denominator = gk395DaysInYear(currentEvent.date);
         const interest = balance * (rateInfo.rate / 100) * days / denominator;
         totalInterest = gk395Round(totalInterest + interest);
+
         rows.push({
             from: new Date(currentEvent.date),
             to: gk395AddDays(nextEvent.date, -1),
             days,
             rate: rateInfo.rate,
-            source: rateInfo.source,
-            denominator,
             debt: balance,
             interest: gk395Round(interest)
         });
@@ -5551,43 +5282,39 @@ function calcGK395() {
             <td>${gk395FormatDate(row.from)} — ${gk395FormatDate(row.to)}</td>
             <td>${row.days}</td>
             <td>${row.rate.toFixed(2)}%</td>
-            <td>${row.source}</td>
             <td>${gk395Money(row.debt)} руб.</td>
             <td>${gk395Money(row.interest)} руб.</td>
         </tr>
     `).join('');
 
-    const gk395FormulasBlock = document.getElementById('gk395-formulas');
-    if (gk395FormulasBlock) {
-        const formulaLines = rows.map(row => {
-            return `${gk395FormatDate(row.from)} — ${gk395FormatDate(row.to)}: `
-                + `${gk395Money(row.debt)} руб. x ${row.rate.toFixed(2)}% / ${row.denominator} дн. x ${row.days} дн. `
-                + `= ${gk395Money(row.interest)} руб. (${row.source})`;
-        });
-        const totalFormulaLine = `ИТОГО процентов по ст. 395 ГК РФ: ${gk395Money(totalInterest)} руб.`;
-        gk395FormulasBlock.style.display = formulaLines.length ? 'block' : 'none';
-        gk395FormulasBlock.textContent = formulaLines.length
-            ? ['РАСЧЁТ ПРОЦЕНТОВ ПО ПЕРИОДАМ (долг x ставка / база x дни = проценты):', '', ...formulaLines, '', totalFormulaLine].join('\n')
-            : '';
-    }
-
-    const currentRateInfo = gk395GetRateInfoWithMode(effectiveEndDate, region, rateMode, manualRates);
-    const endRuleText = endRule === 'include' ? 'включена' : 'не включена';
-    const rateModeText = rateMode === 'legal' ? 'по закону' : rateMode === 'key-only' ? 'только ключевая ставка Банка России' : 'ручной ввод ставок';
+    const currentRateInfo = gk395GetRateInfo(endDate, region);
 
     resultDiv.className = 'result-box';
     resultDiv.textContent =
-        `РАСЧЁТ ПРОЦЕНТОВ ПО СТ. 395 ГК РФ\n\n` +
-        `Первый день начисления: ${gk395FormatDate(startDate)}\n` +
-        `Указанная конечная дата: ${gk395FormatDate(endDate)}\n` +
-        `Дата окончания ${endRuleText}.\n` +
-        `Режим ставки: ${rateModeText}.\n` +
-        `Ставка на последний учитываемый день: ${currentRateInfo.rate.toFixed(2)}% (${currentRateInfo.source}).\n\n` +
-        `Сумма основного долга на начало: ${gk395Money(debt)} руб.\n` +
-        `Учтено платежей: ${gk395Money(totalPaid)} руб.\n` +
-        `Остаток долга: ${gk395Money(balance)} руб.\n` +
-        `Всего процентов: ${gk395Money(totalInterest)} руб.` +
-        (warnings.length ? `\n\nПредупреждение: ${warnings.join(' ')}` : '');
+        `РАСЧЁТ ПРОЦЕНТОВ ПО СТ. 395 ГК РФ
+
+` +
+        `Первый день начисления: ${gk395FormatDate(startDate)}
+` +
+        `Последний день начисления: ${gk395FormatDate(endDate)}
+` +
+        `Начальная сумма долга: ${gk395Money(debt)} руб.
+` +
+        `Учтено платежей: ${gk395Money(totalPaid)} руб.
+` +
+        `Остаток основного долга: ${gk395Money(balance)} руб.
+` +
+        `Ставка на последний день расчёта: ${currentRateInfo.rate.toFixed(2)}% годовых
+
+` +
+        `ИТОГО ПРОЦЕНТЫ: ${gk395Money(totalInterest)} руб.
+
+` +
+        `Правило расчёта: платёж уменьшает основной долг в день его внесения; за дату платежа проценты начисляются на уменьшенный остаток.` +
+        (warnings.length ? `
+
+ВНИМАНИЕ:
+${warnings.join('\n')}` : '');
 }
 
 // ============================================================
@@ -5848,36 +5575,6 @@ document.addEventListener('DOMContentLoaded', function () {
         </div>
 
         <div class="payment-block">
-            <label><strong>Страхование</strong></label>
-            <div class="inline-group">
-                <div class="form-group">
-                    <label for="credit-debt-insurance-used">Страховая премия предусмотрена?</label>
-                    <select id="credit-debt-insurance-used" onchange="toggleCreditDebtInsuranceFields()">
-                        <option value="no">Нет</option>
-                        <option value="yes">Да</option>
-                    </select>
-                </div>
-            </div>
-            <div id="credit-debt-insurance-fields" style="display:none">
-                <div class="inline-group">
-                    <div class="form-group">
-                        <label for="credit-debt-insurance-sum">Сумма премии, руб.</label>
-                        <input type="number" id="credit-debt-insurance-sum" value="0" min="0.01" step="0.01">
-                    </div>
-                    <div class="form-group">
-                        <label for="credit-debt-insurance-mode">Способ уплаты премии</label>
-                        <select id="credit-debt-insurance-mode">
-                            <option value="separate">Оплачена отдельно (не входит в тело кредита)</option>
-                            <option value="withheld">Удержана при выдаче (тело кредита не увеличивается)</option>
-                            <option value="included">Включена в сумму кредита (увеличивает основной долг)</option>
-                        </select>
-                    </div>
-                </div>
-                <p class="muted">При выборе «включена в сумму кредита» основной долг для расчёта графика и процентов увеличивается на сумму премии. При выборе «удержана при выдаче» заёмщик фактически получает сумму за вычетом премии, но график строится от полной суммы кредита. При выборе «оплачена отдельно» премия не участвует в кредитном расчёте.</p>
-            </div>
-        </div>
-
-        <div class="payment-block">
             <label><strong>Неустойка</strong></label>
 
             <div class="inline-group">
@@ -6033,7 +5730,7 @@ document.addEventListener('DOMContentLoaded', function () {
         </div>
 
         <div class="scroll-table">
-            <table id="credit-debt-result-table">
+            <table>
                 <thead>
                     <tr>
                         <th>Дата</th>
@@ -6051,12 +5748,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 <tbody id="credit-debt-result-tbody"></tbody>
             </table>
         </div>
-
-        <button type="button" class="add-row-btn" onclick="copyTable('credit-debt-result-table')">📋 Копировать таблицу</button>
-
-        <div id="credit-debt-formulas" class="result-box" style="display:none; white-space: pre-wrap; margin-top: 10px;"></div>
-
-        <button type="button" class="add-row-btn" style="background:#6b7280" onclick="copyFormulas('credit-debt-formulas')">🧮 Копировать формулы расчёта</button>
     `;
 
     const scriptElement = document.querySelector('script');
@@ -6864,23 +6555,6 @@ function calcCreditDebt() {
         return;
     }
 
-    const insuranceUsed = document.getElementById('credit-debt-insurance-used').value === 'yes';
-    const insuranceMode = document.getElementById('credit-debt-insurance-mode').value;
-    const insuranceSum = Number(document.getElementById('credit-debt-insurance-sum').value) || 0;
-
-    if (insuranceUsed && (!Number.isFinite(insuranceSum) || insuranceSum <= 0)) {
-        summary.className = 'result-box error';
-        summary.textContent = 'Укажите корректную сумму страховой премии.';
-        resultBody.innerHTML = '';
-        return;
-    }
-
-    let insuranceIncludedInDebt = 0;
-    if (insuranceUsed && insuranceMode === 'included') {
-        insuranceIncludedInDebt = creditDebtRound(insuranceSum);
-        data.amount = creditDebtRound(data.amount + insuranceIncludedInDebt);
-    }
-
     let priority;
 
     try {
@@ -7193,40 +6867,12 @@ function calcCreditDebt() {
         </tr>
     `).join('');
 
-    const creditDebtFormulasBlock = document.getElementById('credit-debt-formulas');
-    if (creditDebtFormulasBlock) {
-        const formulaLines = resultRows
-            .filter(row => row.interestPaid > 0 || row.principalPaid > 0 || row.penalty > 0 || row.overdueInterest > 0 || row.overduePrincipal > 0)
-            .map(row => {
-                const parts = [];
-                if (row.interestPaid > 0) parts.push(`погашено процентов ${creditDebtMoney(row.interestPaid)} руб.`);
-                if (row.principalPaid > 0) parts.push(`погашено основного долга ${creditDebtMoney(row.principalPaid)} руб.`);
-                if (row.overdueInterest > 0) parts.push(`просроченные проценты ${creditDebtMoney(row.overdueInterest)} руб.`);
-                if (row.overduePrincipal > 0) parts.push(`просроченный основной долг ${creditDebtMoney(row.overduePrincipal)} руб.`);
-                if (row.penalty > 0) parts.push(`неустойка (нарастающим итогом) ${creditDebtMoney(row.penalty)} руб.`);
-                return `${creditDebtFormatDate(row.date)} (${row.event}): ${parts.join('; ')}.`;
-            });
-        creditDebtFormulasBlock.style.display = formulaLines.length ? 'block' : 'none';
-        creditDebtFormulasBlock.textContent = formulaLines.length
-            ? ['РАСШИФРОВКА ДВИЖЕНИЯ ЗАДОЛЖЕННОСТИ ПО СОБЫТИЯМ:', '', ...formulaLines].join('\n')
-            : '';
-    }
-
-    const insuranceText = insuranceUsed
-        ? (insuranceMode === 'included'
-            ? `Страхование: премия ${creditDebtMoney(insuranceIncludedInDebt)} руб. включена в тело кредита и увеличивает основной долг и начисляемые проценты.`
-            : insuranceMode === 'withheld'
-                ? `Страхование: премия ${creditDebtMoney(insuranceSum)} руб. удержана при выдаче; тело кредита в расчёте не увеличено.`
-                : `Страхование: премия ${creditDebtMoney(insuranceSum)} руб. оплачена отдельно и не участвует в кредитном расчёте.`)
-        : 'Страхование: премия по договору не предусмотрена.';
-
     summary.className = 'result-box';
     summary.textContent =
         `РАСЧЁТ ЗАДОЛЖЕННОСТИ ПО КРЕДИТНОМУ ДОГОВОРУ\n\n` +
         `Дата расчёта: ${creditDebtFormatDate(data.calculationDate)}\n` +
         `Вид графика: ${data.type === 'annuity' ? 'аннуитетный' : 'дифференцированный'}\n` +
-        `Очередность погашения: ${priorityText}\n` +
-        `${insuranceText}\n\n` +
+        `Очередность погашения: ${priorityText}\n\n` +
 
         `ОСНОВНОЙ ДОЛГ\n` +
         `Текущий основной долг: ${creditDebtMoney(currentPrincipal)} руб.\n` +
@@ -7540,6 +7186,522 @@ document.addEventListener('DOMContentLoaded', function() {
             `Примечание: расчёт является ориентировочным. Суд проверяет документальное подтверждение, необходимость и разумность издержек, а также наличие предусмотренных законом льгот.`;
     });
 });
+
+
+// ========== ВКЛАДКА 9: ЗАКОН О ЗАЩИТЕ ПРАВ ПОТРЕБИТЕЛЕЙ ==========
+document.addEventListener('DOMContentLoaded', function () {
+    const tabsContainer = document.getElementById('tabs');
+    if (tabsContainer && !document.querySelector('[data-tab="tab9"]')) {
+        const tabButton = document.createElement('button');
+        tabButton.className = 'tab-btn';
+        tabButton.dataset.tab = 'tab9';
+        tabButton.textContent = 'Защита прав потребителей';
+        tabButton.addEventListener('click', function() {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            tabButton.classList.add('active');
+            const tab = document.getElementById('tab9');
+            if (tab) tab.classList.add('active');
+        });
+        tabsContainer.appendChild(tabButton);
+    }
+    if (document.getElementById('tab9')) return;
+
+    const tab = document.createElement('div');
+    tab.id = 'tab9';
+    tab.className = 'tab-content';
+    tab.innerHTML = `
+        <h2>Расчёт по Закону РФ «О защите прав потребителей»</h2>
+        <div class="note">
+            Калькулятор рассчитывает неустойку (пени) по требованиям потребителя,
+            штраф за отказ от добровольного удовлетворения требований (п. 6 ст. 13 Закона)
+            и итоговую сумму, подлежащую взысканию. Расчёт учитывает разъяснения
+            Постановления Пленума Верховного Суда РФ от 28.06.2012 № 17 «О рассмотрении
+            судами гражданских дел по спорам о защите прав потребителей», а также
+            правовую позицию Конституционного Суда РФ о соразмерности неустойки
+            последствиям нарушения обязательства (ст. 333 ГК РФ). Суд применяет
+            статью 333 ГК РФ по своей инициативе или по заявлению ответчика —
+            калькулятор такое уменьшение не производит и показывает неустойку
+            в размере, предусмотренном законом.
+        </div>
+
+        <div class="payment-block">
+            <label><strong>Вид требования потребителя</strong></label>
+            <div class="form-group">
+                <label for="zpp-claim-type">Основание неустойки</label>
+                <select id="zpp-claim-type" onchange="toggleZppFields()">
+                    <option value="work-delay">Нарушение срока выполнения работы / оказания услуги (ст. 28)</option>
+                    <option value="defect-fix-delay">Нарушение срока устранения недостатков товара/работы (ст. 20, 30)</option>
+                    <option value="prepaid-goods-delay">Нарушение срока передачи предварительно оплаченного товара (ст. 23.1)</option>
+                    <option value="voluntary-refusal">Отказ добровольно удовлетворить требование потребителя (ст. 22, 23)</option>
+                </select>
+            </div>
+            <div class="muted" id="zpp-claim-hint"></div>
+        </div>
+
+        <div class="payment-block">
+            <label><strong>Данные для расчёта неустойки</strong></label>
+            <div class="inline-group">
+                <div class="form-group">
+                    <label id="zpp-base-label">Цена товара (работы, услуги), руб.</label>
+                    <input type="number" id="zpp-base-amount" value="50000" min="0.01" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>Ставка неустойки, % в день</label>
+                    <select id="zpp-rate-percent">
+                        <option value="3">3% в день (ст. 28, 20, 30 — работы/услуги)</option>
+                        <option value="0.5">0,5% в день (ст. 23.1 — предоплаченный товар)</option>
+                        <option value="1">1% в день (ст. 23 — за просрочку требований потребителя)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="inline-group">
+                <div class="form-group">
+                    <label>Дата начала просрочки</label>
+                    <input type="date" id="zpp-start" value="2026-05-01">
+                    <div class="muted">День, следующий за днём, когда обязательство должно было быть исполнено.</div>
+                </div>
+                <div class="form-group">
+                    <label>Дата окончания просрочки</label>
+                    <input type="date" id="zpp-end" value="2026-08-15">
+                    <div class="muted">Обычно — дата фактического исполнения либо дата расчёта / подачи иска.</div>
+                </div>
+            </div>
+            <div class="muted">
+                По общему правилу неустойка не может превышать цену товара, работы, услуги
+                (п. 5 ст. 28 Закона), а для отдельных требований — сумму предварительной оплаты.
+                Калькулятор ограничивает неустойку этим лимитом автоматически.
+            </div>
+        </div>
+
+        <div class="payment-block">
+            <label><strong>Дополнительные требования</strong></label>
+            <div class="inline-group">
+                <div class="form-group">
+                    <label>Убытки, причинённые потребителю, руб.</label>
+                    <input type="number" id="zpp-losses" value="0" min="0" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>Компенсация морального вреда, руб.</label>
+                    <input type="number" id="zpp-moral" value="0" min="0" step="0.01">
+                    <div class="muted">Размер определяется судом самостоятельно (ст. 15 Закона), не зависит от размера имущественного вреда.</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Было ли требование потребителя добровольно (полностью) удовлетворено до подачи иска?</label>
+                <select id="zpp-voluntary-satisfied">
+                    <option value="no">Нет — штраф по п. 6 ст. 13 подлежит взысканию</option>
+                    <option value="yes">Да, до обращения в суд</option>
+                </select>
+                <div class="muted">
+                    Согласно п. 46 Постановления Пленума ВС РФ № 17, штраф в размере 50%
+                    взыскивается независимо от того, заявлялось ли такое требование суду,
+                    если требования потребителя не были удовлетворены исполнителем добровольно.
+                </div>
+            </div>
+        </div>
+
+        <button type="button" class="btn" onclick="calcZpp()">Рассчитать</button>
+
+        <div class="result-wrapper">
+            <div id="zpp-result" class="result-box">Заполните данные и нажмите «Рассчитать».</div>
+            <button class="copy-btn" onclick="copyResult('zpp-result')">Копировать</button>
+        </div>
+        <div id="zpp-formulas" class="result-box" style="display:none; white-space: pre-wrap; margin-top: 10px;"></div>
+        <button type="button" class="add-row-btn" style="background:#6b7280" onclick="copyFormulas('zpp-formulas')">Копировать формулы</button>
+    `;
+    document.body.appendChild(tab);
+});
+
+function toggleZppFields() {
+    const type = document.getElementById('zpp-claim-type').value;
+    const rateSelect = document.getElementById('zpp-rate-percent');
+    const baseLabel = document.getElementById('zpp-base-label');
+    const hint = document.getElementById('zpp-claim-hint');
+
+    if (type === 'work-delay' || type === 'defect-fix-delay') {
+        rateSelect.value = '3';
+        baseLabel.textContent = 'Цена работы, услуги (или её невыполненной части), руб.';
+        hint.textContent = 'Ст. 28, 30 Закона: 3% цены выполнения работы (оказания услуги) за каждый день просрочки. Неустойка не может превышать цену работы/услуги.';
+    } else if (type === 'prepaid-goods-delay') {
+        rateSelect.value = '0.5';
+        baseLabel.textContent = 'Сумма предварительной оплаты товара, руб.';
+        hint.textContent = 'Ст. 23.1 Закона: 0,5% суммы предоплаты за каждый день просрочки передачи товара. Неустойка не может превышать сумму предоплаты.';
+    } else if (type === 'voluntary-refusal') {
+        rateSelect.value = '1';
+        baseLabel.textContent = 'Цена товара на день предъявления требования, руб.';
+        hint.textContent = 'Ст. 23 Закона: 1% цены товара за каждый день просрочки исполнения требований о замене, возврате денег и др. Неустойка не ограничена ценой товара.';
+    }
+}
+
+function zppParseDate(value) {
+    if (!value) return null;
+    const parts = value.split('-').map(Number);
+    return new Date(parts[0], parts[1] - 1, parts[2]);
+}
+
+function zppDaysBetween(from, to) {
+    return Math.round((to.getTime() - from.getTime()) / 86400000) + 1;
+}
+
+function zppRound(value) {
+    return Math.round((Number(value) + Number.EPSILON) * 100) / 100;
+}
+
+function zppMoney(value) {
+    return zppRound(value).toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function calcZpp() {
+    const resultDiv = document.getElementById('zpp-result');
+    const formulasBlock = document.getElementById('zpp-formulas');
+    const claimType = document.getElementById('zpp-claim-type').value;
+    const baseAmount = parseFloat(document.getElementById('zpp-base-amount').value);
+    const ratePercent = parseFloat(document.getElementById('zpp-rate-percent').value);
+    const startValue = document.getElementById('zpp-start').value;
+    const endValue = document.getElementById('zpp-end').value;
+    const losses = parseFloat(document.getElementById('zpp-losses').value) || 0;
+    const moral = parseFloat(document.getElementById('zpp-moral').value) || 0;
+    const voluntarySatisfied = document.getElementById('zpp-voluntary-satisfied').value === 'yes';
+
+    if (!Number.isFinite(baseAmount) || baseAmount <= 0 || !startValue || !endValue) {
+        resultDiv.className = 'result-box error';
+        resultDiv.textContent = 'Заполните сумму и обе даты просрочки.';
+        formulasBlock.style.display = 'none';
+        return;
+    }
+
+    const startDate = zppParseDate(startValue);
+    const endDate = zppParseDate(endValue);
+
+    if (endDate < startDate) {
+        resultDiv.className = 'result-box error';
+        resultDiv.textContent = 'Дата окончания просрочки не может быть раньше даты начала.';
+        formulasBlock.style.display = 'none';
+        return;
+    }
+
+    const days = zppDaysBetween(startDate, endDate);
+    const rawPenalty = zppRound(baseAmount * (ratePercent / 100) * days);
+
+    let penaltyLimit = null;
+    let limitText = '';
+    if (claimType === 'work-delay' || claimType === 'defect-fix-delay') {
+        penaltyLimit = baseAmount;
+        limitText = 'Неустойка ограничена ценой работы (услуги) — п. 5 ст. 28 Закона.';
+    } else if (claimType === 'prepaid-goods-delay') {
+        penaltyLimit = baseAmount;
+        limitText = 'Неустойка ограничена суммой предварительной оплаты — ст. 23.1 Закона.';
+    } else {
+        limitText = 'Неустойка по ст. 23 Закона законом не ограничена предельным размером.';
+    }
+
+    const penalty = penaltyLimit !== null ? Math.min(rawPenalty, penaltyLimit) : rawPenalty;
+    const isLimited = penaltyLimit !== null && rawPenalty > penaltyLimit;
+
+    const preClaimAmount = zppRound(penalty + losses + moral);
+
+    let penaltyBase = 0;
+    let penaltyText = 'Штраф по п. 6 ст. 13 Закона не взыскивается — требования потребителя удовлетворены добровольно до обращения в суд.';
+    if (!voluntarySatisfied) {
+        penaltyBase = preClaimAmount;
+        penaltyText = 'Штраф по п. 6 ст. 13 Закона взыскивается независимо от того, заявлялось ли такое требование суду (п. 46 Постановления Пленума ВС РФ № 17 от 28.06.2012).';
+    }
+    const consumerPenalty = zppRound(penaltyBase * 0.5);
+
+    const totalToRecover = zppRound(preClaimAmount + consumerPenalty);
+
+    document.querySelectorAll('.zpp-result-row').forEach(el => el.remove());
+
+    resultDiv.className = 'result-box';
+    resultDiv.textContent =
+        `Период просрочки: с ${startDate.toLocaleDateString('ru-RU')} по ${endDate.toLocaleDateString('ru-RU')} (${days} дн.)\n` +
+        `Ставка неустойки: ${ratePercent}% в день от суммы ${zppMoney(baseAmount)} руб.\n` +
+        `Неустойка без учёта ограничения: ${zppMoney(rawPenalty)} руб.\n` +
+        (isLimited ? `Неустойка ограничена лимитом: ${zppMoney(penaltyLimit)} руб. (${limitText})\n` : `${limitText}\n`) +
+        `Неустойка к взысканию: ${zppMoney(penalty)} руб.\n` +
+        `Убытки: ${zppMoney(losses)} руб.\n` +
+        `Компенсация морального вреда: ${zppMoney(moral)} руб.\n` +
+        `\nСумма требований потребителя (неустойка + убытки + моральный вред): ${zppMoney(preClaimAmount)} руб.\n` +
+        `\n${penaltyText}\n` +
+        `Штраф 50% от суммы, присуждённой в пользу потребителя: ${zppMoney(consumerPenalty)} руб.\n` +
+        `\nИТОГО ПОДЛЕЖИТ ВЗЫСКАНИЮ В ПОЛЬЗУ ПОТРЕБИТЕЛЯ: ${zppMoney(totalToRecover)} руб.\n` +
+        `\nПравовые основания: Закон РФ от 07.02.1992 № 2300-1 «О защите прав потребителей» ` +
+        `(ст. 13, 15, 20, 22, 23, 23.1, 28, 30), Постановление Пленума Верховного Суда РФ ` +
+        `от 28.06.2012 № 17. Суд вправе уменьшить размер неустойки на основании ст. 333 ГК РФ ` +
+        `с учётом правовых позиций Конституционного Суда РФ (Определения от 21.12.2000 № 263-О, ` +
+        `от 15.01.2015 № 6-О) — калькулятор такое уменьшение не производит.`;
+
+    formulasBlock.style.display = 'block';
+    formulasBlock.textContent =
+        `Неустойка = Сумма × Ставка(%) × Дней\n` +
+        `${zppMoney(baseAmount)} × ${ratePercent}% × ${days} дн. = ${zppMoney(rawPenalty)} руб.\n` +
+        (isLimited ? `Применён лимит: min(${zppMoney(rawPenalty)}; ${zppMoney(penaltyLimit)}) = ${zppMoney(penalty)} руб.\n` : '') +
+        `\nШтраф = (Неустойка + Убытки + Моральный вред) × 50%\n` +
+        `Штраф = ${zppMoney(preClaimAmount)} × 50% = ${zppMoney(consumerPenalty)} руб.\n` +
+        `\nИтого = Неустойка + Убытки + Моральный вред + Штраф\n` +
+        `Итого = ${zppMoney(penalty)} + ${zppMoney(losses)} + ${zppMoney(moral)} + ${zppMoney(consumerPenalty)} = ${zppMoney(totalToRecover)} руб.`;
+}
+
+// ========== ВКЛАДКА 10: РАСЧЁТ ПО ОСАГО ==========
+document.addEventListener('DOMContentLoaded', function () {
+    const tabsContainer = document.getElementById('tabs');
+    if (tabsContainer && !document.querySelector('[data-tab="tab10"]')) {
+        const tabButton = document.createElement('button');
+        tabButton.className = 'tab-btn';
+        tabButton.dataset.tab = 'tab10';
+        tabButton.textContent = 'ОСАГО';
+        tabButton.addEventListener('click', function() {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            tabButton.classList.add('active');
+            const tab = document.getElementById('tab10');
+            if (tab) tab.classList.add('active');
+        });
+        tabsContainer.appendChild(tabButton);
+    }
+    if (document.getElementById('tab10')) return;
+
+    const tab = document.createElement('div');
+    tab.id = 'tab10';
+    tab.className = 'tab-content';
+    tab.innerHTML = `
+        <h2>Расчёт по Закону «Об ОСАГО»</h2>
+        <div class="note">
+            Калькулятор рассчитывает неустойку за нарушение срока страховой выплаты
+            (п. 21 ст. 12 Закона об ОСАГО), финансовую санкцию за нарушение срока
+            направления мотивированного отказа и штраф в размере 50% от разницы между
+            надлежащим и фактически выплаченным страховым возмещением (п. 3 ст. 16.1
+            Закона об ОСАГО). Расчёт учитывает разъяснения Постановления Пленума
+            Верховного Суда РФ от 08.11.2022 № 31 «О применении судами законодательства
+            об обязательном страховании гражданской ответственности владельцев
+            транспортных средств».
+        </div>
+
+        <div class="payment-block">
+            <label><strong>Обращение к страховщику и выплата</strong></label>
+            <div class="inline-group">
+                <div class="form-group">
+                    <label>Дата подачи заявления о страховой выплате (с полным комплектом документов)</label>
+                    <input type="date" id="osago-application-date" value="2026-04-01">
+                </div>
+                <div class="form-group">
+                    <label>Вид причинённого вреда</label>
+                    <select id="osago-harm-type" onchange="toggleOsagoLimit()">
+                        <option value="property">Вред имуществу (лимит 400 000 руб.)</option>
+                        <option value="health">Вред жизни или здоровью (лимит 500 000 руб.)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="muted">
+                Страховщик обязан произвести выплату (либо направить мотивированный отказ)
+                в течение 20 календарных дней со дня получения заявления, за исключением
+                выходных и праздничных дней (абз. 2 п. 21 ст. 12 Закона об ОСАГО).
+                Просрочка начинается с 21-го дня.
+            </div>
+        </div>
+
+        <div class="payment-block">
+            <label><strong>Данные для расчёта неустойки за просрочку выплаты</strong></label>
+            <div class="inline-group">
+                <div class="form-group">
+                    <label>Надлежащий размер страхового возмещения, руб.</label>
+                    <input type="number" id="osago-due-amount" value="150000" min="0" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>Фактически выплачено добровольно, руб.</label>
+                    <input type="number" id="osago-paid-amount" value="70000" min="0" step="0.01">
+                </div>
+            </div>
+            <div class="inline-group">
+                <div class="form-group">
+                    <label>Дата фактической выплаты невыплаченной части (или дата расчёта/иска)</label>
+                    <input type="date" id="osago-end-date" value="2026-08-15">
+                </div>
+                <div class="form-group">
+                    <label>Страховая сумма (лимит ответственности), руб.</label>
+                    <input type="number" id="osago-limit-amount" value="400000" min="0" step="0.01">
+                </div>
+            </div>
+        </div>
+
+        <div class="payment-block">
+            <label><strong>Финансовая санкция за непредставление мотивированного отказа</strong></label>
+            <div class="form-group">
+                <label>Страховщик направил мотивированный отказ в выплате в установленный срок?</label>
+                <select id="osago-refusal-timely">
+                    <option value="yes">Да, отказ направлен своевременно либо выплата произведена</option>
+                    <option value="no">Нет, мотивированный отказ не направлен / направлен с нарушением срока</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="payment-block">
+            <label><strong>Штраф по п. 3 ст. 16.1 Закона об ОСАГО</strong></label>
+            <div class="form-group">
+                <label>Требование потребителя было полностью исполнено добровольно до обращения в суд (в т.ч. по претензии)?</label>
+                <select id="osago-voluntary-satisfied">
+                    <option value="no">Нет — штраф подлежит взысканию</option>
+                    <option value="yes">Да, исполнено в полном объёме до подачи иска</option>
+                </select>
+                <div class="muted">
+                    Штраф не взыскивается, если страховщик исполнил обязательство в добровольном
+                    порядке до вступления в силу решения суда либо страхователь являлся
+                    юридическим лицом (п. 3 ст. 16.1 Закона об ОСАГО распространяется на
+                    потерпевшего — физическое лицо).
+                </div>
+            </div>
+        </div>
+
+        <button type="button" class="btn" onclick="calcOsago()">Рассчитать</button>
+
+        <div class="result-wrapper">
+            <div id="osago-result" class="result-box">Заполните данные и нажмите «Рассчитать».</div>
+            <button class="copy-btn" onclick="copyResult('osago-result')">Копировать</button>
+        </div>
+        <div id="osago-formulas" class="result-box" style="display:none; white-space: pre-wrap; margin-top: 10px;"></div>
+        <button type="button" class="add-row-btn" style="background:#6b7280" onclick="copyFormulas('osago-formulas')">Копировать формулы</button>
+    `;
+    document.body.appendChild(tab);
+});
+
+function toggleOsagoLimit() {
+    const harmType = document.getElementById('osago-harm-type').value;
+    const limitInput = document.getElementById('osago-limit-amount');
+    limitInput.value = harmType === 'health' ? 500000 : 400000;
+}
+
+function osagoParseDate(value) {
+    if (!value) return null;
+    const parts = value.split('-').map(Number);
+    return new Date(parts[0], parts[1] - 1, parts[2]);
+}
+
+function osagoAddDays(date, days) {
+    const result = new Date(date);
+    result.setDate(result.getDate() + days);
+    return result;
+}
+
+function osagoDaysBetween(from, to) {
+    return Math.round((to.getTime() - from.getTime()) / 86400000);
+}
+
+function osagoRound(value) {
+    return Math.round((Number(value) + Number.EPSILON) * 100) / 100;
+}
+
+function osagoMoney(value) {
+    return osagoRound(value).toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function calcOsago() {
+    const resultDiv = document.getElementById('osago-result');
+    const formulasBlock = document.getElementById('osago-formulas');
+
+    const applicationValue = document.getElementById('osago-application-date').value;
+    const dueAmount = parseFloat(document.getElementById('osago-due-amount').value);
+    const paidAmount = parseFloat(document.getElementById('osago-paid-amount').value) || 0;
+    const endValue = document.getElementById('osago-end-date').value;
+    const limitAmount = parseFloat(document.getElementById('osago-limit-amount').value);
+    const refusalTimely = document.getElementById('osago-refusal-timely').value === 'yes';
+    const voluntarySatisfied = document.getElementById('osago-voluntary-satisfied').value === 'yes';
+
+    if (!applicationValue || !endValue || !Number.isFinite(dueAmount) || dueAmount < 0) {
+        resultDiv.className = 'result-box error';
+        resultDiv.textContent = 'Заполните дату обращения, дату окончания расчёта и надлежащий размер выплаты.';
+        formulasBlock.style.display = 'none';
+        return;
+    }
+
+    const applicationDate = osagoParseDate(applicationValue);
+    const endDate = osagoParseDate(endValue);
+    const deadline = osagoAddDays(applicationDate, 20);
+    const overdueStart = osagoAddDays(deadline, 1);
+
+    if (endDate < applicationDate) {
+        resultDiv.className = 'result-box error';
+        resultDiv.textContent = 'Дата окончания расчёта не может быть раньше даты обращения к страховщику.';
+        formulasBlock.style.display = 'none';
+        return;
+    }
+
+    const unpaidAmount = osagoRound(Math.max(0, dueAmount - paidAmount));
+
+    let penaltyDays = 0;
+    let penalty = 0;
+    if (endDate > overdueStart && unpaidAmount > 0) {
+        penaltyDays = osagoDaysBetween(overdueStart, endDate) + 1;
+        penalty = osagoRound(unpaidAmount * 0.01 * penaltyDays);
+    }
+
+    const penaltyLimitedByLaw = Math.min(penalty, limitAmount);
+    const isPenaltyLimited = penalty > limitAmount;
+
+    let financialSanction = 0;
+    let sanctionDays = 0;
+    let sanctionText = 'Финансовая санкция не начисляется — мотивированный отказ направлен своевременно либо выплата произведена в срок.';
+    if (!refusalTimely && endDate > overdueStart) {
+        sanctionDays = osagoDaysBetween(overdueStart, endDate) + 1;
+        financialSanction = osagoRound(limitAmount * 0.0005 * sanctionDays);
+        sanctionText = 'Финансовая санкция начисляется за каждый день просрочки направления мотивированного отказа (абз. 3 п. 21 ст. 12 Закона об ОСАГО).';
+    }
+    const sanctionLimited = Math.min(financialSanction, limitAmount);
+
+    let penaltyBase = 0;
+    let fineText = 'Штраф не взыскивается — требование о выплате исполнено страховщиком добровольно и в полном объёме до обращения потерпевшего в суд.';
+    if (!voluntarySatisfied) {
+        penaltyBase = unpaidAmount;
+        fineText = 'Штраф взыскивается в размере 50% от разницы между надлежащим размером страхового возмещения и добровольно осуществлённой страховой выплатой (п. 3 ст. 16.1 Закона об ОСАГО, п. 78–83 Постановления Пленума ВС РФ № 31 от 08.11.2022).';
+    }
+    const fine = osagoRound(penaltyBase * 0.5);
+
+    const totalToRecover = osagoRound(unpaidAmount + penaltyLimitedByLaw + sanctionLimited + fine);
+
+    resultDiv.className = 'result-box';
+    resultDiv.textContent =
+        `Дата обращения к страховщику: ${applicationDate.toLocaleDateString('ru-RU')}\n` +
+        `Срок выплаты истекает: ${deadline.toLocaleDateString('ru-RU')} (20 дней)\n` +
+        `Начало просрочки: ${overdueStart.toLocaleDateString('ru-RU')}\n` +
+        `Дата окончания расчёта: ${endDate.toLocaleDateString('ru-RU')}\n` +
+        `\nНадлежащий размер выплаты: ${osagoMoney(dueAmount)} руб.\n` +
+        `Выплачено добровольно: ${osagoMoney(paidAmount)} руб.\n` +
+        `Невыплаченная (недоплаченная) часть: ${osagoMoney(unpaidAmount)} руб.\n` +
+        `\nНЕУСТОЙКА ЗА ПРОСРОЧКУ ВЫПЛАТЫ (п. 21 ст. 12 Закона об ОСАГО)\n` +
+        `Дней просрочки: ${penaltyDays}\n` +
+        `Неустойка (1% в день от невыплаченной суммы): ${osagoMoney(penalty)} руб.\n` +
+        (isPenaltyLimited ? `Неустойка ограничена страховой суммой: ${osagoMoney(limitAmount)} руб.\n` : '') +
+        `Неустойка к взысканию: ${osagoMoney(penaltyLimitedByLaw)} руб.\n` +
+        `\nФИНАНСОВАЯ САНКЦИЯ (абз. 3 п. 21 ст. 12 Закона об ОСАГО)\n` +
+        `${sanctionText}\n` +
+        `Дней: ${sanctionDays}. Финансовая санкция к взысканию: ${osagoMoney(sanctionLimited)} руб.\n` +
+        `\nШТРАФ (п. 3 ст. 16.1 Закона об ОСАГО)\n` +
+        `${fineText}\n` +
+        `Штраф к взысканию: ${osagoMoney(fine)} руб.\n` +
+        `\nИТОГО ПОДЛЕЖИТ ВЗЫСКАНИЮ СО СТРАХОВЩИКА: ${osagoMoney(totalToRecover)} руб.\n` +
+        `(невыплаченное возмещение + неустойка + финансовая санкция + штраф)\n` +
+        `\nПравовые основания: Федеральный закон от 25.04.2002 № 40-ФЗ «Об обязательном ` +
+        `страховании гражданской ответственности владельцев транспортных средств» ` +
+        `(п. 21 ст. 12, ст. 16.1), Постановление Пленума Верховного Суда РФ от 08.11.2022 № 31. ` +
+        `Суд вправе снизить неустойку, финансовую санкцию и штраф на основании ст. 333 ГК РФ ` +
+        `при явной несоразмерности последствиям нарушения обязательства (п. 85 Постановления ` +
+        `Пленума ВС РФ № 31) — калькулятор такое уменьшение не производит.`;
+
+    formulasBlock.style.display = 'block';
+    formulasBlock.textContent =
+        `Невыплаченная часть = Надлежащая выплата − Выплачено добровольно\n` +
+        `${osagoMoney(dueAmount)} − ${osagoMoney(paidAmount)} = ${osagoMoney(unpaidAmount)} руб.\n\n` +
+        `Неустойка = Невыплаченная часть × 1% × Дней просрочки\n` +
+        `${osagoMoney(unpaidAmount)} × 1% × ${penaltyDays} дн. = ${osagoMoney(penalty)} руб.\n` +
+        (isPenaltyLimited ? `Применён лимит: min(${osagoMoney(penalty)}; ${osagoMoney(limitAmount)}) = ${osagoMoney(penaltyLimitedByLaw)} руб.\n\n` : '\n') +
+        `Финансовая санкция = Страховая сумма × 0,05% × Дней\n` +
+        `${osagoMoney(limitAmount)} × 0,05% × ${sanctionDays} дн. = ${osagoMoney(financialSanction)} руб.\n\n` +
+        `Штраф = Невыплаченная часть × 50%\n` +
+        `${osagoMoney(penaltyBase)} × 50% = ${osagoMoney(fine)} руб.\n\n` +
+        `Итого = Невыплаченная часть + Неустойка + Финансовая санкция + Штраф\n` +
+        `${osagoMoney(unpaidAmount)} + ${osagoMoney(penaltyLimitedByLaw)} + ${osagoMoney(sanctionLimited)} + ${osagoMoney(fine)} = ${osagoMoney(totalToRecover)} руб.`;
+}
+
 </script>
 </body>
 </html>
