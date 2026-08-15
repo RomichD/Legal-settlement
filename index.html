@@ -1409,6 +1409,61 @@ pre {
             </p>
         </div>
 
+        <!-- ===== НОВЫЙ БЛОК: ДОСРОЧНОЕ ИСТРЕБОВАНИЕ ДОЛГА ===== -->
+        <div class="payment-block">
+            <label><strong>Досрочное истребование долга</strong></label>
+
+            <div class="form-group">
+                <label>Кредитор требовал досрочного возврата всей суммы?</label>
+
+                <select
+                    id="lim-early-demand-used"
+                    onchange="toggleLimitationEarlyDemandFields()"
+                >
+                    <option value="no">Нет</option>
+                    <option value="yes">Да</option>
+                </select>
+            </div>
+
+            <div id="lim-early-demand-fields" style="display: none;">
+                <div class="inline-group">
+                    <div class="form-group">
+                        <label>Дата направления/получения требования</label>
+                        <input type="date" id="lim-early-demand-date">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Срок для исполнения, дней</label>
+                        <input
+                            type="number"
+                            id="lim-early-demand-term"
+                            value="30"
+                            min="1"
+                            step="1"
+                        >
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Сумма досрочно истребованного долга, руб.</label>
+                    <input
+                        type="number"
+                        id="lim-early-demand-amount"
+                        min="0.01"
+                        step="0.01"
+                    >
+                </div>
+
+                <p class="muted">
+                    Срок исковой давности по этой сумме считается отдельно: с даты,
+                    следующей за днём истечения срока для исполнения требования.
+                    Расчёт по отдельным платежам ниже сохраняется как самостоятельный
+                    результат.
+                </p>
+            </div>
+        </div>
+        <!-- ===== КОНЕЦ НОВОГО БЛОКА ===== -->
+
         <div class="payment-block">
             <label><strong>Судебный приказ</strong></label>
 
@@ -4416,6 +4471,99 @@ function toggleLimitationAcknowledgmentFields() {
     ).style.display = used === 'yes' ? 'block' : 'none';
 }
 
+/* === НОВЫЕ ФУНКЦИИ ДЛЯ ДОСРОЧНОГО ИСТРЕБОВАНИЯ === */
+function toggleLimitationEarlyDemandFields() {
+    const used = document.getElementById(
+        'lim-early-demand-used'
+    ).value;
+
+    document.getElementById(
+        'lim-early-demand-fields'
+    ).style.display = used === 'yes' ? 'block' : 'none';
+}
+
+function limitationGetEarlyDemand() {
+    const used = document.getElementById(
+        'lim-early-demand-used'
+    ).value === 'yes';
+
+    if (!used) {
+        return null;
+    }
+
+    const dateValue = document.getElementById(
+        'lim-early-demand-date'
+    ).value;
+
+    const term = Number(document.getElementById(
+        'lim-early-demand-term'
+    ).value);
+
+    const amount = Number(document.getElementById(
+        'lim-early-demand-amount'
+    ).value);
+
+    if (!dateValue) {
+        throw new Error(
+            'Укажите дату требования о досрочном возврате долга.'
+        );
+    }
+
+    if (!Number.isInteger(term) || term < 1) {
+        throw new Error(
+            'Укажите корректный срок для исполнения требования в днях.'
+        );
+    }
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+        throw new Error(
+            'Укажите сумму досрочно истребованного долга.'
+        );
+    }
+
+    const demandDate = parseDate(dateValue);
+
+    /* Срок для исполнения истекает через N дней после требования */
+    const performanceDeadline = limitationAddDays(demandDate, term);
+
+    return {
+        demandDate,
+        term,
+        amount,
+        performanceDeadline
+    };
+}
+
+function calcLimitationEarlyDemand(
+    earlyDemand,
+    claimDate,
+    acknowledgmentDate,
+    suspensionPeriods
+) {
+    /*
+       Начало СИД — день, следующий за истечением срока
+       исполнения требования. Используется тот же механизм
+       перерыва/приостановления, что и для обычных платежей.
+    */
+    const deadline = limitationGetDeadline(
+        earlyDemand.performanceDeadline,
+        acknowledgmentDate,
+        suspensionPeriods
+    );
+
+    const isExpired = claimDate > deadline.endDate;
+
+    return {
+        demandDate: earlyDemand.demandDate,
+        performanceDeadline: earlyDemand.performanceDeadline,
+        amount: earlyDemand.amount,
+        limitationStart: deadline.startDate,
+        limitationEnd: deadline.endDate,
+        isExpired
+    };
+}
+/* === КОНЕЦ НОВЫХ ФУНКЦИЙ === */
+
 function limitationGetPayments() {
     const payments = [];
     document.querySelectorAll('#payment-tbody tr').forEach((row, index) => {
@@ -4637,9 +4785,12 @@ function calcLimitation() {
 
     let suspensionPeriods;
     let acknowledgmentDate;
+    let earlyDemand; // новая переменная
+
     try {
         suspensionPeriods = limitationGetSuspensionPeriods();
         acknowledgmentDate = limitationGetAcknowledgmentDate();
+        earlyDemand = limitationGetEarlyDemand(); // получаем данные о досрочном требовании
     } catch (error) {
         resultDiv.className = 'result-box error';
         resultDiv.textContent = error.message;
@@ -4728,6 +4879,35 @@ function calcLimitation() {
         ? limitationDateText(acknowledgmentDate)
         : 'Не указано';
 
+    // === БЛОК ДЛЯ ДОСРОЧНОГО ИСТРЕБОВАНИЯ ===
+    let earlyDemandBlock = '';
+    let earlyDemandResult = null;
+
+    if (earlyDemand) {
+        earlyDemandResult = calcLimitationEarlyDemand(
+            earlyDemand,
+            claimDate,
+            acknowledgmentDate,
+            suspensionPeriods
+        );
+
+        earlyDemandBlock =
+            `\n\nДОСРОЧНОЕ ИСТРЕБОВАНИЕ ДОЛГА\n` +
+            `Дата требования: ${limitationDateText(earlyDemandResult.demandDate)}\n` +
+            `Срок исполнения истёк: ${limitationDateText(earlyDemandResult.performanceDeadline)}\n` +
+            `Истребованная сумма: ${limitationMoney(earlyDemandResult.amount)} руб.\n` +
+            `Начало СИД: ${limitationDateText(earlyDemandResult.limitationStart)}\n` +
+            `Окончание СИД: ${limitationDateText(earlyDemandResult.limitationEnd)}\n` +
+            `Статус на дату обращения в суд: ${
+                earlyDemandResult.isExpired
+                    ? 'срок истёк'
+                    : 'срок не истёк'
+            }\n` +
+            `Это отдельный расчёт по всей истребованной сумме; расчёт по ` +
+            `отдельным платежам ниже сохраняет самостоятельное значение.`;
+    }
+    // === КОНЕЦ БЛОКА ===
+
     resultDiv.className = 'result-box';
     resultDiv.textContent =
         `РАСЧЁТ СРОКА ИСКОВОЙ ДАВНОСТИ\n\n` +
@@ -4746,7 +4926,7 @@ function calcLimitation() {
         `УЧТЁННЫЕ ОБСТОЯТЕЛЬСТВА\n` +
         `Судебный приказ / претензионный порядок: ${suspensionText}\n` +
         `Дата признания долга: ${acknowledgmentText}\n\n` +
-
+        (earlyDemandBlock ? earlyDemandBlock + '\n\n' : '') +
         `Важно: истечение срока исковой давности применяется судом ` +
         `только по заявлению стороны в споре. Расчёт не заменяет правовую ` +
         `оценку документов, в том числе требования о досрочном возврате ` +
