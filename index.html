@@ -362,87 +362,280 @@ pre {
         <button class="tab-btn" data-tab="tab6">Ст. 395 ГК РФ</button>
     </div>
 
-    <!-- ========== ВКЛАДКА 1 (ПРОЦЕНТЫ ПО ЗАЙМУ) ========== -->
+    <!-- ========== ВКЛАДКА 1 (НОВАЯ: ПРОЦЕНТЫ ПО ДОГОВОРУ ЗАЙМА) ========== -->
     <div id="tab1" class="tab-content active">
-        <h2>Расчёт процентов по займу</h2>
+        <h2>Проценты по договору займа</h2>
 
         <div class="note">
-            В режиме с платежами расчёт использует очередность по ст. 319 ГК РФ:
-            издержки кредитора → проценты за пользование займом → основной долг.
+            Калькулятор рассчитывает проценты за фактическое пользование суммой
+            займа, учитывает частичные платежи и показывает их распределение.
+            Для точного расчёта выберите правила, которые прямо предусмотрены
+            договором: ставку, базу дней, даты и очередность погашения.
         </div>
 
-        <div class="form-group">
-            <label>Режим расчёта</label>
-            <div class="radio-group">
-                <label>
-                    <input type="radio" name="loan-calc-mode" value="simple" checked onchange="toggleLoanPayments()">
-                    Без частичных платежей
-                </label>
-                <label>
-                    <input type="radio" name="loan-calc-mode" value="payments" onchange="toggleLoanPayments()">
-                    С платежами по ст. 319 ГК РФ
-                </label>
+        <div class="payment-block">
+            <label><strong>Условия займа</strong></label>
+
+            <div class="inline-group">
+                <div class="form-group">
+                    <label>Сумма займа, руб.</label>
+                    <input
+                        type="number"
+                        id="loan-amount"
+                        value="100000"
+                        step="0.01"
+                        min="0.01"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label>Процентная ставка, % годовых</label>
+                    <input
+                        type="number"
+                        id="loan-rate"
+                        value="15"
+                        step="0.001"
+                        min="0"
+                    >
+                </div>
+            </div>
+
+            <div class="inline-group">
+                <div class="form-group">
+                    <label>Дата выдачи займа</label>
+                    <input type="date" id="loan-start" value="2025-01-01">
+                </div>
+
+                <div class="form-group">
+                    <label>Дата расчёта / возврата</label>
+                    <input type="date" id="loan-end" value="2026-06-01">
+                </div>
+            </div>
+
+            <div class="inline-group">
+                <div class="form-group">
+                    <label>База для расчёта</label>
+
+                    <select id="loan-year-base">
+                        <option value="actual">
+                            Фактическое число дней в году
+                        </option>
+                        <option value="365">365 дней</option>
+                        <option value="366">366 дней</option>
+                        <option value="360">360 дней</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Дата окончания периода</label>
+
+                    <select id="loan-end-rule">
+                        <option value="exclude">
+                            Не включать дату возврата / расчёта
+                        </option>
+                        <option value="include">
+                            Включать дату возврата / расчёта
+                        </option>
+                    </select>
+                </div>
             </div>
         </div>
 
-        <div class="form-group">
-            <label>Сумма займа, руб.</label>
-            <input type="number" id="loan-amount" value="100000" step="0.01" min="0.01">
-        </div>
+        <div class="payment-block">
+            <label><strong>Режим расчёта</strong></label>
 
-        <div class="form-group">
-            <label>Тип ставки</label>
-            <div class="radio-group">
-                <label><input type="radio" name="loan-rate-type" value="yearly" checked> Годовая (% годовых)</label>
-                <label><input type="radio" name="loan-rate-type" value="daily"> Дневная (% в день)</label>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>Значение ставки</label>
-            <input type="number" id="loan-rate" value="15" step="0.001" min="0">
-        </div>
-
-        <div class="inline-group">
             <div class="form-group">
-                <label>Дата выдачи займа</label>
-                <input type="date" id="loan-start" value="2025-01-01">
+                <label>Учитывать фактические платежи?</label>
+
+                <select
+                    id="loan-calc-mode"
+                    onchange="toggleLoanPayments()"
+                >
+                    <option value="simple">
+                        Нет, рассчитать проценты на первоначальную сумму
+                    </option>
+                    <option value="payments">
+                        Да, учесть платежи и распределить их
+                    </option>
+                </select>
             </div>
+        </div>
+
+        <div
+            id="loan-payments-settings"
+            class="payment-block"
+            style="display: none;"
+        >
+            <label><strong>Очередность погашения</strong></label>
+
             <div class="form-group">
-                <label>Дата расчёта</label>
-                <input type="date" id="loan-end" value="2026-06-01">
+                <label>Применяемое правило</label>
+
+                <select
+                    id="loan-priority-mode"
+                    onchange="toggleLoanPriorityFields()"
+                >
+                    <option value="article319">
+                        Ст. 319 ГК РФ: издержки → проценты → основной долг
+                    </option>
+                    <option value="contract">
+                        Договорная очередность
+                    </option>
+                </select>
             </div>
+
+            <div id="loan-contract-priority-fields" style="display: none;">
+                <div class="inline-group">
+                    <div class="form-group">
+                        <label>1-я очередь</label>
+                        <select id="loan-priority-1">
+                            <option value="expenses">Издержки</option>
+                            <option value="interest">Проценты</option>
+                            <option value="principal">Основной долг</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>2-я очередь</label>
+                        <select id="loan-priority-2">
+                            <option value="interest">Проценты</option>
+                            <option value="expenses">Издержки</option>
+                            <option value="principal">Основной долг</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>3-я очередь</label>
+                        <select id="loan-priority-3">
+                            <option value="principal">Основной долг</option>
+                            <option value="interest">Проценты</option>
+                            <option value="expenses">Издержки</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Издержки кредитора, руб.</label>
+                <input
+                    type="number"
+                    id="loan-expenses"
+                    value="0"
+                    step="0.01"
+                    min="0"
+                >
+            </div>
+
+            <p class="muted">
+                Указывайте издержки, только если они относятся к получению
+                исполнения по обязательству. Неустойка и проценты за просрочку
+                рассчитываются отдельно в соответствующих вкладках.
+            </p>
         </div>
 
-        <div id="loan-expenses-group" class="form-group" style="display: none;">
-            <label>Издержки кредитора по получению исполнения, руб.</label>
-            <input type="number" id="loan-expenses" value="0" step="0.01" min="0">
-            <div class="muted">Не включайте сюда неустойку, штрафы или проценты по ст. 395 ГК РФ.</div>
-        </div>
-
-        <div id="loan-payments-block" class="payment-block" style="display: none;">
+        <div
+            id="loan-payments-block"
+            class="payment-block"
+            style="display: none;"
+        >
             <label><strong>Фактические платежи заёмщика</strong></label>
-            <p class="muted">Каждый платёж уменьшает задолженность в дату его поступления. Очерёдность зачёта: издержки, проценты, основной долг.</p>
+
+            <p class="muted">
+                Платёж начисляется на задолженность в указанную дату. Для
+                досрочного возврата укажите фактическую дату поступления денег.
+            </p>
+
             <div class="table-wrapper">
                 <table>
-                    <thead><tr><th>Дата платежа</th><th>Сумма, руб.</th><th>Действие</th></tr></thead>
+                    <thead>
+                        <tr>
+                            <th>Дата платежа</th>
+                            <th>Сумма, руб.</th>
+                            <th>Действие</th>
+                        </tr>
+                    </thead>
+
                     <tbody id="loan-payment-tbody">
                         <tr>
-                            <td><input type="date" class="loan-pay-date"></td>
-                            <td><input type="number" class="loan-pay-sum" step="0.01" min="0"></td>
-                            <td><button type="button" class="danger-btn" onclick="removeLoanPaymentRow(this)">Удалить</button></td>
+                            <td>
+                                <input type="date" class="loan-pay-date">
+                            </td>
+                            <td>
+                                <input
+                                    type="number"
+                                    class="loan-pay-sum"
+                                    min="0.01"
+                                    step="0.01"
+                                >
+                            </td>
+                            <td>
+                                <button
+                                    type="button"
+                                    class="danger-btn"
+                                    onclick="removeLoanPaymentRow(this)"
+                                >
+                                    Удалить
+                                </button>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-            <button type="button" class="add-row-btn" onclick="addLoanPaymentRow()">➕ Добавить платёж</button>
+
+            <button
+                type="button"
+                class="add-row-btn"
+                onclick="addLoanPaymentRow()"
+            >
+                ➕ Добавить платёж
+            </button>
+
+            <button
+                type="button"
+                class="add-row-btn"
+                style="background: #6b7280; margin-left: 8px;"
+                onclick="clearLoanPayments()"
+            >
+                🗑 Очистить платежи
+            </button>
         </div>
 
-        <button class="btn" onclick="calcLoanInterest()">Рассчитать проценты</button>
+        <button
+            class="btn"
+            type="button"
+            onclick="calcLoanInterest()"
+        >
+            Рассчитать проценты
+        </button>
 
         <div class="result-wrapper">
-            <div id="loan-result" class="result-box">Результат появится здесь.</div>
-            <button class="copy-btn" onclick="copyResult('loan-result')">📋 Копировать результат</button>
+            <div id="loan-result" class="result-box">
+                Укажите условия займа и нажмите «Рассчитать проценты».
+            </div>
+
+            <button class="copy-btn" onclick="copyResult('loan-result')">
+                📋 Копировать результат
+            </button>
+        </div>
+
+        <div class="scroll-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Период</th>
+                        <th>Дней</th>
+                        <th>Основной долг</th>
+                        <th>Начислено процентов</th>
+                        <th>Платёж</th>
+                        <th>В издержки</th>
+                        <th>В проценты</th>
+                        <th>В основной долг</th>
+                        <th>Остаток ОД</th>
+                    </tr>
+                </thead>
+
+                <tbody id="loan-result-tbody"></tbody>
+            </table>
         </div>
     </div>
 
@@ -1352,184 +1545,532 @@ function getDayWord(n) {
 }
 
 // ============================================================
-// 1. Проценты по займу (с платежами и ст.319)
+// 1. ПРОЦЕНТЫ ПО ДОГОВОРУ ЗАЙМА (НОВАЯ ВЕРСИЯ)
 // ============================================================
-function toggleLoanPayments() {
-    const mode = document.querySelector('input[name="loan-calc-mode"]:checked').value;
-    const isPaymentsMode = mode === 'payments';
-    document.getElementById('loan-payments-block').style.display = isPaymentsMode ? 'block' : 'none';
-    document.getElementById('loan-expenses-group').style.display = isPaymentsMode ? 'block' : 'none';
-}
-function addLoanPaymentRow() {
-    const tbody = document.getElementById('loan-payment-tbody');
-    const row = document.createElement('tr');
-    row.innerHTML = `
-        <td><input type="date" class="loan-pay-date"></td>
-        <td><input type="number" class="loan-pay-sum" step="0.01" min="0"></td>
-        <td><button type="button" class="danger-btn" onclick="removeLoanPaymentRow(this)">Удалить</button></td>
-    `;
-    tbody.appendChild(row);
-}
-function removeLoanPaymentRow(button) {
-    const tbody = document.getElementById('loan-payment-tbody');
-    const row = button.closest('tr');
-    if (tbody.rows.length > 1) { row.remove(); return; }
-    row.querySelector('.loan-pay-date').value = '';
-    row.querySelector('.loan-pay-sum').value = '';
-}
+
 function loanRound(value) {
     return Math.round((Number(value) + Number.EPSILON) * 100) / 100;
 }
+
 function loanMoney(value) {
-    return loanRound(value).toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-function loanDaysBetween(date1, date2) {
-    return Math.round((date2.getTime() - date1.getTime()) / (24*60*60*1000)) + 1; // включаем обе даты
-}
-function loanGetPayments(startDate, endDate) {
-    const payments = [];
-    document.querySelectorAll('#loan-payment-tbody tr').forEach(row => {
-        const dateValue = row.querySelector('.loan-pay-date').value;
-        const amount = parseFloat(row.querySelector('.loan-pay-sum').value);
-        if (!dateValue || !Number.isFinite(amount) || amount <= 0) return;
-        const date = parseDate(dateValue);
-        if (date >= startDate && date <= endDate) {
-            payments.push({ date, amount: loanRound(amount) });
-        }
+    return loanRound(value).toLocaleString('ru-RU', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
     });
-    return payments.sort((a, b) => a.date - b.date);
 }
-function loanPeriodInterest(principal, rateType, rateValue, periodStart, periodEnd) {
-    const days = loanDaysBetween(periodStart, periodEnd);
-    if (principal <= 0 || rateValue <= 0 || days <= 0) return 0;
-    if (rateType === 'daily') {
-        return principal * (rateValue / 100) * days;
-    }
-    let result = 0;
-    let currentDate = new Date(periodStart);
-    while (currentDate < periodEnd) {
-        const nextYear = new Date(currentDate.getFullYear() + 1, 0, 1);
-        const segmentEnd = nextYear < periodEnd ? nextYear : periodEnd;
-        const segmentDays = loanDaysBetween(currentDate, segmentEnd);
-        result += principal * (rateValue / 100) * segmentDays / daysInYear(currentDate.getFullYear());
-        currentDate = segmentEnd;
-    }
+
+function loanAddDays(date, days) {
+    const result = new Date(date);
+    result.setDate(result.getDate() + days);
+
     return result;
 }
+
+function loanDaysBetween(firstDate, secondDate) {
+    return Math.round(
+        (secondDate.getTime() - firstDate.getTime()) / 86400000
+    );
+}
+
+function loanIsLeapYear(year) {
+    return (
+        (year % 4 === 0 && year % 100 !== 0) ||
+        year % 400 === 0
+    );
+}
+
+function loanYearBase(date, base) {
+    if (base === '360') {
+        return 360;
+    }
+
+    if (base === '365') {
+        return 365;
+    }
+
+    if (base === '366') {
+        return 366;
+    }
+
+    return loanIsLeapYear(date.getFullYear()) ? 366 : 365;
+}
+
+function toggleLoanPayments() {
+    const mode = document.getElementById('loan-calc-mode').value;
+    const show = mode === 'payments';
+
+    document.getElementById(
+        'loan-payments-settings'
+    ).style.display = show ? 'block' : 'none';
+
+    document.getElementById(
+        'loan-payments-block'
+    ).style.display = show ? 'block' : 'none';
+}
+
+function toggleLoanPriorityFields() {
+    const mode = document.getElementById(
+        'loan-priority-mode'
+    ).value;
+
+    document.getElementById(
+        'loan-contract-priority-fields'
+    ).style.display = mode === 'contract' ? 'block' : 'none';
+}
+
+function loanPaymentRowHtml(date = '', sum = '') {
+    return `
+        <tr>
+            <td>
+                <input
+                    type="date"
+                    class="loan-pay-date"
+                    value="${date}"
+                >
+            </td>
+
+            <td>
+                <input
+                    type="number"
+                    class="loan-pay-sum"
+                    value="${sum}"
+                    min="0.01"
+                    step="0.01"
+                >
+            </td>
+
+            <td>
+                <button
+                    type="button"
+                    class="danger-btn"
+                    onclick="removeLoanPaymentRow(this)"
+                >
+                    Удалить
+                </button>
+            </td>
+        </tr>
+    `;
+}
+
+function addLoanPaymentRow() {
+    const tbody = document.getElementById('loan-payment-tbody');
+
+    tbody.insertAdjacentHTML(
+        'beforeend',
+        loanPaymentRowHtml()
+    );
+}
+
+function removeLoanPaymentRow(button) {
+    const tbody = document.getElementById('loan-payment-tbody');
+    const row = button.closest('tr');
+
+    if (tbody.rows.length > 1) {
+        row.remove();
+        return;
+    }
+
+    row.querySelector('.loan-pay-date').value = '';
+    row.querySelector('.loan-pay-sum').value = '';
+}
+
+function clearLoanPayments() {
+    document.getElementById('loan-payment-tbody').innerHTML =
+        loanPaymentRowHtml();
+}
+
+function loanGetPayments(startDate, endDate) {
+    const payments = [];
+
+    document.querySelectorAll('#loan-payment-tbody tr').forEach(row => {
+        const dateValue = row.querySelector('.loan-pay-date').value;
+        const amount = Number(row.querySelector('.loan-pay-sum').value);
+
+        if (
+            !dateValue ||
+            !Number.isFinite(amount) ||
+            amount <= 0
+        ) {
+            return;
+        }
+
+        const date = parseDate(dateValue);
+
+        if (date >= startDate && date <= endDate) {
+            payments.push({
+                date,
+                amount: loanRound(amount)
+            });
+        }
+    });
+
+    return payments.sort((first, second) => first.date - second.date);
+}
+
+function loanGetPriority() {
+    const mode = document.getElementById(
+        'loan-priority-mode'
+    ).value;
+
+    if (mode === 'article319') {
+        return ['expenses', 'interest', 'principal'];
+    }
+
+    const priority = [
+        document.getElementById('loan-priority-1').value,
+        document.getElementById('loan-priority-2').value,
+        document.getElementById('loan-priority-3').value
+    ];
+
+    if (new Set(priority).size !== 3) {
+        throw new Error(
+            'В договорной очередности каждая категория должна быть указана один раз.'
+        );
+    }
+
+    return priority;
+}
+
+function loanPeriodInterest(
+    principal,
+    annualRate,
+    base,
+    periodStart,
+    periodEnd
+) {
+    if (principal <= 0 || annualRate <= 0 || periodEnd <= periodStart) {
+        return 0;
+    }
+
+    let result = 0;
+    let cursor = new Date(periodStart);
+
+    while (cursor < periodEnd) {
+        const nextYear = new Date(
+            cursor.getFullYear() + 1,
+            0,
+            1
+        );
+
+        const segmentEnd = nextYear < periodEnd
+            ? nextYear
+            : periodEnd;
+
+        const days = loanDaysBetween(cursor, segmentEnd);
+
+        result +=
+            principal *
+            annualRate / 100 *
+            days /
+            loanYearBase(cursor, base);
+
+        cursor = segmentEnd;
+    }
+
+    return result;
+}
+
+function loanAllocatePayment(state, amount, priority) {
+    let rest = loanRound(amount);
+
+    const allocation = {
+        expenses: 0,
+        interest: 0,
+        principal: 0,
+        overpayment: 0
+    };
+
+    priority.forEach(category => {
+        if (rest <= 0) {
+            return;
+        }
+
+        if (category === 'expenses') {
+            const part = Math.min(rest, state.expenses);
+
+            state.expenses = loanRound(state.expenses - part);
+            rest = loanRound(rest - part);
+
+            allocation.expenses = loanRound(
+                allocation.expenses + part
+            );
+        }
+
+        if (category === 'interest') {
+            const part = Math.min(rest, state.interest);
+
+            state.interest = loanRound(state.interest - part);
+            rest = loanRound(rest - part);
+
+            allocation.interest = loanRound(
+                allocation.interest + part
+            );
+        }
+
+        if (category === 'principal') {
+            const part = Math.min(rest, state.principal);
+
+            state.principal = loanRound(state.principal - part);
+            rest = loanRound(rest - part);
+
+            allocation.principal = loanRound(
+                allocation.principal + part
+            );
+        }
+    });
+
+    allocation.overpayment = rest;
+
+    return allocation;
+}
+
 function calcLoanInterest() {
     const resultDiv = document.getElementById('loan-result');
-    const loanAmount = parseFloat(document.getElementById('loan-amount').value);
-    const rateType = document.querySelector('input[name="loan-rate-type"]:checked').value;
-    const rateValue = parseFloat(document.getElementById('loan-rate').value);
+    const resultBody = document.getElementById('loan-result-tbody');
+
+    const amount = Number(document.getElementById('loan-amount').value);
+    const annualRate = Number(document.getElementById('loan-rate').value);
     const startValue = document.getElementById('loan-start').value;
     const endValue = document.getElementById('loan-end').value;
-    const calculationMode = document.querySelector('input[name="loan-calc-mode"]:checked').value;
-    const creditorExpenses = parseFloat(document.getElementById('loan-expenses').value) || 0;
+    const base = document.getElementById('loan-year-base').value;
+    const endRule = document.getElementById('loan-end-rule').value;
+    const mode = document.getElementById('loan-calc-mode').value;
 
-    if (!Number.isFinite(loanAmount) || loanAmount <= 0 || !Number.isFinite(rateValue) || rateValue < 0 || !startValue || !endValue) {
+    if (
+        !Number.isFinite(amount) ||
+        amount <= 0 ||
+        !Number.isFinite(annualRate) ||
+        annualRate < 0 ||
+        !startValue ||
+        !endValue
+    ) {
         resultDiv.className = 'result-box error';
-        resultDiv.textContent = 'Проверьте сумму займа, ставку и даты расчёта.';
-        return;
-    }
-    const startDate = parseDate(startValue);
-    const endDate = parseDate(endValue);
-    if (endDate < startDate) {
-        resultDiv.className = 'result-box error';
-        resultDiv.textContent = 'Дата расчёта не может быть раньше даты выдачи займа.';
-        return;
-    }
-
-    if (calculationMode === 'simple') {
-        const interest = loanPeriodInterest(loanAmount, rateType, rateValue, startDate, endDate);
-        resultDiv.className = 'result-box';
         resultDiv.textContent =
-            'РАСЧЁТ ПРОЦЕНТОВ ПО ЗАЙМУ\n\n' +
-            `Сумма займа: ${loanMoney(loanAmount)} руб.\n` +
-            `Ставка: ${rateValue}% ${rateType === 'daily' ? 'в день' : 'годовых'}\n` +
-            `Период: ${formatDate(startDate)} — ${formatDate(endDate)}\n` +
-            `Количество дней: ${loanDaysBetween(startDate, endDate)}\n\n` +
-            `Начисленные проценты: ${loanMoney(interest)} руб.\n` +
-            `Итого долг: ${loanMoney(loanAmount + interest)} руб.`;
+            'Проверьте сумму займа, ставку и даты.';
+        resultBody.innerHTML = '';
         return;
     }
 
-    // Режим с платежами
-    const payments = loanGetPayments(startDate, endDate);
-    let principalDebt = loanRound(loanAmount);
-    let interestDebt = 0;
-    let expensesDebt = loanRound(creditorExpenses);
+    const startDate = parseDate(startValue);
+    const enteredEndDate = parseDate(endValue);
+
+    if (enteredEndDate < startDate) {
+        resultDiv.className = 'result-box error';
+        resultDiv.textContent =
+            'Дата расчёта не может быть раньше даты выдачи займа.';
+        resultBody.innerHTML = '';
+        return;
+    }
+
+    /*
+       Внутри расчёта конец периода всегда является исключающей границей.
+       При включении даты расчёта прибавляется один день.
+    */
+    const endExclusive = endRule === 'include'
+        ? loanAddDays(enteredEndDate, 1)
+        : new Date(enteredEndDate);
+
+    const state = {
+        principal: loanRound(amount),
+        interest: 0,
+        expenses: 0
+    };
+
+    let payments = [];
+    let priority = ['expenses', 'interest', 'principal'];
+
+    if (mode === 'payments') {
+        const expenses = Number(
+            document.getElementById('loan-expenses').value
+        ) || 0;
+
+        if (expenses < 0) {
+            resultDiv.className = 'result-box error';
+            resultDiv.textContent =
+                'Издержки кредитора не могут быть отрицательными.';
+            resultBody.innerHTML = '';
+            return;
+        }
+
+        state.expenses = loanRound(expenses);
+
+        try {
+            priority = loanGetPriority();
+        } catch (error) {
+            resultDiv.className = 'result-box error';
+            resultDiv.textContent = error.message;
+            resultBody.innerHTML = '';
+            return;
+        }
+
+        payments = loanGetPayments(startDate, enteredEndDate);
+    }
+
+    const rows = [];
+    let currentDate = new Date(startDate);
     let totalInterestAccrued = 0;
     let totalPaid = 0;
     let totalExpensesPaid = 0;
     let totalInterestPaid = 0;
     let totalPrincipalPaid = 0;
-    let currentDate = new Date(startDate);
-    const lines = [];
-    lines.push('РАСЧЁТ С УЧЁТОМ СТ. 319 ГК РФ');
-    lines.push('');
-    lines.push(`Сумма займа: ${loanMoney(loanAmount)} руб.`);
-    lines.push(`Ставка: ${rateValue}% ${rateType === 'daily' ? 'в день' : 'годовых'}`);
-    lines.push(`Период: ${formatDate(startDate)} — ${formatDate(endDate)}`);
-    lines.push(`Издержки кредитора: ${loanMoney(creditorExpenses)} руб.`);
-    lines.push('');
-    lines.push('ДЕТАЛИЗАЦИЯ РАСЧЁТА');
-    lines.push('');
+    let totalOverpayment = 0;
 
-    function accrueInterestUntil(targetDate) {
-        if (targetDate <= currentDate || principalDebt <= 0) { currentDate = new Date(targetDate); return; }
+    function accrueUntil(targetDate) {
+        if (targetDate <= currentDate) {
+            return 0;
+        }
+
         const days = loanDaysBetween(currentDate, targetDate);
-        const interest = loanPeriodInterest(principalDebt, rateType, rateValue, currentDate, targetDate);
-        interestDebt = loanRound(interestDebt + interest);
-        totalInterestAccrued = loanRound(totalInterestAccrued + interest);
-        lines.push(`${formatDate(currentDate)} — ${formatDate(targetDate)}: ${days} дн.; остаток основного долга ${loanMoney(principalDebt)} руб.; начислено процентов ${loanMoney(interest)} руб.`);
+
+        const interest = loanRound(
+            loanPeriodInterest(
+                state.principal,
+                annualRate,
+                base,
+                currentDate,
+                targetDate
+            )
+        );
+
+        state.interest = loanRound(state.interest + interest);
+        totalInterestAccrued = loanRound(
+            totalInterestAccrued + interest
+        );
+
+        rows.push({
+            startDate: new Date(currentDate),
+            endDate: loanAddDays(targetDate, -1),
+            days,
+            principalStart: state.principal,
+            interestAccrued: interest,
+            payment: 0,
+            expensesPaid: 0,
+            interestPaid: 0,
+            principalPaid: 0,
+            principalEnd: state.principal
+        });
+
         currentDate = new Date(targetDate);
+
+        return interest;
     }
 
-    payments.forEach((payment, index) => {
-        accrueInterestUntil(payment.date);
-        let remainingPayment = loanRound(payment.amount);
-        const paidExpenses = loanRound(Math.min(remainingPayment, expensesDebt));
-        expensesDebt = loanRound(expensesDebt - paidExpenses);
-        remainingPayment = loanRound(remainingPayment - paidExpenses);
-        totalExpensesPaid = loanRound(totalExpensesPaid + paidExpenses);
-        const paidInterest = loanRound(Math.min(remainingPayment, interestDebt));
-        interestDebt = loanRound(interestDebt - paidInterest);
-        remainingPayment = loanRound(remainingPayment - paidInterest);
-        totalInterestPaid = loanRound(totalInterestPaid + paidInterest);
-        const paidPrincipal = loanRound(Math.min(remainingPayment, principalDebt));
-        principalDebt = loanRound(principalDebt - paidPrincipal);
-        remainingPayment = loanRound(remainingPayment - paidPrincipal);
-        totalPrincipalPaid = loanRound(totalPrincipalPaid + paidPrincipal);
+    payments.forEach(payment => {
+        /*
+           Проценты начисляются за период до даты платежа.
+           День платежа не включается в уже завершившийся период.
+        */
+        accrueUntil(payment.date);
+
+        const allocation = loanAllocatePayment(
+            state,
+            payment.amount,
+            priority
+        );
+
         totalPaid = loanRound(totalPaid + payment.amount);
-        lines.push(`Платёж №${index+1} от ${formatDate(payment.date)}: ${loanMoney(payment.amount)} руб.`);
-        lines.push(`  Направлено в издержки: ${loanMoney(paidExpenses)} руб.; в проценты: ${loanMoney(paidInterest)} руб.; в основной долг: ${loanMoney(paidPrincipal)} руб.`);
-        if (remainingPayment > 0) lines.push(`  Переплата: ${loanMoney(remainingPayment)} руб.`);
-        lines.push(`  Остаток: основной долг ${loanMoney(principalDebt)} руб.; проценты ${loanMoney(interestDebt)} руб.; издержки ${loanMoney(expensesDebt)} руб.`);
-        lines.push('');
+        totalExpensesPaid = loanRound(
+            totalExpensesPaid + allocation.expenses
+        );
+        totalInterestPaid = loanRound(
+            totalInterestPaid + allocation.interest
+        );
+        totalPrincipalPaid = loanRound(
+            totalPrincipalPaid + allocation.principal
+        );
+        totalOverpayment = loanRound(
+            totalOverpayment + allocation.overpayment
+        );
+
+        rows.push({
+            startDate: new Date(payment.date),
+            endDate: new Date(payment.date),
+            days: 0,
+            principalStart: state.principal,
+            interestAccrued: 0,
+            payment: payment.amount,
+            expensesPaid: allocation.expenses,
+            interestPaid: allocation.interest,
+            principalPaid: allocation.principal,
+            principalEnd: state.principal,
+            isPayment: true,
+            overpayment: allocation.overpayment
+        });
     });
 
-    accrueInterestUntil(endDate);
-    const totalDebt = loanRound(principalDebt + interestDebt + expensesDebt);
-    lines.push('');
-    lines.push('ИТОГ НА ДАТУ РАСЧЁТА');
-    lines.push('');
-    lines.push(`Остаток основного долга: ${loanMoney(principalDebt)} руб.`);
-    lines.push(`Непогашенные проценты: ${loanMoney(interestDebt)} руб.`);
-    lines.push(`Непогашенные издержки: ${loanMoney(expensesDebt)} руб.`);
-    lines.push(`ИТОГО ЗАДОЛЖЕННОСТЬ: ${loanMoney(totalDebt)} руб.`);
-    lines.push('');
-    lines.push('СПРАВОЧНО');
-    lines.push(`Всего начислено процентов: ${loanMoney(totalInterestAccrued)} руб.`);
-    lines.push(`Всего внесено платежей: ${loanMoney(totalPaid)} руб.`);
-    lines.push(`Погашено издержек: ${loanMoney(totalExpensesPaid)} руб.`);
-    lines.push(`Погашено процентов: ${loanMoney(totalInterestPaid)} руб.`);
-    lines.push(`Погашено основного долга: ${loanMoney(totalPrincipalPaid)} руб.`);
-    lines.push('');
-    lines.push('Очередность погашения: издержки кредитора → проценты за пользование займом → основной долг.');
-    lines.push('Неустойка и проценты по ст. 395 ГК РФ в этот расчёт не включаются.');
+    accrueUntil(endExclusive);
+
+    const totalDebt = loanRound(
+        state.expenses + state.interest + state.principal
+    );
+
+    resultBody.innerHTML = rows.map(row => `
+        <tr>
+            <td>${
+                row.days > 0
+                    ? `${formatDate(row.startDate)} — ${formatDate(row.endDate)}`
+                    : formatDate(row.startDate)
+            }</td>
+            <td>${row.days || '—'}</td>
+            <td>${loanMoney(row.principalStart)}</td>
+            <td>${row.interestAccrued ? loanMoney(row.interestAccrued) : '—'}</td>
+            <td>${row.payment ? loanMoney(row.payment) : '—'}</td>
+            <td>${row.expensesPaid ? loanMoney(row.expensesPaid) : '—'}</td>
+            <td>${row.interestPaid ? loanMoney(row.interestPaid) : '—'}</td>
+            <td>${row.principalPaid ? loanMoney(row.principalPaid) : '—'}</td>
+            <td>${loanMoney(row.principalEnd)}</td>
+        </tr>
+    `).join('');
+
+    const baseText = base === 'actual'
+        ? 'фактическое число дней в году'
+        : `${base} дней`;
+
+    const priorityNames = {
+        expenses: 'издержки',
+        interest: 'проценты',
+        principal: 'основной долг'
+    };
+
+    const priorityText = priority.map(item => {
+        return priorityNames[item];
+    }).join(' → ');
 
     resultDiv.className = 'result-box';
-    resultDiv.textContent = lines.join('\n');
+    resultDiv.textContent =
+        `РАСЧЁТ ПРОЦЕНТОВ ПО ДОГОВОРУ ЗАЙМА\n\n` +
+        `Сумма займа: ${loanMoney(amount)} руб.\n` +
+        `Ставка: ${annualRate}% годовых\n` +
+        `Период: ${formatDate(startDate)} — ${formatDate(enteredEndDate)}\n` +
+        `База расчёта: ${baseText}\n` +
+        `Дата окончания ${
+            endRule === 'include'
+                ? 'включена в расчёт'
+                : 'не включена в расчёт'
+        }\n\n` +
+
+        `ИТОГИ\n` +
+        `Начислено процентов: ${loanMoney(totalInterestAccrued)} руб.\n` +
+        `Погашено процентов: ${loanMoney(totalInterestPaid)} руб.\n` +
+        `Погашено основного долга: ${loanMoney(totalPrincipalPaid)} руб.\n` +
+        `Погашено издержек: ${loanMoney(totalExpensesPaid)} руб.\n` +
+        `Всего внесено: ${loanMoney(totalPaid)} руб.\n` +
+        `Переплата сверх задолженности: ${loanMoney(totalOverpayment)} руб.\n\n` +
+
+        `ОСТАТОК НА ДАТУ РАСЧЁТА\n` +
+        `Основной долг: ${loanMoney(state.principal)} руб.\n` +
+        `Проценты: ${loanMoney(state.interest)} руб.\n` +
+        `Издержки: ${loanMoney(state.expenses)} руб.\n` +
+        `Итого задолженность: ${loanMoney(totalDebt)} руб.\n\n` +
+
+        `${
+            mode === 'payments'
+                ? `Очередность погашения: ${priorityText}\n\n`
+                : ''
+        }` +
+
+        `Важно: расчёт не включает неустойку, проценты по статье 395 ГК РФ ` +
+        `и судебные расходы; используйте соответствующие вкладки отдельно.`;
 }
 
 // ============================================================
