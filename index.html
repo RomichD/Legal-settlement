@@ -638,7 +638,7 @@ pre {
             </table>
         </div>
 
-        <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyFullCalculation('loan-result', 'loan-result-tbody')">📋 Копировать</button>
+        <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyFullCalculation('loan-result-tbody')">📋 Копировать</button>
     </div>
 
     <!-- ========== ВКЛАДКА 2 (ДОГОВОРНАЯ НЕУСТОЙКА) ========== -->
@@ -958,7 +958,7 @@ pre {
             </table>
         </div>
 
-        <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyFullCalculation('penalty-result', 'penalty-result-tbody')">📋 Копировать</button>
+        <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyFullCalculation('penalty-result-tbody')">📋 Копировать</button>
     </div>
 
     <!-- ========== ВКЛАДКА 3 (ПРОСТЫЕ ДРОБИ) ========== -->
@@ -1386,7 +1386,7 @@ pre {
             </table>
         </div>
 
-        <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyFullCalculation('card-result', 'card-result-tbody')">📋 Копировать</button>
+        <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyFullCalculation('card-result-tbody')">📋 Копировать</button>
     </div>
 
     <!-- ========== ВКЛАДКА 5 (СРОК ИСКОВОЙ ДАВНОСТИ) ========== -->
@@ -1692,7 +1692,7 @@ pre {
             </table>
         </div>
 
-        <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyFullCalculation('lim-result', 'lim-result-tbody')">📋 Копировать</button>
+        <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyFullCalculation('lim-result-tbody')">📋 Копировать</button>
     </div>
 
     <!-- ========== ВКЛАДКА 6 (СТ. 395 ГК РФ) ========== -->
@@ -1757,6 +1757,21 @@ pre {
                     <option value="crimea">Крымский</option>
                 </select>
             </div>
+            <div class="form-group">
+                <label for="gk395-rate-mode">Источник ставки для расчёта</label>
+                <select id="gk395-rate-mode" onchange="toggleGk395ManualRates()">
+                    <option value="legal">Автоматически (ключевая ставка ЦБ РФ)</option>
+                    <option value="manual">Ввести ставку вручную для нового периода</option>
+                </select>
+                <div class="muted">В ручном режиме до первой указанной даты применяется последняя известная ставка ЦБ, а далее — введённые вами ставки.</div>
+            </div>
+        </div>
+        <div id="gk395-manual-rates-block" class="payment-block" style="display:none;">
+            <label><strong>Ставки, заданные вручную</strong></label>
+            <p class="muted">Укажите дату начала действия и ставку в процентах годовых. При нескольких изменениях добавьте отдельные строки.</p>
+            <div class="table-wrapper"><table><thead><tr><th>Дата начала действия</th><th>Ставка, % годовых</th><th></th></tr></thead>
+            <tbody id="gk395-manual-rate-tbody"><tr><td><input type="date" class="gk395-manual-rate-date"></td><td><input type="number" class="gk395-manual-rate-value" min="0" step="0.01"></td><td><button type="button" class="danger-btn" onclick="removeGk395ManualRateRow(this)">Удалить</button></td></tr></tbody></table></div>
+            <button type="button" class="add-row-btn" onclick="addGk395ManualRateRow()">+ Добавить ставку</button>
         </div>
 
         <div class="payment-block">
@@ -1852,7 +1867,7 @@ pre {
             </table>
         </div>
 
-        <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyFullCalculation('gk395-result', 'gk395-result-tbody')">📋 Копировать</button>
+        <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyFullCalculation('gk395-result-tbody')">📋 Копировать</button>
     </div>
 </div>
 
@@ -5098,6 +5113,43 @@ function gk395GetRateInfo(date, region) {
     };
 }
 
+function toggleGk395ManualRates() {
+    const mode = document.getElementById('gk395-rate-mode').value;
+    document.getElementById('gk395-manual-rates-block').style.display = mode === 'manual' ? 'block' : 'none';
+}
+
+function addGk395ManualRateRow() {
+    document.getElementById('gk395-manual-rate-tbody').insertAdjacentHTML('beforeend', `
+        <tr><td><input type="date" class="gk395-manual-rate-date"></td><td><input type="number" class="gk395-manual-rate-value" min="0" step="0.01"></td><td><button type="button" class="danger-btn" onclick="removeGk395ManualRateRow(this)">Удалить</button></td></tr>`);
+}
+
+function removeGk395ManualRateRow(button) {
+    const tbody = document.getElementById('gk395-manual-rate-tbody');
+    if (tbody.rows.length > 1) button.closest('tr').remove();
+}
+
+function gk395GetManualRates() {
+    const rates = [];
+    document.querySelectorAll('#gk395-manual-rate-tbody tr').forEach(row => {
+        const from = row.querySelector('.gk395-manual-rate-date').value;
+        const rate = Number(row.querySelector('.gk395-manual-rate-value').value);
+        if (from && Number.isFinite(rate) && rate > 0) rates.push({ from: gk395ParseDate(from), rate });
+    });
+    return rates.sort((a, b) => a.from - b.from);
+}
+
+function gk395GetRateInfoWithMode(date, region, mode, manualRates) {
+    if (mode === 'manual') {
+        let manualRate = null;
+        for (const item of manualRates) {
+            if (item.from <= date) manualRate = item.rate;
+            else break;
+        }
+        if (manualRate !== null) return { rate: manualRate, source: 'Ставка указана вручную' };
+    }
+    return gk395GetRateInfo(date, region);
+}
+
 function addGk395Row() {
     const tbody = document.getElementById('gk395-payment-tbody');
     const row = document.createElement('tr');
@@ -5164,6 +5216,8 @@ function calcGK395() {
     const startDate = gk395ParseDate(document.getElementById('gk395-start').value);
     const endDate = gk395ParseDate(document.getElementById('gk395-end').value);
     const region = document.getElementById('gk395-region').value;
+    const rateMode = document.getElementById('gk395-rate-mode').value;
+    const manualRates = rateMode === 'manual' ? gk395GetManualRates() : [];
 
     if (!Number.isFinite(debt) || debt <= 0 || !startDate || !endDate) {
         resultDiv.className = 'result-box error';
@@ -5179,12 +5233,17 @@ function calcGK395() {
         return;
     }
 
-    const lastKnownRateDate = gk395LastKnownRateDate();
-    if (endDate > lastKnownRateDate) {
+    if (rateMode === 'manual' && manualRates.length === 0) {
         resultDiv.className = 'result-box error';
-        resultDiv.textContent =
-            `В таблице ставок нет подтверждённых данных для периода после ` +
-            `${gk395FormatDate(lastKnownRateDate)}.\n\nОбновите массив GK395_KEY_RATES по официальным решениям Банка России и повторите расчёт.`;
+        resultDiv.textContent = 'Добавьте хотя бы одну дату и ставку в блоке ручного ввода.';
+        resultBody.innerHTML = '';
+        return;
+    }
+
+    const lastKnownRateDate = gk395LastKnownRateDate();
+    if (rateMode !== 'manual' && endDate > lastKnownRateDate) {
+        resultDiv.className = 'result-box error';
+        resultDiv.textContent = `В таблице ставок нет подтверждённых данных для периода после ${gk395FormatDate(lastKnownRateDate)}. Выберите режим ручного ввода ставки для продолжения расчёта.`;
         resultBody.innerHTML = '';
         return;
     }
@@ -5220,11 +5279,12 @@ function calcGK395() {
         });
     });
 
-    GK395_KEY_RATES.forEach(item => {
+    const rateChanges = rateMode === 'manual'
+        ? manualRates.map(item => ({ from: gk395DateKey(item.from) }))
+        : GK395_KEY_RATES;
+    rateChanges.forEach(item => {
         const date = gk395ParseDate(item.from);
-        if (date > startDate && date <= endDate) {
-            addEvent(date, { type: 'rate' });
-        }
+        if (date > startDate && date <= endDate) addEvent(date, { type: 'rate' });
     });
 
     for (let year = startDate.getFullYear() + 1; year <= endDate.getFullYear(); year += 1) {
@@ -5265,7 +5325,7 @@ function calcGK395() {
             continue;
         }
 
-        const rateInfo = gk395GetRateInfo(currentEvent.date, region);
+        const rateInfo = gk395GetRateInfoWithMode(currentEvent.date, region, rateMode, manualRates);
         if (!Number.isFinite(rateInfo.rate)) {
             resultDiv.className = 'result-box error';
             resultDiv.textContent = `Не найдена ставка для даты ${gk395FormatDate(currentEvent.date)}.`;
@@ -5297,7 +5357,7 @@ function calcGK395() {
         </tr>
     `).join('');
 
-    const currentRateInfo = gk395GetRateInfo(endDate, region);
+    const currentRateInfo = gk395GetRateInfoWithMode(endDate, region, rateMode, manualRates);
 
     resultDiv.className = 'result-box';
     resultDiv.textContent =
@@ -5759,7 +5819,7 @@ document.addEventListener('DOMContentLoaded', function () {
             </table>
         </div>
 
-        <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyFullCalculation('credit-debt-summary', 'credit-debt-result-tbody')">📋 Копировать</button>
+        <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyFullCalculation('credit-debt-result-tbody')">📋 Копировать</button>
     `;
 
     const scriptElement = document.querySelector('script');
@@ -7320,7 +7380,7 @@ document.addEventListener('DOMContentLoaded', function () {
             <button class="copy-btn" onclick="copyResult('zpp-result')">Копировать</button>
         </div>
         <div id="zpp-formulas" class="result-box" style="display:none; white-space: pre-wrap; margin-top: 10px;"></div>
-        <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyZppOsagoCalculation('zpp-result', 'zpp-formulas')">📋 Копировать</button>
+        <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyZppOsagoCalculation('zpp-formulas')">📋 Копировать</button>
     `;
     document.body.appendChild(tab);
 });
@@ -7572,7 +7632,7 @@ document.addEventListener('DOMContentLoaded', function () {
             <button class="copy-btn" onclick="copyResult('osago-result')">Копировать</button>
         </div>
         <div id="osago-formulas" class="result-box" style="display:none; white-space: pre-wrap; margin-top: 10px;"></div>
-        <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyZppOsagoCalculation('osago-result', 'osago-formulas')">📋 Копировать</button>
+        <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyZppOsagoCalculation('osago-formulas')">📋 Копировать</button>
     `;
     document.body.appendChild(tab);
 });
@@ -7716,29 +7776,18 @@ function calcOsago() {
 
 
 
-function copyFullCalculation(summaryId, tableBodyId) {
-    const summary = document.getElementById(summaryId);
+function copyFullCalculation(tableBodyId) {
     const tbody = document.getElementById(tableBodyId);
-    let text = summary ? (summary.innerText || summary.textContent || '').trim() : '';
     const table = tbody ? tbody.closest('table') : null;
-    if (table) {
-        const tableText = Array.from(table.querySelectorAll('tr')).map(row =>
-            Array.from(row.querySelectorAll('th, td')).map(cell =>
-                (cell.innerText || cell.textContent || '').replace(/\s+/g, ' ').trim()
-            ).join('\t')
-        ).filter(Boolean).join('\n');
-        if (tableText) text += (text ? '\n\n' : '') + tableText;
-    }
+    const text = table ? Array.from(table.querySelectorAll('tr')).map(row =>
+        Array.from(row.querySelectorAll('th, td')).map(cell => (cell.innerText || cell.textContent || '').replace(/\s+/g, ' ').trim()).join('\t')
+    ).filter(Boolean).join('\n') : '';
     copyCalculationText(text);
 }
 
-function copyZppOsagoCalculation(resultId, formulasId) {
-    const result = document.getElementById(resultId);
+function copyZppOsagoCalculation(formulasId) {
     const formulas = document.getElementById(formulasId);
-    let text = result ? (result.innerText || result.textContent || '').trim() : '';
-    const formulasText = formulas ? (formulas.innerText || formulas.textContent || '').trim() : '';
-    if (formulasText) text += (text ? '\n\n' : '') + formulasText;
-    copyCalculationText(text);
+    copyCalculationText(formulas ? (formulas.innerText || formulas.textContent || '').trim() : '');
 }
 
 function copyCalculationText(text) {
