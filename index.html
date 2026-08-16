@@ -637,6 +637,8 @@ pre {
                 <tbody id="loan-result-tbody"></tbody>
             </table>
         </div>
+
+        <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyFullCalculation('loan-result', 'loan-result-tbody')">📋 Копировать</button>
     </div>
 
     <!-- ========== ВКЛАДКА 2 (ДОГОВОРНАЯ НЕУСТОЙКА) ========== -->
@@ -955,6 +957,8 @@ pre {
                 <tbody id="penalty-result-tbody"></tbody>
             </table>
         </div>
+
+        <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyFullCalculation('penalty-result', 'penalty-result-tbody')">📋 Копировать</button>
     </div>
 
     <!-- ========== ВКЛАДКА 3 (ПРОСТЫЕ ДРОБИ) ========== -->
@@ -1381,6 +1385,8 @@ pre {
                 <tbody id="card-result-tbody"></tbody>
             </table>
         </div>
+
+        <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyFullCalculation('card-result', 'card-result-tbody')">📋 Копировать</button>
     </div>
 
     <!-- ========== ВКЛАДКА 5 (СРОК ИСКОВОЙ ДАВНОСТИ) ========== -->
@@ -1685,6 +1691,8 @@ pre {
                 <tbody id="lim-result-tbody"></tbody>
             </table>
         </div>
+
+        <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyFullCalculation('lim-result', 'lim-result-tbody')">📋 Копировать</button>
     </div>
 
     <!-- ========== ВКЛАДКА 6 (СТ. 395 ГК РФ) ========== -->
@@ -1843,6 +1851,8 @@ pre {
                 <tbody id="gk395-result-tbody"></tbody>
             </table>
         </div>
+
+        <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyFullCalculation('gk395-result', 'gk395-result-tbody')">📋 Копировать</button>
     </div>
 </div>
 
@@ -5748,6 +5758,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 <tbody id="credit-debt-result-tbody"></tbody>
             </table>
         </div>
+
+        <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyFullCalculation('credit-debt-summary', 'credit-debt-result-tbody')">📋 Копировать</button>
     `;
 
     const scriptElement = document.querySelector('script');
@@ -7308,7 +7320,7 @@ document.addEventListener('DOMContentLoaded', function () {
             <button class="copy-btn" onclick="copyResult('zpp-result')">Копировать</button>
         </div>
         <div id="zpp-formulas" class="result-box" style="display:none; white-space: pre-wrap; margin-top: 10px;"></div>
-        <button type="button" class="add-row-btn" style="background:#6b7280" onclick="copyFormulas('zpp-formulas')">Копировать формулы</button>
+        <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyZppOsagoCalculation('zpp-result', 'zpp-formulas')">📋 Копировать</button>
     `;
     document.body.appendChild(tab);
 });
@@ -7560,7 +7572,7 @@ document.addEventListener('DOMContentLoaded', function () {
             <button class="copy-btn" onclick="copyResult('osago-result')">Копировать</button>
         </div>
         <div id="osago-formulas" class="result-box" style="display:none; white-space: pre-wrap; margin-top: 10px;"></div>
-        <button type="button" class="add-row-btn" style="background:#6b7280" onclick="copyFormulas('osago-formulas')">Копировать формулы</button>
+        <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyZppOsagoCalculation('osago-result', 'osago-formulas')">📋 Копировать</button>
     `;
     document.body.appendChild(tab);
 });
@@ -7700,6 +7712,47 @@ function calcOsago() {
         `${osagoMoney(penaltyBase)} × 50% = ${osagoMoney(fine)} руб.\n\n` +
         `Итого = Невыплаченная часть + Неустойка + Финансовая санкция + Штраф\n` +
         `${osagoMoney(unpaidAmount)} + ${osagoMoney(penaltyLimitedByLaw)} + ${osagoMoney(sanctionLimited)} + ${osagoMoney(fine)} = ${osagoMoney(totalToRecover)} руб.`;
+}
+
+
+
+function copyFullCalculation(summaryId, tableBodyId) {
+    const summary = document.getElementById(summaryId);
+    const tbody = document.getElementById(tableBodyId);
+    let text = summary ? (summary.innerText || summary.textContent || '').trim() : '';
+    const table = tbody ? tbody.closest('table') : null;
+    if (table) {
+        const tableText = Array.from(table.querySelectorAll('tr')).map(row =>
+            Array.from(row.querySelectorAll('th, td')).map(cell =>
+                (cell.innerText || cell.textContent || '').replace(/\s+/g, ' ').trim()
+            ).join('\t')
+        ).filter(Boolean).join('\n');
+        if (tableText) text += (text ? '\n\n' : '') + tableText;
+    }
+    copyCalculationText(text);
+}
+
+function copyZppOsagoCalculation(resultId, formulasId) {
+    const result = document.getElementById(resultId);
+    const formulas = document.getElementById(formulasId);
+    let text = result ? (result.innerText || result.textContent || '').trim() : '';
+    const formulasText = formulas ? (formulas.innerText || formulas.textContent || '').trim() : '';
+    if (formulasText) text += (text ? '\n\n' : '') + formulasText;
+    copyCalculationText(text);
+}
+
+function copyCalculationText(text) {
+    if (!text) { showCopyToast('Сначала выполните расчёт'); return; }
+    const done = () => showCopyToast('Расчёт скопирован в буфер обмена');
+    const fallback = () => {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed'; textarea.style.opacity = '0';
+        document.body.appendChild(textarea); textarea.focus(); textarea.select();
+        try { document.execCommand('copy'); done(); } catch (e) { showCopyToast('Не удалось скопировать расчёт'); }
+        document.body.removeChild(textarea);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
 }
 
 </script>
