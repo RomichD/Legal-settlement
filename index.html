@@ -638,7 +638,7 @@ pre {
             </table>
         </div>
 
-        <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyFullCalculation('loan-result-tbody')">📋 Копировать</button>
+        <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyFullCalculation('loan-result', 'loan-result-tbody')">📋 Копировать</button>
     </div>
 
     <!-- ========== ВКЛАДКА 2 (ДОГОВОРНАЯ НЕУСТОЙКА) ========== -->
@@ -958,7 +958,7 @@ pre {
             </table>
         </div>
 
-        <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyFullCalculation('penalty-result-tbody')">📋 Копировать</button>
+        <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyFullCalculation('penalty-result', 'penalty-result-tbody')">📋 Копировать</button>
     </div>
 
     <!-- ========== ВКЛАДКА 3 (ПРОСТЫЕ ДРОБИ) ========== -->
@@ -1386,7 +1386,7 @@ pre {
             </table>
         </div>
 
-        <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyFullCalculation('card-result-tbody')">📋 Копировать</button>
+        <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyFullCalculation('card-result', 'card-result-tbody')">📋 Копировать</button>
     </div>
 
     <!-- ========== ВКЛАДКА 5 (СРОК ИСКОВОЙ ДАВНОСТИ) ========== -->
@@ -1692,7 +1692,7 @@ pre {
             </table>
         </div>
 
-        <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyFullCalculation('lim-result-tbody')">📋 Копировать</button>
+        <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyFullCalculation('lim-result', 'lim-result-tbody')">📋 Копировать</button>
     </div>
 
     <!-- ========== ВКЛАДКА 6 (СТ. 395 ГК РФ) ========== -->
@@ -1760,17 +1760,16 @@ pre {
             <div class="form-group">
                 <label for="gk395-rate-mode">Источник ставки для расчёта</label>
                 <select id="gk395-rate-mode" onchange="toggleGk395ManualRates()">
-                    <option value="legal">Автоматически (ключевая ставка ЦБ РФ)</option>
-                    <option value="manual">Ввести ставку вручную для нового периода</option>
+                    <option value="legal">Автоматически: таблица ключевой ставки Банка России</option>
+                    <option value="manual">Ручной ввод ставки (для нового периода)</option>
                 </select>
-                <div class="muted">В ручном режиме до первой указанной даты применяется последняя известная ставка ЦБ, а далее — введённые вами ставки.</div>
+                <div class="muted">В ручном режиме до первой указанной даты используется последняя подтверждённая ставка из встроенной таблицы; далее — введённые вами значения.</div>
             </div>
         </div>
         <div id="gk395-manual-rates-block" class="payment-block" style="display:none;">
             <label><strong>Ставки, заданные вручную</strong></label>
-            <p class="muted">Укажите дату начала действия и ставку в процентах годовых. При нескольких изменениях добавьте отдельные строки.</p>
-            <div class="table-wrapper"><table><thead><tr><th>Дата начала действия</th><th>Ставка, % годовых</th><th></th></tr></thead>
-            <tbody id="gk395-manual-rate-tbody"><tr><td><input type="date" class="gk395-manual-rate-date"></td><td><input type="number" class="gk395-manual-rate-value" min="0" step="0.01"></td><td><button type="button" class="danger-btn" onclick="removeGk395ManualRateRow(this)">Удалить</button></td></tr></tbody></table></div>
+            <p class="muted">Укажите дату начала действия и ставку в процентах годовых. Для последующих изменений добавьте отдельные строки.</p>
+            <div class="table-wrapper"><table><thead><tr><th>Дата начала действия</th><th>Ставка, % годовых</th><th></th></tr></thead><tbody id="gk395-manual-rate-tbody"><tr><td><input type="date" class="gk395-manual-rate-date"></td><td><input type="number" class="gk395-manual-rate-value" min="0" step="0.01"></td><td><button type="button" class="danger-btn" onclick="removeGk395ManualRateRow(this)">Удалить</button></td></tr></tbody></table></div>
             <button type="button" class="add-row-btn" onclick="addGk395ManualRateRow()">+ Добавить ставку</button>
         </div>
 
@@ -1867,7 +1866,7 @@ pre {
             </table>
         </div>
 
-        <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyFullCalculation('gk395-result-tbody')">📋 Копировать</button>
+        <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyFullCalculation('gk395-result', 'gk395-result-tbody')">📋 Копировать</button>
     </div>
 </div>
 
@@ -4774,15 +4773,11 @@ function limitationGetDeadline(
         startDate = limitationAddDays(acknowledgmentDate, 1);
         endDate = limitationAddYears(startDate, 3);
     }
-    const finalEndDate = limitationApplySuspension(
-        startDate,
-        endDate,
-        suspensionPeriods
-    );
-    return {
-        startDate,
-        endDate: finalEndDate
-    };
+    let finalEndDate = limitationApplySuspension(startDate, endDate, suspensionPeriods);
+    const objectiveLimit = limitationAddYears(dueDate, 10);
+    const objectiveCapApplied = finalEndDate > objectiveLimit;
+    if (objectiveCapApplied) finalEndDate = objectiveLimit;
+    return { startDate, endDate: finalEndDate, objectiveLimit, objectiveCapApplied };
 }
 
 function calcLimitation() {
@@ -4828,6 +4823,7 @@ function calcLimitation() {
     let paidCount = 0;
     let expiredSum = 0;
     let activeSum = 0;
+    let objectiveCapUsed = false;
 
     const rows = payments.map(payment => {
         if (payment.status === 'paid') {
@@ -4846,6 +4842,7 @@ function calcLimitation() {
             acknowledgmentDate,
             suspensionPeriods
         );
+        if (deadline.objectiveCapApplied) objectiveCapUsed = true;
         const isExpired = claimDate > deadline.endDate;
         if (isExpired) {
             expiredCount += 1;
@@ -4952,11 +4949,8 @@ function calcLimitation() {
         `Судебный приказ / претензионный порядок: ${suspensionText}\n` +
         `Дата признания долга: ${acknowledgmentText}\n\n` +
         (earlyDemandBlock ? earlyDemandBlock + '\n\n' : '') +
-        `Важно: истечение срока исковой давности применяется судом ` +
-        `только по заявлению стороны в споре. Расчёт не заменяет правовую ` +
-        `оценку документов, в том числе требования о досрочном возврате ` +
-        `кредита, даты получения претензии и юридической силы действий ` +
-        `по признанию долга.`;
+        (objectiveCapUsed ? `ВНИМАНИЕ: применён предельный десятилетний срок исковой давности (п. 2 ст. 196 ГК РФ). Он не прерывается, не приостанавливается и не восстанавливается.\n\n` : '') +
+        `Важно: истечение срока исковой давности применяется судом только по заявлению стороны в споре. Расчёт не заменяет правовую оценку документов, в том числе требования о досрочном возврате кредита, даты получения претензии и юридической силы действий по признанию долга.`;
 }
 
 // ============================================================
@@ -5114,40 +5108,25 @@ function gk395GetRateInfo(date, region) {
 }
 
 function toggleGk395ManualRates() {
-    const mode = document.getElementById('gk395-rate-mode').value;
-    document.getElementById('gk395-manual-rates-block').style.display = mode === 'manual' ? 'block' : 'none';
+    document.getElementById('gk395-manual-rates-block').style.display = document.getElementById('gk395-rate-mode').value === 'manual' ? 'block' : 'none';
 }
-
 function addGk395ManualRateRow() {
-    document.getElementById('gk395-manual-rate-tbody').insertAdjacentHTML('beforeend', `
-        <tr><td><input type="date" class="gk395-manual-rate-date"></td><td><input type="number" class="gk395-manual-rate-value" min="0" step="0.01"></td><td><button type="button" class="danger-btn" onclick="removeGk395ManualRateRow(this)">Удалить</button></td></tr>`);
+    document.getElementById('gk395-manual-rate-tbody').insertAdjacentHTML('beforeend', '<tr><td><input type="date" class="gk395-manual-rate-date"></td><td><input type="number" class="gk395-manual-rate-value" min="0" step="0.01"></td><td><button type="button" class="danger-btn" onclick="removeGk395ManualRateRow(this)">Удалить</button></td></tr>');
 }
-
 function removeGk395ManualRateRow(button) {
-    const tbody = document.getElementById('gk395-manual-rate-tbody');
-    if (tbody.rows.length > 1) button.closest('tr').remove();
+    const tbody=document.getElementById('gk395-manual-rate-tbody'); if(tbody.rows.length>1) button.closest('tr').remove();
 }
-
 function gk395GetManualRates() {
-    const rates = [];
-    document.querySelectorAll('#gk395-manual-rate-tbody tr').forEach(row => {
-        const from = row.querySelector('.gk395-manual-rate-date').value;
-        const rate = Number(row.querySelector('.gk395-manual-rate-value').value);
-        if (from && Number.isFinite(rate) && rate > 0) rates.push({ from: gk395ParseDate(from), rate });
+    const rates=[];
+    document.querySelectorAll('#gk395-manual-rate-tbody tr').forEach(row=>{
+        const from=row.querySelector('.gk395-manual-rate-date').value, rate=Number(row.querySelector('.gk395-manual-rate-value').value);
+        if(from && Number.isFinite(rate) && rate>0) rates.push({from:gk395ParseDate(from),rate});
     });
-    return rates.sort((a, b) => a.from - b.from);
+    return rates.sort((a,b)=>a.from-b.from);
 }
-
-function gk395GetRateInfoWithMode(date, region, mode, manualRates) {
-    if (mode === 'manual') {
-        let manualRate = null;
-        for (const item of manualRates) {
-            if (item.from <= date) manualRate = item.rate;
-            else break;
-        }
-        if (manualRate !== null) return { rate: manualRate, source: 'Ставка указана вручную' };
-    }
-    return gk395GetRateInfo(date, region);
+function gk395GetRateInfoWithMode(date,region,mode,manualRates) {
+    if(mode==='manual') { let rate=null; for(const item of manualRates){if(item.from<=date)rate=item.rate;else break;} if(rate!==null)return {rate,source:'Ставка введена вручную'}; }
+    return gk395GetRateInfo(date,region);
 }
 
 function addGk395Row() {
@@ -5234,18 +5213,11 @@ function calcGK395() {
     }
 
     if (rateMode === 'manual' && manualRates.length === 0) {
-        resultDiv.className = 'result-box error';
-        resultDiv.textContent = 'Добавьте хотя бы одну дату и ставку в блоке ручного ввода.';
-        resultBody.innerHTML = '';
-        return;
+        resultDiv.className = 'result-box error'; resultDiv.textContent = 'Добавьте хотя бы одну дату и ставку в блоке ручного ввода.'; resultBody.innerHTML = ''; return;
     }
-
     const lastKnownRateDate = gk395LastKnownRateDate();
     if (rateMode !== 'manual' && endDate > lastKnownRateDate) {
-        resultDiv.className = 'result-box error';
-        resultDiv.textContent = `В таблице ставок нет подтверждённых данных для периода после ${gk395FormatDate(lastKnownRateDate)}. Выберите режим ручного ввода ставки для продолжения расчёта.`;
-        resultBody.innerHTML = '';
-        return;
+        resultDiv.className = 'result-box error'; resultDiv.textContent = `В таблице ставок нет подтверждённых данных для периода после ${gk395FormatDate(lastKnownRateDate)}. Выберите ручной ввод ставки либо обновите массив по решениям Банка России.`; resultBody.innerHTML = ''; return;
     }
 
     const payments = gk395GetPayments(startDate, endDate);
@@ -5279,13 +5251,8 @@ function calcGK395() {
         });
     });
 
-    const rateChanges = rateMode === 'manual'
-        ? manualRates.map(item => ({ from: gk395DateKey(item.from) }))
-        : GK395_KEY_RATES;
-    rateChanges.forEach(item => {
-        const date = gk395ParseDate(item.from);
-        if (date > startDate && date <= endDate) addEvent(date, { type: 'rate' });
-    });
+    const rateChanges = rateMode === 'manual' ? manualRates : GK395_KEY_RATES.map(item => ({from: gk395ParseDate(item.from), rate:item.rate}));
+    rateChanges.forEach(item => { const date = item.from instanceof Date ? item.from : gk395ParseDate(item.from); if (date > startDate && date <= endDate) addEvent(date, { type: 'rate' }); });
 
     for (let year = startDate.getFullYear() + 1; year <= endDate.getFullYear(); year += 1) {
         const newYear = new Date(year, 0, 1);
@@ -5819,7 +5786,7 @@ document.addEventListener('DOMContentLoaded', function () {
             </table>
         </div>
 
-        <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyFullCalculation('credit-debt-result-tbody')">📋 Копировать</button>
+        <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyFullCalculation('credit-debt-summary', 'credit-debt-result-tbody')">📋 Копировать</button>
     `;
 
     const scriptElement = document.querySelector('script');
@@ -7380,7 +7347,7 @@ document.addEventListener('DOMContentLoaded', function () {
             <button class="copy-btn" onclick="copyResult('zpp-result')">Копировать</button>
         </div>
         <div id="zpp-formulas" class="result-box" style="display:none; white-space: pre-wrap; margin-top: 10px;"></div>
-        <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyZppOsagoCalculation('zpp-formulas')">📋 Копировать</button>
+        <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyZppOsagoCalculation('zpp-result', 'zpp-formulas')">📋 Копировать</button>
     `;
     document.body.appendChild(tab);
 });
@@ -7632,7 +7599,7 @@ document.addEventListener('DOMContentLoaded', function () {
             <button class="copy-btn" onclick="copyResult('osago-result')">Копировать</button>
         </div>
         <div id="osago-formulas" class="result-box" style="display:none; white-space: pre-wrap; margin-top: 10px;"></div>
-        <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyZppOsagoCalculation('osago-formulas')">📋 Копировать</button>
+        <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyZppOsagoCalculation('osago-result', 'osago-formulas')">📋 Копировать</button>
     `;
     document.body.appendChild(tab);
 });
@@ -7776,18 +7743,26 @@ function calcOsago() {
 
 
 
-function copyFullCalculation(tableBodyId) {
+function copyFullCalculation(summaryId, tableBodyId) {
+    /* Нижняя кнопка копирует только расчётную таблицу, без итогового поля и иных блоков страницы. */
     const tbody = document.getElementById(tableBodyId);
     const table = tbody ? tbody.closest('table') : null;
-    const text = table ? Array.from(table.querySelectorAll('tr')).map(row =>
-        Array.from(row.querySelectorAll('th, td')).map(cell => (cell.innerText || cell.textContent || '').replace(/\s+/g, ' ').trim()).join('\t')
-    ).filter(Boolean).join('\n') : '';
+    if (!table) { showCopyToast('Сначала выполните расчёт'); return; }
+    const text = Array.from(table.querySelectorAll('tr')).map(row =>
+        Array.from(row.querySelectorAll('th, td')).map(cell =>
+            (cell.innerText || cell.textContent || '').replace(/\s+/g, ' ').trim()
+        ).join('\t')
+    ).filter(Boolean).join('\n');
     copyCalculationText(text);
 }
 
-function copyZppOsagoCalculation(formulasId) {
+function copyZppOsagoCalculation(resultId, formulasId) {
+    const result = document.getElementById(resultId);
     const formulas = document.getElementById(formulasId);
-    copyCalculationText(formulas ? (formulas.innerText || formulas.textContent || '').trim() : '');
+    let text = result ? (result.innerText || result.textContent || '').trim() : '';
+    const formulasText = formulas ? (formulas.innerText || formulas.textContent || '').trim() : '';
+    if (formulasText) text += (text ? '\n\n' : '') + formulasText;
+    copyCalculationText(text);
 }
 
 function copyCalculationText(text) {
@@ -7805,5 +7780,8 @@ function copyCalculationText(text) {
 }
 
 </script>
+
+<!-- Правовая оговорка -->
+<div class="note" style="margin:20px 25px;"><strong>Правовая оговорка.</strong> Калькулятор является вспомогательным инструментом подготовки расчётов. Перед направлением в суд проверьте договор, первичные документы, действующую редакцию закона и применимую судебную практику. Неустойка рассчитывается без автоматического снижения: вопрос о применении статьи 333 ГК РФ разрешается судом. Расчёт срока исковой давности носит справочный характер; последствия её истечения применяются судом только по заявлению стороны.</div>
 </body>
 </html>
