@@ -1675,6 +1675,8 @@ pre {
             </button>
         </div>
 
+        <div id="lim-reasoning" class="result-box" style="display:none; margin-top: 16px;"></div>
+
         <div class="scroll-table">
             <table>
                 <thead>
@@ -4697,87 +4699,96 @@ function limitationGetAcknowledgmentDate() {
     return parseDate(value);
 }
 
-function limitationApplySuspension(
-    limitationStart,
-    limitationEnd,
-    periods
-) {
+function limitationApplySuspension(limitationStart, limitationEnd, periods) {
     let finalEnd = new Date(limitationEnd);
-    const sortedPeriods = [...periods].sort((first, second) => {
-        return first.start - second.start;
-    });
+    const appliedPeriods = [];
+    const sortedPeriods = [...periods].sort((a, b) => a.start - b.start);
 
     sortedPeriods.forEach(period => {
-        /*
-           Приостановление имеет значение только если началось
-           до исходного окончания срока.
-        */
-        if (period.start > finalEnd) {
-            return;
-        }
-        /*
-           Если событие началось раньше начала срока, учитываем только часть
-           периода, попавшую в течение срока исковой давности.
-        */
-        const actualStart = period.start < limitationStart
-            ? limitationStart
-            : period.start;
-        const actualEnd = period.end > finalEnd
-            ? finalEnd
-            : period.end;
-        if (actualEnd < actualStart) {
-            return;
-        }
-        const days = Math.floor(
-            (actualEnd - actualStart) / 86400000
-        ) + 1;
+        if (period.start > finalEnd) return;
+        const actualStart = period.start < limitationStart ? limitationStart : period.start;
+        const actualEnd = period.end > finalEnd ? finalEnd : period.end;
+        if (actualEnd < actualStart) return;
+
+        const days = Math.floor((actualEnd - actualStart) / 86400000) + 1;
+        const endBeforeSuspension = new Date(finalEnd);
         finalEnd = limitationAddDays(finalEnd, days);
-        /*
-           Если к окончанию приостановления оставалось менее шести месяцев,
-           срок продлевается до шести месяцев.
-        */
-        const remainingDays = Math.floor(
-            (finalEnd - period.end) / 86400000
-        );
+        const remainingDays = Math.floor((finalEnd - period.end) / 86400000);
+        let extendedToSixMonths = false;
         if (remainingDays < 180) {
             finalEnd = limitationAddMonths(period.end, 6);
+            extendedToSixMonths = true;
         }
+        appliedPeriods.push({
+            type: period.type,
+            periodStart: period.start,
+            periodEnd: period.end,
+            actualStart,
+            actualEnd,
+            days,
+            endBeforeSuspension,
+            endAfterSuspension: new Date(finalEnd),
+            extendedToSixMonths
+        });
     });
-
-    return finalEnd;
+    return { finalEnd, appliedPeriods };
 }
 
-function limitationGetDeadline(
-    dueDate,
-    acknowledgmentDate,
-    suspensionPeriods
-) {
-    /*
-       Срок начинается на следующий день после дня,
-       когда обязательство должно было быть исполнено.
-    */
-    let startDate = limitationAddDays(dueDate, 1);
-    /*
-       Общий срок — три года.
-    */
-    let endDate = limitationAddYears(startDate, 3);
-    /*
-       Признание долга до истечения срока прерывает срок:
-       новый трёхлетний период начинается заново со следующего дня.
-    */
-    if (
-        acknowledgmentDate &&
-        acknowledgmentDate >= startDate &&
-        acknowledgmentDate <= endDate
-    ) {
+function limitationGetDeadline(dueDate, acknowledgmentDate, suspensionPeriods) {
+    const originalStartDate = limitationAddDays(dueDate, 1);
+    const originalEndDate = limitationAddYears(originalStartDate, 3);
+    let startDate = new Date(originalStartDate);
+    let endDateBeforeSuspension = new Date(originalEndDate);
+    let interruptedByAcknowledgment = false;
+
+    if (acknowledgmentDate && acknowledgmentDate >= startDate && acknowledgmentDate <= endDateBeforeSuspension) {
+        interruptedByAcknowledgment = true;
         startDate = limitationAddDays(acknowledgmentDate, 1);
-        endDate = limitationAddYears(startDate, 3);
+        endDateBeforeSuspension = limitationAddYears(startDate, 3);
     }
-    let finalEndDate = limitationApplySuspension(startDate, endDate, suspensionPeriods);
+    const suspensionResult = limitationApplySuspension(startDate, endDateBeforeSuspension, suspensionPeriods);
+    let finalEndDate = suspensionResult.finalEnd;
     const objectiveLimit = limitationAddYears(dueDate, 10);
     const objectiveCapApplied = finalEndDate > objectiveLimit;
     if (objectiveCapApplied) finalEndDate = objectiveLimit;
-    return { startDate, endDate: finalEndDate, objectiveLimit, objectiveCapApplied };
+
+    return {
+        originalStartDate,
+        originalEndDate,
+        startDate,
+        endDate: finalEndDate,
+        endDateBeforeSuspension,
+        objectiveLimit,
+        objectiveCapApplied,
+        interruptedByAcknowledgment,
+        appliedPeriods: suspensionResult.appliedPeriods
+    };
+}
+
+function limitationBuildReasoning(row, claimDate) {
+    if (row.status === 'paid') return '';
+    const d = row.deadline;
+    const paymentText = `платежу, подлежавшему внесению ${limitationDateText(row.dueDate)} на сумму ${limitationMoney(row.sum)} руб.`;
+    let text = `По ${paymentText} обязанность по оплате наступила ${limitationDateText(row.dueDate)}. Течение трёхлетнего срока исковой давности началось ${limitationDateText(d.originalStartDate)} — на следующий день после установленной даты исполнения обязательства (статья 200 ГК РФ). Первоначально срок исковой давности истекал ${limitationDateText(d.originalEndDate)} (пункт 1 статьи 196 ГК РФ).`;
+
+    if (d.interruptedByAcknowledgment) {
+        text += ` В связи с признанием долга срок исковой давности исчисляется заново с ${limitationDateText(d.startDate)}; без учёта судебной защиты он истекал бы ${limitationDateText(d.endDateBeforeSuspension)} (статья 203 ГК РФ).`;
+    }
+    if (d.appliedPeriods.length) {
+        d.appliedPeriods.forEach(p => {
+            const isOrder = p.type === 'Судебный приказ';
+            const periodName = isOrder ? 'заявление о выдаче судебного приказа находилось на судебной защите' : p.type.toLowerCase();
+            text += ` ${isOrder ? 'С даты подачи заявления о выдаче судебного приказа' : 'В период'} ${limitationDateText(p.actualStart)} по ${limitationDateText(p.actualEnd)} ${periodName}; в этот период течение срока исковой давности не осуществлялось (пункт 1 статьи 204 ГК РФ).`;
+            if (isOrder) text += ` Судебный приказ отменён ${limitationDateText(p.periodEnd)}.`;
+            text += ` После окончания указанного периода течение срока продолжилось; срок продлён с ${limitationDateText(p.endBeforeSuspension)} до ${limitationDateText(p.endAfterSuspension)}.`;
+            if (p.extendedToSixMonths) text += ` Поскольку после окончания судебной защиты оставшаяся часть срока составляла менее шести месяцев, она продлена до шести месяцев (пункт 3 статьи 202 ГК РФ).`;
+        });
+    } else {
+        text += ` Обстоятельства, приостанавливающие течение срока исковой давности, по данному платежу не применялись.`;
+    }
+    if (d.objectiveCapApplied) text += ` При этом применён предельный десятилетний срок исковой давности, истекающий ${limitationDateText(d.objectiveLimit)} (пункт 2 статьи 196 ГК РФ).`;
+    text += ` Итоговый срок исковой давности истекал ${limitationDateText(d.endDate)}. Поскольку иск предъявлен ${limitationDateText(claimDate)}, срок исковой давности по данному платежу ${row.isExpired ? 'пропущен' : 'не пропущен'}.`;
+    return text;
 }
 
 function calcLimitation() {
@@ -4858,7 +4869,9 @@ function calcLimitation() {
             statusText: isExpired
                 ? 'Срок истёк'
                 : 'Срок не истёк',
-            statusClass: isExpired ? 'expired' : 'active'
+            statusClass: isExpired ? 'expired' : 'active',
+            isExpired,
+            deadline
         };
     });
 
@@ -4951,6 +4964,26 @@ function calcLimitation() {
         (earlyDemandBlock ? earlyDemandBlock + '\n\n' : '') +
         (objectiveCapUsed ? `ВНИМАНИЕ: применён предельный десятилетний срок исковой давности (п. 2 ст. 196 ГК РФ). Он не прерывается, не приостанавливается и не восстанавливается.\n\n` : '') +
         `Важно: истечение срока исковой давности применяется судом только по заявлению стороны в споре. Расчёт не заменяет правовую оценку документов, в том числе требования о досрочном возврате кредита, даты получения претензии и юридической силы действий по признанию долга.`;
+
+    const reasoningDiv = document.getElementById('lim-reasoning');
+    const reasoningRows = rows.filter(row => row.status !== 'paid');
+    if (reasoningRows.length) {
+        reasoningDiv.style.display = 'block';
+        reasoningDiv.innerHTML = `<div style="font-weight:700; margin-bottom:10px;">МОТИВИРОВОЧНЫЕ БЛОКИ ПО КАЖДОМУ ПЛАТЕЖУ</div>` +
+            `<div style="margin-bottom:12px; font-size:0.93em;">Каждый блок подготовлен для самостоятельного копирования в проект судебного акта.</div>` +
+            reasoningRows.map((row, index) => {
+                const text = limitationBuildReasoning(row, claimDate);
+                const id = `lim-reasoning-${index}`;
+                return `<div style="margin:14px 0; padding:12px; border:1px solid #cfd8dc; border-radius:8px; background:#fff;">` +
+                    `<div style="font-weight:700; margin-bottom:8px;">Платёж от ${limitationDateText(row.dueDate)} — ${row.isExpired ? 'срок пропущен' : 'срок не пропущен'}</div>` +
+                    `<div id="${id}" style="white-space:pre-wrap; line-height:1.55;">${text}</div>` +
+                    `<button type="button" class="copy-btn" style="margin-top:10px;" onclick="copyResult('${id}')">📋 Копировать мотивировочный блок</button>` +
+                    `</div>`;
+            }).join('');
+    } else {
+        reasoningDiv.style.display = 'none';
+        reasoningDiv.innerHTML = '';
+    }
 }
 
 // ============================================================
