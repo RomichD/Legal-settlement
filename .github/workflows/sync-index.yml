@@ -1,0 +1,53 @@
+name: Sync index.html to app branches
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - index.html
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Загрузка ветки main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Настройка автора коммитов
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Копирование в Android-ветку
+        run: |
+          git checkout Android-Legal-settlement
+          git checkout main -- index.html
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "Изменений для Android-ветки нет"
+          else
+            git commit -m "Автообновление index.html из main"
+            git push origin Android-Legal-settlement
+          fi
+
+      - name: Копирование в Windows-ветку
+        run: |
+          git checkout windows-build
+          git checkout main -- index.html
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "Изменений для Windows-ветки нет"
+          else
+            git commit -m "Автообновление index.html из main"
+            git push origin windows-build
+          fi
