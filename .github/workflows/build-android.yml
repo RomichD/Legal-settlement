@@ -3,7 +3,7 @@ name: Build Android APK
 on:
   push:
     branches:
-      - apk-build
+      - Android-Legal-settlement
   workflow_dispatch:
 
 jobs:
