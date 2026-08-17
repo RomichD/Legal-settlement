@@ -2,11 +2,28 @@
   "name": "legal-settlement",
   "version": "1.0.0",
   "private": true,
+  "main": "main.js",
+  "scripts": {
+    "build-win": "electron-builder --win --publish never"
+  },
   "dependencies": {
     "@capacitor/core": "6.1.2",
     "@capacitor/android": "6.1.2"
   },
   "devDependencies": {
-    "@capacitor/cli": "6.1.2"
+    "@capacitor/cli": "6.1.2",
+    "electron": "31.0.0",
+    "electron-builder": "24.13.3"
+  },
+  "build": {
+    "appId": "ru.romichd.legalsettlement",
+    "productName": "Юридический калькулятор",
+    "files": [
+      "main.js",
+      "www/**/*"
+    ],
+    "win": {
+      "target": "nsis"
+    }
   }
 }
