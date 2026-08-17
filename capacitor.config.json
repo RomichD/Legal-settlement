@@ -1,0 +1,6 @@
+{
+  "appId": "ru.romichd.legalsettlement",
+  "appName": "Юридический калькулятор",
+  "webDir": "www",
+  "bundledWebRuntime": false
+}
