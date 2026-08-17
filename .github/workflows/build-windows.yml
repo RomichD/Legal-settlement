@@ -1,0 +1,32 @@
+name: Build Windows EXE
+
+on:
+  push:
+    branches:
+      - windows-build
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Получение файлов репозитория
+        uses: actions/checkout@v4
+
+      - name: Установка Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Установка зависимостей
+        run: npm install
+
+      - name: Сборка Windows-приложения
+        run: npx electron-builder --win --publish never
+
+      - name: Сохранение установщика
+        uses: actions/upload-artifact@v4
+        with:
+          name: legal-calculator-windows
+          path: dist/*.exe
