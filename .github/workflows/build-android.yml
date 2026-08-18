@@ -34,6 +34,11 @@ jobs:
             npx cap add android
           fi
 
+      - name: Подготовка актуальной веб-версии
+        run: |
+          mkdir -p www
+          cp index.html www/index.html
+
       - name: Синхронизация HTML с Android-проектом
         run: npx cap sync android
 
