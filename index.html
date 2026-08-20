@@ -1887,7 +1887,13 @@ let liveCpiLoaded = false;
 
 async function fetchLiveKeyRates() {
     try {
-        const response = await fetch(DATA_PROXY_BASE + '?route=key-rate&from=2016-01-01&to=2030-12-31');
+        const response = await fetch(
+            DATA_PROXY_BASE + '?route=key-rate&from=2016-01-01&to=' +
+            new Date().getFullYear() + '-12-31'
+        );
+        if (!response.ok) {
+            throw new Error('HTTP ' + response.status);
+        }
         const data = await response.json();
         if (!data.ok || !Array.isArray(data.rates)) return;
 
@@ -1912,6 +1918,9 @@ async function fetchLiveKeyRates() {
 async function fetchLiveCpi() {
     try {
         const response = await fetch(DATA_PROXY_BASE + '?route=cpi');
+        if (!response.ok) {
+            throw new Error('HTTP ' + response.status);
+        }
         const data = await response.json();
         if (!data.ok || !Array.isArray(data.values)) return;
 
