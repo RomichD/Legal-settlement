@@ -1877,9 +1877,9 @@ pre {
 </div>
 
 <script>
+
 // ============================================================
-// Подключение к прокси-серверу Yandex Cloud Functions
-// Автоматическая загрузка ключевой ставки и ИПЦ
+// Онлайн-обновление ключевой ставки и ИПЦ
 // ============================================================
 const DATA_PROXY_BASE = 'https://functions.yandexcloud.net/d4eikb7q338sph0h5u66';
 let liveKeyRatesLoaded = false;
@@ -1891,62 +1891,71 @@ async function fetchLiveKeyRates() {
             DATA_PROXY_BASE + '?route=key-rate&from=2016-01-01&to=' +
             new Date().getFullYear() + '-12-31'
         );
-        if (!response.ok) {
-            throw new Error('HTTP ' + response.status);
-        }
+        if (!response.ok) throw new Error('HTTP ' + response.status);
         const data = await response.json();
-        if (!data.ok || !Array.isArray(data.rates)) return;
+        if (!data.ok || !Array.isArray(data.rates) || data.rates.length === 0) {
+            throw new Error('Некорректный или пустой ответ API');
+        }
 
-        const existingDates = new Set(GK395KEYRATES.map(item => item.from));
+        const byDate = new Map(GK395KEYRATES.map(item => [item.from, item.rate]));
         data.rates.forEach(item => {
-            if (!existingDates.has(item.from)) {
-                GK395KEYRATES.push({ from: item.from, rate: item.rate });
-                existingDates.add(item.from);
-            } else {
-                const existing = GK395KEYRATES.find(r => r.from === item.from);
-                if (existing) existing.rate = item.rate;
+            if (item && typeof item.from === 'string' && Number.isFinite(item.rate)) {
+                byDate.set(item.from, item.rate);
             }
         });
-        GK395KEYRATES.sort((a, b) => a.from.localeCompare(b.from));
+        GK395KEYRATES.splice(0, GK395KEYRATES.length,
+            ...Array.from(byDate, ([from, rate]) => ({ from, rate }))
+                .sort((a, b) => a.from.localeCompare(b.from))
+        );
         liveKeyRatesLoaded = true;
+        console.log('[key-rate] Обновлено. Всего записей: ' + GK395KEYRATES.length);
         updateDataStatusBadge('key-rate', true);
     } catch (error) {
-        updateDataStatusBadge('key-rate', false);
+        console.error('[key-rate] Ошибка загрузки:', error);
+        updateDataStatusBadge('key-rate', false, error.message);
     }
 }
 
 async function fetchLiveCpi() {
     try {
         const response = await fetch(DATA_PROXY_BASE + '?route=cpi');
-        if (!response.ok) {
-            throw new Error('HTTP ' + response.status);
-        }
+        if (!response.ok) throw new Error('HTTP ' + response.status);
         const data = await response.json();
-        if (!data.ok || !Array.isArray(data.values)) return;
+        if (!data.ok || !Array.isArray(data.values) || data.values.length === 0) {
+            throw new Error('Некорректный или пустой ответ API');
+        }
 
+        let loaded = 0;
         data.values.forEach(item => {
-            CPITABLE[item.month] = item.index;
+            if (item && typeof item.month === 'string' && Number.isFinite(item.index)) {
+                CPITABLE[item.month] = item.index;
+                loaded++;
+            }
         });
+        if (loaded === 0) throw new Error('Нет корректных значений ИПЦ');
         liveCpiLoaded = true;
+        console.log('[cpi] Обновлено. Загружено значений: ' + loaded);
         updateDataStatusBadge('cpi', true);
         if (typeof renderCpiMonthInputs === 'function') renderCpiMonthInputs();
     } catch (error) {
-        updateDataStatusBadge('cpi', false);
+        console.error('[cpi] Ошибка загрузки:', error);
+        updateDataStatusBadge('cpi', false, error.message);
     }
 }
 
 async function fetchLiveCalendarYear(year) {
     try {
         const response = await fetch(DATA_PROXY_BASE + '?route=calendar&year=' + year);
+        if (!response.ok) return null;
         const data = await response.json();
-        if (!data.ok || !data.rawDayCodes) return null;
-        return data;
+        return data && data.ok && data.rawDayCodes ? data : null;
     } catch (error) {
+        console.warn('[calendar] Не удалось загрузить календарь:', error);
         return null;
     }
 }
 
-function updateDataStatusBadge(source, success) {
+function updateDataStatusBadge(source, success, errorMessage) {
     const badgeId = 'data-status-' + source;
     let badge = document.getElementById(badgeId);
     if (!badge) {
@@ -1960,12 +1969,15 @@ function updateDataStatusBadge(source, success) {
         badge.style.borderRadius = '4px';
         badge.style.zIndex = '9999';
         badge.style.fontFamily = 'inherit';
+        badge.style.maxWidth = '300px';
+        badge.style.textAlign = 'right';
         document.body.appendChild(badge);
     }
     badge.style.background = success ? '#e8f5e9' : '#fff3e0';
     badge.style.color = success ? '#1b5e20' : '#e65100';
     const label = source === 'key-rate' ? 'Ключевая ставка' : 'ИПЦ';
-    badge.textContent = label + ': ' + (success ? 'обновлено' : 'офлайн-данные');
+    badge.textContent = label + ': ' + (success ? 'обновлено' : 'встроенные данные');
+    badge.title = success ? 'Данные получены из API.' : ('Онлайн-обновление недоступно. Причина: ' + (errorMessage || 'неизвестная ошибка'));
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -5089,7 +5101,7 @@ function calcLimitation() {
 // ============================================================
 // СТ. 395 ГК РФ
 // ============================================================
-const GK395_KEY_RATES = [
+const GK395KEYRATES = [
     { from: '2016-08-01', rate: 10.50 },
     { from: '2016-09-19', rate: 10.00 },
     { from: '2017-03-27', rate: 9.75 },
@@ -5200,12 +5212,12 @@ function gk395Money(value) {
 }
 
 function gk395LastKnownRateDate() {
-    return gk395ParseDate(GK395_KEY_RATES[GK395_KEY_RATES.length - 1].from);
+    return gk395ParseDate(GK395KEYRATES[GK395KEYRATES.length - 1].from);
 }
 
 function gk395GetKeyRate(date) {
     let rate = null;
-    for (const item of GK395_KEY_RATES) {
+    for (const item of GK395KEYRATES) {
         const fromDate = gk395ParseDate(item.from);
         if (fromDate <= date) {
             rate = item.rate;
@@ -5384,15 +5396,26 @@ function calcGK395() {
         });
     });
 
-    const rateChanges = rateMode === 'manual' ? manualRates : GK395_KEY_RATES.map(item => ({from: gk395ParseDate(item.from), rate:item.rate}));
-    rateChanges.forEach(item => { const date = item.from instanceof Date ? item.from : gk395ParseDate(item.from); if (date > startDate && date <= endDate) addEvent(date, { type: 'rate' }); });
-
-    for (let year = startDate.getFullYear() + 1; year <= endDate.getFullYear(); year += 1) {
-        const newYear = new Date(year, 0, 1);
-        if (newYear > startDate && newYear <= endDate) {
-            addEvent(newYear, { type: 'year' });
-        }
-    }
+    const rawRateChanges = rateMode === 'manual'
+        ? manualRates
+        : GK395KEYRATES.map(item => ({ from: gk395ParseDate(item.from), rate: item.rate }));
+    // API может возвращать ежедневные записи с одной и той же ставкой.
+    // В расчёте оставляем только даты реального изменения ставки.
+    const rateChanges = [];
+    let previousRate = null;
+    rawRateChanges
+        .filter(item => item && item.from instanceof Date && Number.isFinite(item.rate))
+        .sort((a, b) => a.from - b.from)
+        .forEach(item => {
+            if (previousRate === null || item.rate !== previousRate) {
+                rateChanges.push(item);
+                previousRate = item.rate;
+            }
+        });
+    rateChanges.forEach(item => {
+        const date = item.from;
+        if (date > startDate && date <= endDate) addEvent(date, { type: 'rate' });
+    });
 
     const timeline = Array.from(events.values()).sort((a, b) => a.date - b.date);
 
@@ -5433,18 +5456,38 @@ function calcGK395() {
             return;
         }
 
-        const denominator = gk395DaysInYear(currentEvent.date);
-        const interest = balance * (rateInfo.rate / 100) * days / denominator;
+        // Проценты считаются отдельно по каждому календарному году (365/366),
+        // но в таблице соседние части одного периода объединяются в одну строку.
+        let interest = 0;
+        let segmentStart = new Date(currentEvent.date);
+        while (segmentStart < nextEvent.date) {
+            const nextYear = new Date(segmentStart.getFullYear() + 1, 0, 1);
+            const segmentEnd = nextYear < nextEvent.date ? nextYear : nextEvent.date;
+            const segmentDays = gk395DaysBetween(segmentStart, segmentEnd);
+            interest += balance * (rateInfo.rate / 100) * segmentDays / gk395DaysInYear(segmentStart);
+            segmentStart = segmentEnd;
+        }
         totalInterest = gk395Round(totalInterest + interest);
 
-        rows.push({
+        const row = {
             from: new Date(currentEvent.date),
             to: gk395AddDays(nextEvent.date, -1),
             days,
             rate: rateInfo.rate,
             debt: balance,
             interest: gk395Round(interest)
-        });
+        };
+        const previousRow = rows[rows.length - 1];
+        if (previousRow &&
+            previousRow.rate === row.rate &&
+            previousRow.debt === row.debt &&
+            gk395DateKey(gk395AddDays(previousRow.to, 1)) === gk395DateKey(row.from)) {
+            previousRow.to = row.to;
+            previousRow.days += row.days;
+            previousRow.interest = gk395Round(previousRow.interest + row.interest);
+        } else {
+            rows.push(row);
+        }
     }
 
     resultBody.innerHTML = rows.map(row => `
@@ -8128,6 +8171,40 @@ function parseHolidayTransferImportText() {
     }
 }
 
+function daysPlural(value, one, few, many) {
+    const n = Math.abs(value) % 100;
+    const n1 = n % 10;
+    if (n > 10 && n < 20) return many;
+    if (n1 > 1 && n1 < 5) return few;
+    if (n1 === 1) return one;
+    return many;
+}
+
+function formatDaysPeriod(startDate, endDateExclusive) {
+    let cursor = new Date(startDate);
+    let years = 0;
+    let months = 0;
+
+    while (true) {
+        const next = new Date(cursor);
+        next.setFullYear(next.getFullYear() + 1);
+        if (next > endDateExclusive) break;
+        cursor = next;
+        years++;
+    }
+    while (true) {
+        const next = new Date(cursor);
+        next.setMonth(next.getMonth() + 1);
+        if (next > endDateExclusive) break;
+        cursor = next;
+        months++;
+    }
+    const days = Math.round((endDateExclusive - cursor) / 86400000);
+    return years + ' ' + daysPlural(years, 'год', 'года', 'лет') + ', ' +
+        months + ' ' + daysPlural(months, 'месяц', 'месяца', 'месяцев') + ', ' +
+        days + ' ' + daysPlural(days, 'день', 'дня', 'дней');
+}
+
 function calculateDaysBetween() {
     const d1str = document.getElementById('days-date1').value;
     const d2str = document.getElementById('days-date2').value;
@@ -8143,86 +8220,77 @@ function calculateDaysBetween() {
     let reversed = false;
     if (start > end) { [start, end] = [end, start]; reversed = true; }
 
+    const countStart = new Date(start);
+    if (!includeFirst) countStart.setDate(countStart.getDate() + 1);
+    const countEndExclusive = new Date(end);
+    countEndExclusive.setDate(countEndExclusive.getDate() + 1);
+
     let calendarDays = 0;
-    let workingDays = 0;
+    let daysAfterExclusions = 0;
     let weekendCount = 0;
     let holidayCount = 0;
     let transferredWorkdays = 0;
     let transferredRestdays = 0;
-    let years = new Set();
+    const years = new Set();
 
-    let cursor = new Date(start);
-    if (!includeFirst) cursor.setDate(cursor.getDate() + 1);
-
-    while (cursor <= end) {
+    for (let cursor = new Date(countStart); cursor <= end; cursor.setDate(cursor.getDate() + 1)) {
         calendarDays++;
         years.add(cursor.getFullYear());
         const info = isNonWorkingDayWithTransfers(cursor, useTransfers);
+        const ordinaryWeekend = isWeekend(cursor);
+        const holiday = isRfHoliday(cursor);
+        const isTransferredWorkday = useTransfers && info.transferred && !info.nonWorking;
+        const isTransferredRestday = useTransfers && info.transferred && info.nonWorking;
 
-        let isWknd, isHol;
-        if (info.transferred) {
-            if (info.nonWorking) { transferredRestdays++; isWknd = false; isHol = false; }
-            else { transferredWorkdays++; isWknd = false; isHol = false; }
-        } else {
-            isWknd = info.wknd;
-            isHol = info.hol && !info.wknd;
-        }
-        if (isWknd) weekendCount++;
-        if (isHol) holidayCount++;
+        if (isTransferredWorkday) transferredWorkdays++;
+        if (isTransferredRestday) transferredRestdays++;
+        if (ordinaryWeekend && !isTransferredWorkday) weekendCount++;
+        if (holiday && !ordinaryWeekend && !isTransferredWorkday) holidayCount++;
 
-        let counted = true;
-        if (info.nonWorking) {
-            if (excludeWeekends || excludeHolidays) counted = false;
-        }
-        if (counted) workingDays++;
-
-        cursor.setDate(cursor.getDate() + 1);
+        const excludeForWeekend = excludeWeekends && (ordinaryWeekend && !isTransferredWorkday || isTransferredRestday);
+        const excludeForHoliday = excludeHolidays && holiday && !isTransferredWorkday;
+        if (!excludeForWeekend && !excludeForHoliday) daysAfterExclusions++;
     }
 
+    const periodText = formatDaysPeriod(countStart, countEndExclusive);
     const resultDiv = document.getElementById('days-result');
     resultDiv.style.display = 'block';
     document.getElementById('days-copy-btn').style.display = 'inline-block';
 
     const missingYears = [...years].filter(y => !RF_HOLIDAY_TRANSFERS[y] && useTransfers);
-
-    let text = `РАСЧЁТ КОЛИЧЕСТВА ДНЕЙ МЕЖДУ ДАТАМИ\n\n`;
-    text += `Первая дата: ${formatDate(start)}\n`;
-    text += `Вторая дата: ${formatDate(end)}\n`;
-    text += `Первая дата ${includeFirst ? 'включена' : 'не включена'} в подсчёт\n`;
-    text += `Учёт переноса выходных дней по постановлениям Правительства РФ: ${useTransfers ? 'включён' : 'выключен'}\n\n`;
-    text += `Календарных дней: ${calendarDays}\n`;
-    text += `Из них выходных (суббота/воскресенье, с учётом переноса): ${weekendCount}\n`;
-    text += `Из них нерабочих праздничных дней (ст. 112 ТК РФ): ${holidayCount}\n`;
+    let text = 'РАСЧЁТ КОЛИЧЕСТВА ДНЕЙ МЕЖДУ ДАТАМИ\n\n';
+    text += 'Первая дата: ' + formatDate(start) + '\n';
+    text += 'Вторая дата: ' + formatDate(end) + '\n';
+    text += 'Первая дата ' + (includeFirst ? 'включена' : 'не включена') + ' в подсчёт\n';
+    text += 'Учёт переноса выходных дней по постановлениям Правительства РФ: ' + (useTransfers ? 'включён' : 'выключен') + '\n\n';
+    text += 'Календарных дней: ' + calendarDays + ' (' + periodText + ')\n';
+    text += 'Из них выходных: ' + weekendCount + '\n';
+    text += 'Из них нерабочих праздничных дней (ст. 112 ТК РФ): ' + holidayCount + '\n';
     if (useTransfers) {
-        text += `Дней, переведённых в рабочие по постановлению о переносе: ${transferredWorkdays}\n`;
-        text += `Дней, переведённых в выходные по постановлению о переносе: ${transferredRestdays}\n`;
+        text += 'Дней, переведённых в рабочие по постановлению о переносе: ' + transferredWorkdays + '\n';
+        text += 'Дней, переведённых в выходные по постановлению о переносе: ' + transferredRestdays + '\n';
     }
-    text += `\nДней с учётом заданных исключений: ${workingDays}\n`;
-    if (reversed) text += `\nПримечание: даты были указаны в обратном порядке и переставлены для расчёта.`;
+    text += '\nДней с учётом выбранных исключений: ' + daysAfterExclusions + '\n';
+    if (reversed) text += '\nПримечание: даты были указаны в обратном порядке и переставлены для расчёта.\n';
 
-    text += `\n\nПравовая справка: перечень нерабочих праздничных дней в РФ установлен статьёй 112 Трудового кодекса РФ. `;
+    text += '\nПравовая справка: нерабочие праздничные дни установлены статьёй 112 Трудового кодекса РФ. ';
     if (useTransfers) {
-        text += `Перенос выходных дней учтён по постановлениям Правительства РФ: от 10.07.2023 N 1131 (на 2024 год), от 04.10.2024 N 1335 (на 2025 год), от 24.09.2025 N 1466 (на 2026 год). `;
-        if ([...years].includes(2027)) {
-            text += `Для 2027 года использован проект постановления Правительства РФ (подготовлен Минтрудом России 01.04.2026) — на дату расчёта официально не утверждён, требует проверки перед использованием в судебном документе. `;
-        }
+        text += 'Переносы выходных учитываются по встроенным данным и добавленным вручную значениям. ';
         if (missingYears.length > 0) {
-            text += `Внимание: для года(лет) ${missingYears.join(', ')} сведения о переносе в калькуляторе отсутствуют — сверьте с официальным постановлением Правительства РФ и при необходимости добавьте перенос вручную. `;
+            text += 'Для года(лет) ' + missingYears.join(', ') + ' сведения о переносах отсутствуют — сверьте производственный календарь и при необходимости добавьте перенос вручную.';
         }
     } else {
-        text += `Перенос выходных дней в данном расчёте не применялся.`;
+        text += 'Переносы выходных в расчёте не применялись.';
     }
-
     resultDiv.textContent = text;
 }
-
 
 // ============================================================
 // ВКЛАДКА 12: ИНДЕКСАЦИЯ ПРИСУЖДЁННЫХ СУММ (СТ. 208 ГПК РФ)
 // ============================================================
 
 // Встроенная (базовая) таблица ИПЦ РФ, % к предыдущему месяцу
-const CPI_TABLE = {
+const CPITABLE = {
     "2023-01":100.84,"2023-02":100.46,"2023-03":100.37,"2023-04":100.38,
     "2023-05":100.31,"2023-06":100.37,"2023-07":100.63,"2023-08":100.28,
     "2023-09":100.87,"2023-10":100.83,"2023-11":101.11,"2023-12":100.73,
@@ -8285,7 +8353,7 @@ function getCpiValue(year, month) {
     const manualInput = document.getElementById(`cpi-manual-${key}`);
     if (manualInput && manualInput.value) return parseFloat(manualInput.value);
     if (cpiOverrides[key] !== undefined) return cpiOverrides[key];
-    if (CPI_TABLE[key] !== undefined) return CPI_TABLE[key];
+    if (CPITABLE[key] !== undefined) return CPITABLE[key];
     return null;
 }
 
@@ -8317,7 +8385,7 @@ function renderCpiMonthInputs() {
     months.forEach(({year, month}) => {
         const key = `${year}-${String(month).padStart(2,'0')}`;
         const value = getCpiValue(year, month);
-        const source = cpiOverrides[key] !== undefined ? 'автозагрузка' : (CPI_TABLE[key] !== undefined ? 'встроенная таблица' : 'нет данных — заполните вручную');
+        const source = cpiOverrides[key] !== undefined ? 'автозагрузка' : (CPITABLE[key] !== undefined ? 'встроенная таблица' : 'нет данных — заполните вручную');
         html += `<tr>
             <td style="padding:6px;border-bottom:1px solid #eceff1;">${monthNames[month-1]} ${year}</td>
             <td style="padding:6px;border-bottom:1px solid #eceff1;">
