@@ -1878,6 +1878,93 @@ pre {
 
 <script>
 // ============================================================
+// Подключение к прокси-серверу Yandex Cloud Functions
+// Автоматическая загрузка ключевой ставки и ИПЦ
+// ============================================================
+const DATA_PROXY_BASE = 'https://functions.yandexcloud.net/d4eikb7q338sph0h5u66';
+let liveKeyRatesLoaded = false;
+let liveCpiLoaded = false;
+
+async function fetchLiveKeyRates() {
+    try {
+        const response = await fetch(DATA_PROXY_BASE + '?route=key-rate&from=2016-01-01&to=2030-12-31');
+        const data = await response.json();
+        if (!data.ok || !Array.isArray(data.rates)) return;
+
+        const existingDates = new Set(GK395KEYRATES.map(item => item.from));
+        data.rates.forEach(item => {
+            if (!existingDates.has(item.from)) {
+                GK395KEYRATES.push({ from: item.from, rate: item.rate });
+                existingDates.add(item.from);
+            } else {
+                const existing = GK395KEYRATES.find(r => r.from === item.from);
+                if (existing) existing.rate = item.rate;
+            }
+        });
+        GK395KEYRATES.sort((a, b) => a.from.localeCompare(b.from));
+        liveKeyRatesLoaded = true;
+        updateDataStatusBadge('key-rate', true);
+    } catch (error) {
+        updateDataStatusBadge('key-rate', false);
+    }
+}
+
+async function fetchLiveCpi() {
+    try {
+        const response = await fetch(DATA_PROXY_BASE + '?route=cpi');
+        const data = await response.json();
+        if (!data.ok || !Array.isArray(data.values)) return;
+
+        data.values.forEach(item => {
+            CPITABLE[item.month] = item.index;
+        });
+        liveCpiLoaded = true;
+        updateDataStatusBadge('cpi', true);
+        if (typeof renderCpiMonthInputs === 'function') renderCpiMonthInputs();
+    } catch (error) {
+        updateDataStatusBadge('cpi', false);
+    }
+}
+
+async function fetchLiveCalendarYear(year) {
+    try {
+        const response = await fetch(DATA_PROXY_BASE + '?route=calendar&year=' + year);
+        const data = await response.json();
+        if (!data.ok || !data.rawDayCodes) return null;
+        return data;
+    } catch (error) {
+        return null;
+    }
+}
+
+function updateDataStatusBadge(source, success) {
+    const badgeId = 'data-status-' + source;
+    let badge = document.getElementById(badgeId);
+    if (!badge) {
+        badge = document.createElement('div');
+        badge.id = badgeId;
+        badge.style.position = 'fixed';
+        badge.style.bottom = (8 + (source === 'cpi' ? 28 : 0)) + 'px';
+        badge.style.right = '8px';
+        badge.style.fontSize = '11px';
+        badge.style.padding = '4px 8px';
+        badge.style.borderRadius = '4px';
+        badge.style.zIndex = '9999';
+        badge.style.fontFamily = 'inherit';
+        document.body.appendChild(badge);
+    }
+    badge.style.background = success ? '#e8f5e9' : '#fff3e0';
+    badge.style.color = success ? '#1b5e20' : '#e65100';
+    const label = source === 'key-rate' ? 'Ключевая ставка' : 'ИПЦ';
+    badge.textContent = label + ': ' + (success ? 'обновлено' : 'офлайн-данные');
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    fetchLiveKeyRates();
+    fetchLiveCpi();
+});
+
+// ============================================================
 // Копирование результата в буфер обмена
 // ============================================================
 function copyResult(elementId) {
