@@ -5965,9 +5965,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyFullCalculation('credit-debt-summary', 'credit-debt-result-tbody')">📋 Копировать</button>
     `;
 
-    const scriptElement = document.querySelector('script');
-
-    scriptElement.parentNode.insertBefore(tab, scriptElement);
+    document.querySelector('.container').appendChild(tab);
 });
 
 
@@ -7192,8 +7190,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <button type="button" class="copy-btn" onclick="copyResult('fee-result')">📋 Копировать результат</button>
         </div>
     `;
-    const scriptElement = document.querySelector('script');
-    scriptElement.parentNode.insertBefore(tab, scriptElement);
+    document.querySelector('.container').appendChild(tab);
 
     function feeRound(value) { return Math.round((Number(value) + Number.EPSILON) * 100) / 100; }
     function feeFormat(value) { return feeRound(value).toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
@@ -7525,7 +7522,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <div id="zpp-formulas" class="result-box" style="display:none; white-space: pre-wrap; margin-top: 10px;"></div>
         <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyZppOsagoCalculation('zpp-result', 'zpp-formulas')">📋 Копировать</button>
     `;
-    document.body.appendChild(tab);
+    document.querySelector('.container').appendChild(tab);
 });
 
 function toggleZppFields() {
@@ -7777,7 +7774,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <div id="osago-formulas" class="result-box" style="display:none; white-space: pre-wrap; margin-top: 10px;"></div>
         <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyZppOsagoCalculation('osago-result', 'osago-formulas')">📋 Копировать</button>
     `;
-    document.body.appendChild(tab);
+    document.querySelector('.container').appendChild(tab);
 });
 
 function toggleOsagoLimit() {
