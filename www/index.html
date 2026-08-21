@@ -1766,6 +1766,10 @@ pre {
                     <option value="manual">Ручной ввод ставки (для нового периода)</option>
                 </select>
                 <div class="muted">В ручном режиме до первой указанной даты используется последняя подтверждённая ставка из встроенной таблицы; далее — введённые вами значения.</div>
+                <div class="inline-group" style="margin-top:10px;">
+                    <a class="btn" style="text-decoration:none;text-align:center;" href="https://www.cbr.ru/hd_base/keyrate/" target="_blank" rel="noopener">🏦 Проверить ставку на сайте Банка России</a>
+                    <a class="btn" style="text-decoration:none;text-align:center;background:#37474f;" href="https://base.garant.ru/10180094/" target="_blank" rel="noopener">🔎 Сверить в Гаранте</a>
+                </div>
             </div>
         </div>
         <div id="gk395-manual-rates-block" class="payment-block" style="display:none;">
@@ -1873,6 +1877,114 @@ pre {
 </div>
 
 <script>
+
+// ============================================================
+// Онлайн-обновление ключевой ставки и ИПЦ
+// ============================================================
+const DATA_PROXY_BASE = 'https://functions.yandexcloud.net/d4eikb7q338sph0h5u66';
+let liveKeyRatesLoaded = false;
+let liveCpiLoaded = false;
+
+async function fetchLiveKeyRates() {
+    try {
+        const response = await fetch(
+            DATA_PROXY_BASE + '?route=key-rate&from=2016-01-01&to=' +
+            new Date().getFullYear() + '-12-31'
+        );
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        const data = await response.json();
+        if (!data.ok || !Array.isArray(data.rates) || data.rates.length === 0) {
+            throw new Error('Некорректный или пустой ответ API');
+        }
+
+        const byDate = new Map(GK395KEYRATES.map(item => [item.from, item.rate]));
+        data.rates.forEach(item => {
+            if (item && typeof item.from === 'string' && Number.isFinite(item.rate)) {
+                byDate.set(item.from, item.rate);
+            }
+        });
+        GK395KEYRATES.splice(0, GK395KEYRATES.length,
+            ...Array.from(byDate, ([from, rate]) => ({ from, rate }))
+                .sort((a, b) => a.from.localeCompare(b.from))
+        );
+        liveKeyRatesLoaded = true;
+        console.log('[key-rate] Обновлено. Всего записей: ' + GK395KEYRATES.length);
+        updateDataStatusBadge('key-rate', true);
+    } catch (error) {
+        console.error('[key-rate] Ошибка загрузки:', error);
+        updateDataStatusBadge('key-rate', false, error.message);
+    }
+}
+
+async function fetchLiveCpi() {
+    try {
+        const response = await fetch(DATA_PROXY_BASE + '?route=cpi');
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        const data = await response.json();
+        if (!data.ok || !Array.isArray(data.values) || data.values.length === 0) {
+            throw new Error('Некорректный или пустой ответ API');
+        }
+
+        let loaded = 0;
+        data.values.forEach(item => {
+            if (item && typeof item.month === 'string' && Number.isFinite(item.index)) {
+                CPITABLE[item.month] = item.index;
+                loaded++;
+            }
+        });
+        if (loaded === 0) throw new Error('Нет корректных значений ИПЦ');
+        liveCpiLoaded = true;
+        console.log('[cpi] Обновлено. Загружено значений: ' + loaded);
+        updateDataStatusBadge('cpi', true);
+        if (typeof renderCpiMonthInputs === 'function') renderCpiMonthInputs();
+    } catch (error) {
+        console.error('[cpi] Ошибка загрузки:', error);
+        updateDataStatusBadge('cpi', false, error.message);
+    }
+}
+
+async function fetchLiveCalendarYear(year) {
+    try {
+        const response = await fetch(DATA_PROXY_BASE + '?route=calendar&year=' + year);
+        if (!response.ok) return null;
+        const data = await response.json();
+        return data && data.ok && data.rawDayCodes ? data : null;
+    } catch (error) {
+        console.warn('[calendar] Не удалось загрузить календарь:', error);
+        return null;
+    }
+}
+
+function updateDataStatusBadge(source, success, errorMessage) {
+    const badgeId = 'data-status-' + source;
+    let badge = document.getElementById(badgeId);
+    if (!badge) {
+        badge = document.createElement('div');
+        badge.id = badgeId;
+        badge.style.position = 'fixed';
+        badge.style.bottom = (8 + (source === 'cpi' ? 28 : 0)) + 'px';
+        badge.style.right = '8px';
+        badge.style.fontSize = '11px';
+        badge.style.padding = '4px 8px';
+        badge.style.borderRadius = '4px';
+        badge.style.zIndex = '9999';
+        badge.style.fontFamily = 'inherit';
+        badge.style.maxWidth = '300px';
+        badge.style.textAlign = 'right';
+        document.body.appendChild(badge);
+    }
+    badge.style.background = success ? '#e8f5e9' : '#fff3e0';
+    badge.style.color = success ? '#1b5e20' : '#e65100';
+    const label = source === 'key-rate' ? 'Ключевая ставка' : 'ИПЦ';
+    badge.textContent = label + ': ' + (success ? 'обновлено' : 'встроенные данные');
+    badge.title = success ? 'Данные получены из API.' : ('Онлайн-обновление недоступно. Причина: ' + (errorMessage || 'неизвестная ошибка'));
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    fetchLiveKeyRates();
+    fetchLiveCpi();
+});
+
 // ============================================================
 // Копирование результата в буфер обмена
 // ============================================================
@@ -4989,7 +5101,7 @@ function calcLimitation() {
 // ============================================================
 // СТ. 395 ГК РФ
 // ============================================================
-const GK395_KEY_RATES = [
+const GK395KEYRATES = [
     { from: '2016-08-01', rate: 10.50 },
     { from: '2016-09-19', rate: 10.00 },
     { from: '2017-03-27', rate: 9.75 },
@@ -5100,12 +5212,12 @@ function gk395Money(value) {
 }
 
 function gk395LastKnownRateDate() {
-    return gk395ParseDate(GK395_KEY_RATES[GK395_KEY_RATES.length - 1].from);
+    return gk395ParseDate(GK395KEYRATES[GK395KEYRATES.length - 1].from);
 }
 
 function gk395GetKeyRate(date) {
     let rate = null;
-    for (const item of GK395_KEY_RATES) {
+    for (const item of GK395KEYRATES) {
         const fromDate = gk395ParseDate(item.from);
         if (fromDate <= date) {
             rate = item.rate;
@@ -5284,15 +5396,26 @@ function calcGK395() {
         });
     });
 
-    const rateChanges = rateMode === 'manual' ? manualRates : GK395_KEY_RATES.map(item => ({from: gk395ParseDate(item.from), rate:item.rate}));
-    rateChanges.forEach(item => { const date = item.from instanceof Date ? item.from : gk395ParseDate(item.from); if (date > startDate && date <= endDate) addEvent(date, { type: 'rate' }); });
-
-    for (let year = startDate.getFullYear() + 1; year <= endDate.getFullYear(); year += 1) {
-        const newYear = new Date(year, 0, 1);
-        if (newYear > startDate && newYear <= endDate) {
-            addEvent(newYear, { type: 'year' });
-        }
-    }
+    const rawRateChanges = rateMode === 'manual'
+        ? manualRates
+        : GK395KEYRATES.map(item => ({ from: gk395ParseDate(item.from), rate: item.rate }));
+    // API может возвращать ежедневные записи с одной и той же ставкой.
+    // В расчёте оставляем только даты реального изменения ставки.
+    const rateChanges = [];
+    let previousRate = null;
+    rawRateChanges
+        .filter(item => item && item.from instanceof Date && Number.isFinite(item.rate))
+        .sort((a, b) => a.from - b.from)
+        .forEach(item => {
+            if (previousRate === null || item.rate !== previousRate) {
+                rateChanges.push(item);
+                previousRate = item.rate;
+            }
+        });
+    rateChanges.forEach(item => {
+        const date = item.from;
+        if (date > startDate && date <= endDate) addEvent(date, { type: 'rate' });
+    });
 
     const timeline = Array.from(events.values()).sort((a, b) => a.date - b.date);
 
@@ -5333,18 +5456,38 @@ function calcGK395() {
             return;
         }
 
-        const denominator = gk395DaysInYear(currentEvent.date);
-        const interest = balance * (rateInfo.rate / 100) * days / denominator;
+        // Проценты считаются отдельно по каждому календарному году (365/366),
+        // но в таблице соседние части одного периода объединяются в одну строку.
+        let interest = 0;
+        let segmentStart = new Date(currentEvent.date);
+        while (segmentStart < nextEvent.date) {
+            const nextYear = new Date(segmentStart.getFullYear() + 1, 0, 1);
+            const segmentEnd = nextYear < nextEvent.date ? nextYear : nextEvent.date;
+            const segmentDays = gk395DaysBetween(segmentStart, segmentEnd);
+            interest += balance * (rateInfo.rate / 100) * segmentDays / gk395DaysInYear(segmentStart);
+            segmentStart = segmentEnd;
+        }
         totalInterest = gk395Round(totalInterest + interest);
 
-        rows.push({
+        const row = {
             from: new Date(currentEvent.date),
             to: gk395AddDays(nextEvent.date, -1),
             days,
             rate: rateInfo.rate,
             debt: balance,
             interest: gk395Round(interest)
-        });
+        };
+        const previousRow = rows[rows.length - 1];
+        if (previousRow &&
+            previousRow.rate === row.rate &&
+            previousRow.debt === row.debt &&
+            gk395DateKey(gk395AddDays(previousRow.to, 1)) === gk395DateKey(row.from)) {
+            previousRow.to = row.to;
+            previousRow.days += row.days;
+            previousRow.interest = gk395Round(previousRow.interest + row.interest);
+        } else {
+            rows.push(row);
+        }
     }
 
     resultBody.innerHTML = rows.map(row => `
@@ -5822,9 +5965,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyFullCalculation('credit-debt-summary', 'credit-debt-result-tbody')">📋 Копировать</button>
     `;
 
-    const scriptElement = document.querySelector('script');
-
-    scriptElement.parentNode.insertBefore(tab, scriptElement);
+    document.querySelector('.container').appendChild(tab);
 });
 
 
@@ -7049,8 +7190,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <button type="button" class="copy-btn" onclick="copyResult('fee-result')">📋 Копировать результат</button>
         </div>
     `;
-    const scriptElement = document.querySelector('script');
-    scriptElement.parentNode.insertBefore(tab, scriptElement);
+    document.querySelector('.container').appendChild(tab);
 
     function feeRound(value) { return Math.round((Number(value) + Number.EPSILON) * 100) / 100; }
     function feeFormat(value) { return feeRound(value).toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
@@ -7382,7 +7522,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <div id="zpp-formulas" class="result-box" style="display:none; white-space: pre-wrap; margin-top: 10px;"></div>
         <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyZppOsagoCalculation('zpp-result', 'zpp-formulas')">📋 Копировать</button>
     `;
-    document.body.appendChild(tab);
+    document.querySelector('.container').appendChild(tab);
 });
 
 function toggleZppFields() {
@@ -7634,7 +7774,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <div id="osago-formulas" class="result-box" style="display:none; white-space: pre-wrap; margin-top: 10px;"></div>
         <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyZppOsagoCalculation('osago-result', 'osago-formulas')">📋 Копировать</button>
     `;
-    document.body.appendChild(tab);
+    document.querySelector('.container').appendChild(tab);
 });
 
 function toggleOsagoLimit() {
@@ -7812,9 +7952,890 @@ function copyCalculationText(text) {
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
 }
 
+
+// ============================================================
+// ВКЛАДКА 11: ДНИ МЕЖДУ ДАТАМИ
+// ============================================================
+document.addEventListener('DOMContentLoaded', function () {
+    const tabs = document.getElementById('tabs');
+
+    if (tabs && !document.querySelector('[data-tab="tab11"]')) {
+        const tabButton = document.createElement('button');
+        tabButton.className = 'tab-btn';
+        tabButton.dataset.tab = 'tab11';
+        tabButton.textContent = 'Дни между датами';
+        tabButton.addEventListener('click', function () {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            tabButton.classList.add('active');
+            const tab = document.getElementById('tab11');
+            if (tab) tab.classList.add('active');
+        });
+        tabs.appendChild(tabButton);
+    }
+
+    if (document.getElementById('tab11')) return;
+
+    const tab = document.createElement('div');
+    tab.id = 'tab11';
+    tab.className = 'tab-content';
+    tab.innerHTML = `
+        <h2>Расчёт количества дней между датами</h2>
+
+        <div class="note">
+            Калькулятор считает календарные и рабочие дни между двумя датами.
+            Нерабочие праздничные дни определены статьёй 112 Трудового кодекса
+            Российской Федерации. Перенос выходных дней по постановлениям
+            Правительства РФ учитывается автоматически для 2024–2026 годов;
+            для будущих лет, пока постановление не принято официально, можно
+            добавить перенос вручную либо временно отключить его учёт.
+        </div>
+
+        <div class="inline-group">
+            <div class="form-group">
+                <label>Первая дата</label>
+                <input type="date" id="days-date1" value="2026-01-01">
+            </div>
+            <div class="form-group">
+                <label>Вторая дата</label>
+                <input type="date" id="days-date2" value="2026-08-17">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>
+                <input type="checkbox" id="days-include-first" checked style="width:auto;display:inline-block;margin-right:8px;">
+                Включать первую дату в подсчёт
+            </label>
+        </div>
+
+        <div class="form-group">
+            <label>
+                <input type="checkbox" id="days-exclude-weekends" style="width:auto;display:inline-block;margin-right:8px;">
+                Не учитывать субботы и воскресенья при подсчёте рабочих дней
+            </label>
+        </div>
+
+        <div class="form-group">
+            <label>
+                <input type="checkbox" id="days-exclude-holidays" style="width:auto;display:inline-block;margin-right:8px;">
+                Не учитывать нерабочие праздничные дни (ст. 112 ТК РФ)
+            </label>
+        </div>
+
+        <div class="form-group">
+            <label>
+                <input type="checkbox" id="days-use-transfers" checked style="width:auto;display:inline-block;margin-right:8px;">
+                Учитывать перенос выходных дней по постановлениям Правительства РФ (2024–2026 годы встроены)
+            </label>
+        </div>
+
+        <div class="note" style="margin-top:5px;">
+            Переносы выходных дней встроены за 2024 год (Постановление от 10.07.2023 N 1131),
+            2025 год (Постановление от 04.10.2024 N 1335) и 2026 год (Постановление от
+            24.09.2025 N 1466). Для 2027 года используется проект постановления Минтруда
+            России от 01.04.2026 — он ещё не утверждён официально, поэтому его нужно сверить
+            перед использованием. Для новых лет добавляйте перенос вручную ниже.
+        </div>
+
+        <div class="form-group">
+            <div class="inline-group">
+                <a class="btn" style="text-decoration:none;text-align:center;" href="https://www.consultant.ru/law/ref/calendar/proizvodstvennye/" target="_blank" rel="noopener">📅 Проверить производственный календарь</a>
+                <a class="btn" style="text-decoration:none;text-align:center;background:#37474f;" href="http://government.ru/docs/" target="_blank" rel="noopener">🏛 Официальный сайт Правительства РФ</a>
+            </div>
+            <label style="margin-top:12px;">Добавить перенос вручную (формат: "2027-01-02: рабочий" — день становится рабочим, или "2027-11-05: выходной" — день становится выходным)</label>
+            <textarea id="days-transfer-import" rows="3" style="width:100%;padding:10px;border:1px solid #cfd8dc;border-radius:6px;font-family:inherit;" placeholder="2027-01-02: рабочий
+2027-11-05: выходной"></textarea>
+            <button class="btn" type="button" style="margin-top:8px;" onclick="parseHolidayTransferImportText()">📥 Добавить перенос</button>
+            <div id="days-transfer-status" style="margin-top:8px;font-size:14px;color:#607d8b;"></div>
+        </div>
+
+        <button class="btn" onclick="calculateDaysBetween()">Рассчитать</button>
+
+        <div id="days-result" class="result-box" style="display:none;"></div>
+        <button class="btn btn-copy" style="display:none;" id="days-copy-btn" onclick="copyResult('days-result')">📋 Копировать результат</button>
+    `;
+
+    const container = document.querySelector('.container');
+    container.appendChild(tab);
+});
+
+const RF_FIXED_HOLIDAYS = [
+    [1,1],[1,2],[1,3],[1,4],[1,5],[1,6],[1,8],
+    [2,23],
+    [3,8],
+    [5,1],[5,9],
+    [6,12],
+    [11,4]
+];
+
+// Официальные переносы выходных дней по годам (постановления Правительства РФ).
+// moveWorkdayTo: даты, которые становятся РАБОЧИМИ днями (перенесённый выходной снят)
+// moveRestTo: даты, которые становятся ВЫХОДНЫМИ днями (куда перенесён отдых)
+const RF_HOLIDAY_TRANSFERS = {
+    2024: {
+        // Постановление Правительства РФ от 10.07.2023 N 1131
+        moveWorkdayTo: ["2024-04-27", "2024-11-02", "2024-12-28"],
+        moveRestTo: ["2024-05-10", "2024-12-30", "2024-12-31"]
+    },
+    2025: {
+        // Постановление Правительства РФ от 04.10.2024 N 1335
+        moveWorkdayTo: ["2025-01-04", "2025-01-05", "2025-02-23", "2025-03-08", "2025-11-01"],
+        moveRestTo: ["2025-05-02", "2025-12-31", "2025-05-08", "2025-06-13", "2025-11-03"]
+    },
+    2026: {
+        // Постановление Правительства РФ от 24.09.2025 N 1466
+        moveWorkdayTo: ["2026-01-03", "2026-01-04"],
+        moveRestTo: ["2026-01-09", "2025-12-31"]
+    },
+    2027: {
+        // Проект постановления Правительства РФ (Минтруд России, подготовлен 01.04.2026),
+        // на дату обновления калькулятора официально не утверждён — требует проверки
+        // перед использованием в расчёте.
+        moveWorkdayTo: ["2027-01-02", "2027-01-03", "2027-02-20"],
+        moveRestTo: ["2027-11-05", "2027-12-31", "2027-02-22"]
+    }
+};
+
+let rfHolidayUserTransfers = { moveWorkdayTo: [], moveRestTo: [] };
+
+function dateKey(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth()+1).padStart(2,'0');
+    const d = String(date.getDate()).padStart(2,'0');
+    return `${y}-${m}-${d}`;
+}
+
+function getHolidayTransfersForYear(year) {
+    const official = RF_HOLIDAY_TRANSFERS[year] || { moveWorkdayTo: [], moveRestTo: [] };
+    return {
+        moveWorkdayTo: [...official.moveWorkdayTo, ...rfHolidayUserTransfers.moveWorkdayTo.filter(d => d.startsWith(String(year)))],
+        moveRestTo: [...official.moveRestTo, ...rfHolidayUserTransfers.moveRestTo.filter(d => d.startsWith(String(year)))]
+    };
+}
+
+function isRfHoliday(date) {
+    const m = date.getMonth() + 1;
+    const d = date.getDate();
+    return RF_FIXED_HOLIDAYS.some(([hm, hd]) => hm === m && hd === d);
+}
+
+function isWeekend(date) {
+    const day = date.getDay();
+    return day === 0 || day === 6;
+}
+
+// Итоговая проверка выходного/нерабочего дня с учётом официальных переносов:
+// - если день попадает в "moveWorkdayTo" — он считается РАБОЧИМ, даже если это суббота/воскресенье;
+// - если день попадает в "moveRestTo" — он считается ВЫХОДНЫМ, даже если это будний день;
+// - иначе действует обычное правило (суббота/воскресенье или праздник по ст. 112 ТК РФ).
+function isNonWorkingDayWithTransfers(date, useTransfers) {
+    const key = dateKey(date);
+    if (useTransfers) {
+        const { moveWorkdayTo, moveRestTo } = getHolidayTransfersForYear(date.getFullYear());
+        if (moveWorkdayTo.includes(key)) return { nonWorking: false, transferred: true };
+        if (moveRestTo.includes(key)) return { nonWorking: true, transferred: true };
+    }
+    const wknd = isWeekend(date);
+    const hol = isRfHoliday(date);
+    return { nonWorking: wknd || hol, transferred: false, wknd, hol };
+}
+
+function parseHolidayTransferImportText() {
+    const raw = document.getElementById('days-transfer-import').value;
+    const statusEl = document.getElementById('days-transfer-status');
+    if (!raw || !raw.trim()) {
+        if (statusEl) statusEl.textContent = 'Вставьте строки с переносами перед импортом.';
+        return;
+    }
+    const lines = raw.split(/\n/);
+    let countWork = 0, countRest = 0;
+    lines.forEach(line => {
+        line = line.trim();
+        if (!line) return;
+        const m = line.match(/(\d{4}-\d{2}-\d{2})\s*[:>\-]+\s*(раб|вых)/i);
+        if (m) {
+            const key = m[1];
+            const type = m[2].toLowerCase();
+            if (type.startsWith('раб')) { rfHolidayUserTransfers.moveWorkdayTo.push(key); countWork++; }
+            else { rfHolidayUserTransfers.moveRestTo.push(key); countRest++; }
+        }
+    });
+    if (statusEl) {
+        statusEl.textContent = (countWork + countRest) > 0
+            ? `✅ Добавлено переносов: рабочих дней — ${countWork}, выходных — ${countRest}. Проверьте правильность по официальному постановлению Правительства РФ перед использованием в суде.`
+            : '⚠ Не удалось распознать данные. Формат: "2027-01-02: рабочий" или "2027-11-05: выходной".';
+    }
+}
+
+function daysPlural(value, one, few, many) {
+    const n = Math.abs(value) % 100;
+    const n1 = n % 10;
+    if (n > 10 && n < 20) return many;
+    if (n1 > 1 && n1 < 5) return few;
+    if (n1 === 1) return one;
+    return many;
+}
+
+function formatDaysPeriod(startDate, endDateExclusive) {
+    let cursor = new Date(startDate);
+    let years = 0;
+    let months = 0;
+
+    while (true) {
+        const next = new Date(cursor);
+        next.setFullYear(next.getFullYear() + 1);
+        if (next > endDateExclusive) break;
+        cursor = next;
+        years++;
+    }
+    while (true) {
+        const next = new Date(cursor);
+        next.setMonth(next.getMonth() + 1);
+        if (next > endDateExclusive) break;
+        cursor = next;
+        months++;
+    }
+    const days = Math.round((endDateExclusive - cursor) / 86400000);
+    return years + ' ' + daysPlural(years, 'год', 'года', 'лет') + ', ' +
+        months + ' ' + daysPlural(months, 'месяц', 'месяца', 'месяцев') + ', ' +
+        days + ' ' + daysPlural(days, 'день', 'дня', 'дней');
+}
+
+function calculateDaysBetween() {
+    const d1str = document.getElementById('days-date1').value;
+    const d2str = document.getElementById('days-date2').value;
+    const includeFirst = document.getElementById('days-include-first').checked;
+    const excludeWeekends = document.getElementById('days-exclude-weekends').checked;
+    const excludeHolidays = document.getElementById('days-exclude-holidays').checked;
+    const useTransfers = document.getElementById('days-use-transfers').checked;
+
+    if (!d1str || !d2str) { alert('Укажите обе даты.'); return; }
+
+    let start = parseDate(d1str);
+    let end = parseDate(d2str);
+    let reversed = false;
+    if (start > end) { [start, end] = [end, start]; reversed = true; }
+
+    const countStart = new Date(start);
+    if (!includeFirst) countStart.setDate(countStart.getDate() + 1);
+    const countEndExclusive = new Date(end);
+    countEndExclusive.setDate(countEndExclusive.getDate() + 1);
+
+    let calendarDays = 0;
+    let daysAfterExclusions = 0;
+    let weekendCount = 0;
+    let holidayCount = 0;
+    let transferredWorkdays = 0;
+    let transferredRestdays = 0;
+    const years = new Set();
+
+    for (let cursor = new Date(countStart); cursor <= end; cursor.setDate(cursor.getDate() + 1)) {
+        calendarDays++;
+        years.add(cursor.getFullYear());
+        const info = isNonWorkingDayWithTransfers(cursor, useTransfers);
+        const ordinaryWeekend = isWeekend(cursor);
+        const holiday = isRfHoliday(cursor);
+        const isTransferredWorkday = useTransfers && info.transferred && !info.nonWorking;
+        const isTransferredRestday = useTransfers && info.transferred && info.nonWorking;
+
+        if (isTransferredWorkday) transferredWorkdays++;
+        if (isTransferredRestday) transferredRestdays++;
+        if (ordinaryWeekend && !isTransferredWorkday) weekendCount++;
+        if (holiday && !ordinaryWeekend && !isTransferredWorkday) holidayCount++;
+
+        const excludeForWeekend = excludeWeekends && (ordinaryWeekend && !isTransferredWorkday || isTransferredRestday);
+        const excludeForHoliday = excludeHolidays && holiday && !isTransferredWorkday;
+        if (!excludeForWeekend && !excludeForHoliday) daysAfterExclusions++;
+    }
+
+    const periodText = formatDaysPeriod(countStart, countEndExclusive);
+    const resultDiv = document.getElementById('days-result');
+    resultDiv.style.display = 'block';
+    document.getElementById('days-copy-btn').style.display = 'inline-block';
+
+    const missingYears = [...years].filter(y => !RF_HOLIDAY_TRANSFERS[y] && useTransfers);
+    let text = 'РАСЧЁТ КОЛИЧЕСТВА ДНЕЙ МЕЖДУ ДАТАМИ\n\n';
+    text += 'Первая дата: ' + formatDate(start) + '\n';
+    text += 'Вторая дата: ' + formatDate(end) + '\n';
+    text += 'Первая дата ' + (includeFirst ? 'включена' : 'не включена') + ' в подсчёт\n';
+    text += 'Учёт переноса выходных дней по постановлениям Правительства РФ: ' + (useTransfers ? 'включён' : 'выключен') + '\n\n';
+    text += 'Календарных дней: ' + calendarDays + ' (' + periodText + ')\n';
+    text += 'Из них выходных: ' + weekendCount + '\n';
+    text += 'Из них нерабочих праздничных дней (ст. 112 ТК РФ): ' + holidayCount + '\n';
+    if (useTransfers) {
+        text += 'Дней, переведённых в рабочие по постановлению о переносе: ' + transferredWorkdays + '\n';
+        text += 'Дней, переведённых в выходные по постановлению о переносе: ' + transferredRestdays + '\n';
+    }
+    text += '\nДней с учётом выбранных исключений: ' + daysAfterExclusions + '\n';
+    if (reversed) text += '\nПримечание: даты были указаны в обратном порядке и переставлены для расчёта.\n';
+
+    text += '\nПравовая справка: нерабочие праздничные дни установлены статьёй 112 Трудового кодекса РФ. ';
+    if (useTransfers) {
+        text += 'Переносы выходных учитываются по встроенным данным и добавленным вручную значениям. ';
+        if (missingYears.length > 0) {
+            text += 'Для года(лет) ' + missingYears.join(', ') + ' сведения о переносах отсутствуют — сверьте производственный календарь и при необходимости добавьте перенос вручную.';
+        }
+    } else {
+        text += 'Переносы выходных в расчёте не применялись.';
+    }
+    resultDiv.textContent = text;
+}
+
+// ============================================================
+// ВКЛАДКА 12: ИНДЕКСАЦИЯ ПРИСУЖДЁННЫХ СУММ (СТ. 208 ГПК РФ)
+// ============================================================
+
+// Встроенная (базовая) таблица ИПЦ РФ, % к предыдущему месяцу
+const CPITABLE = {
+    "2023-01":100.84,"2023-02":100.46,"2023-03":100.37,"2023-04":100.38,
+    "2023-05":100.31,"2023-06":100.37,"2023-07":100.63,"2023-08":100.28,
+    "2023-09":100.87,"2023-10":100.83,"2023-11":101.11,"2023-12":100.73,
+    "2024-01":100.86,"2024-02":100.68,"2024-03":100.39,"2024-04":100.50,
+    "2024-05":100.74,"2024-06":100.64,"2024-07":101.14,"2024-08":100.20,
+    "2024-09":100.48,"2024-10":100.75,"2024-11":101.43,"2024-12":101.32,
+    "2025-01":101.23,"2025-02":100.81,"2025-03":100.65,"2025-04":100.40,
+    "2025-05":100.43,"2025-06":100.20,"2025-07":100.57,"2025-08":99.60,
+    "2025-09":100.34,"2025-10":100.50,"2025-11":100.42,"2025-12":100.32,
+    "2026-01":101.62,"2026-02":100.73,"2026-03":100.60,"2026-04":100.14,
+    "2026-05":100.17,"2026-06":100.87,"2026-07":100.54
+};
+
+let cpiOverrides = {};
+let cpiAutoLoaded = false;
+
+function parseCpiImportText() {
+    const raw = document.getElementById('idx-cpi-import').value;
+    const statusEl = document.getElementById('idx-cpi-status');
+    if (!raw || !raw.trim()) {
+        if (statusEl) statusEl.textContent = 'Вставьте строки с данными ИПЦ перед импортом.';
+        return;
+    }
+    const lines = raw.split(/\n/);
+    let count = 0;
+    const monthNamesRu = {
+        'янв':'01','фев':'02','мар':'03','апр':'04','май':'05','мая':'05','июн':'06',
+        'июл':'07','авг':'08','сен':'09','окт':'10','ноя':'11','дек':'12'
+    };
+    lines.forEach(line => {
+        line = line.trim();
+        if (!line) return;
+        let m = line.match(/(\d{4})[.\-\/](\d{1,2})\D+([\d]+[.,]?\d*)/);
+        if (m) {
+            const year = m[1];
+            const month = m[2].padStart(2,'0');
+            const value = parseFloat(m[3].replace(',', '.'));
+            if (!isNaN(value)) { cpiOverrides[`${year}-${month}`] = value; count++; return; }
+        }
+        m = line.match(/([а-яё]{3,})\D+(\d{4})\D+([\d]+[.,]?\d*)/i);
+        if (m) {
+            const key3 = m[1].toLowerCase().slice(0,3);
+            const monthNum = monthNamesRu[key3];
+            const year = m[2];
+            const value = parseFloat(m[3].replace(',', '.'));
+            if (monthNum && !isNaN(value)) { cpiOverrides[`${year}-${monthNum}`] = value; count++; }
+        }
+    });
+    if (statusEl) {
+        statusEl.textContent = count > 0
+            ? `✅ Импортировано значений ИПЦ: ${count}. Данные внесены вручную из вставленного текста — сверьте их с официальным источником Росстата перед использованием в суде.`
+            : '⚠ Не удалось распознать данные. Проверьте формат: "2026-01; 101,62" или "январь 2026 101,62".';
+    }
+    renderCpiMonthInputs();
+}
+
+
+function getCpiValue(year, month) {
+    const key = `${year}-${String(month).padStart(2,'0')}`;
+    const manualInput = document.getElementById(`cpi-manual-${key}`);
+    if (manualInput && manualInput.value) return parseFloat(manualInput.value);
+    if (cpiOverrides[key] !== undefined) return cpiOverrides[key];
+    if (CPITABLE[key] !== undefined) return CPITABLE[key];
+    return null;
+}
+
+function monthsBetween(d1, d2) {
+    const months = [];
+    let cursor = new Date(d1.getFullYear(), d1.getMonth(), 1);
+    const last = new Date(d2.getFullYear(), d2.getMonth(), 1);
+    while (cursor <= last) {
+        months.push({ year: cursor.getFullYear(), month: cursor.getMonth() + 1 });
+        cursor.setMonth(cursor.getMonth() + 1);
+    }
+    return months;
+}
+
+function renderCpiMonthInputs() {
+    const startStr = document.getElementById('idx-start-date')?.value;
+    const endStr = document.getElementById('idx-end-date')?.value;
+    const wrap = document.getElementById('idx-cpi-months-wrap');
+    if (!wrap || !startStr || !endStr) return;
+
+    const start = parseDate(startStr);
+    const end = parseDate(endStr);
+    if (start > end) { wrap.innerHTML = ''; return; }
+
+    const months = monthsBetween(start, end);
+    const monthNames = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+
+    let html = '<table style="width:100%;border-collapse:collapse;margin-top:10px;"><tr><th style="text-align:left;padding:6px;border-bottom:1px solid #cfd8dc;">Месяц</th><th style="text-align:left;padding:6px;border-bottom:1px solid #cfd8dc;">ИПЦ, % к пред. месяцу</th><th style="text-align:left;padding:6px;border-bottom:1px solid #cfd8dc;">Источник</th></tr>';
+    months.forEach(({year, month}) => {
+        const key = `${year}-${String(month).padStart(2,'0')}`;
+        const value = getCpiValue(year, month);
+        const source = cpiOverrides[key] !== undefined ? 'автозагрузка' : (CPITABLE[key] !== undefined ? 'встроенная таблица' : 'нет данных — заполните вручную');
+        html += `<tr>
+            <td style="padding:6px;border-bottom:1px solid #eceff1;">${monthNames[month-1]} ${year}</td>
+            <td style="padding:6px;border-bottom:1px solid #eceff1;">
+                <input type="number" step="0.01" id="cpi-manual-${key}" placeholder="${value !== null ? value : '—'}" style="width:110px;padding:6px;">
+            </td>
+            <td style="padding:6px;border-bottom:1px solid #eceff1;font-size:13px;color:#607d8b;">${source}</td>
+        </tr>`;
+    });
+    html += '</table>';
+    wrap.innerHTML = html;
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const tabs = document.getElementById('tabs');
+
+    if (tabs && !document.querySelector('[data-tab="tab12"]')) {
+        const tabButton = document.createElement('button');
+        tabButton.className = 'tab-btn';
+        tabButton.dataset.tab = 'tab12';
+        tabButton.textContent = 'Индексация (ст. 208 ГПК РФ)';
+        tabButton.addEventListener('click', function () {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            tabButton.classList.add('active');
+            const tab = document.getElementById('tab12');
+            if (tab) tab.classList.add('active');
+        });
+        tabs.appendChild(tabButton);
+    }
+
+    if (document.getElementById('tab12')) return;
+
+    const tab = document.createElement('div');
+    tab.id = 'tab12';
+    tab.className = 'tab-content';
+    tab.innerHTML = `
+        <h2>Индексация присуждённых денежных сумм (ст. 208 ГПК РФ)</h2>
+
+        <div class="note">
+            Индексация производится на день фактического исполнения решения суда
+            (часть 1 статьи 208 ГПК РФ). Расчёт использует официальный индекс
+            потребительских цен по Российской Федерации в целом методом цепного
+            перемножения месячных коэффициентов, как указано в Обзоре судебной
+            практики, утверждённом Президиумом Верховного Суда РФ 18.12.2024.
+            Индексация не является мерой гражданско-правовой ответственности —
+            это компенсация обесценивания взысканной суммы (постановления
+            Конституционного Суда РФ № 1-П от 12.01.2021 и № 40-П от 22.07.2021).
+        </div>
+
+        <div class="inline-group">
+            <div class="form-group">
+                <label>Присуждённая сумма, руб.</label>
+                <input type="number" id="idx-amount" value="100000" step="0.01" min="0.01">
+            </div>
+            <div class="form-group">
+                <label>Дата вынесения решения суда</label>
+                <input type="date" id="idx-start-date" value="2025-01-15" onchange="renderCpiMonthInputs()">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Дата фактического исполнения решения (или дата расчёта)</label>
+            <input type="date" id="idx-end-date" value="2026-08-17" onchange="renderCpiMonthInputs()">
+        </div>
+
+        <div class="form-group">
+            <div class="inline-group">
+                <a class="btn" style="text-decoration:none;text-align:center;" href="https://rosstat.gov.ru/statistics/price" target="_blank" rel="noopener">📊 Проверить ИПЦ на сайте Росстата</a>
+                <a class="btn" style="text-decoration:none;text-align:center;background:#37474f;" href="https://www.consultant.ru/law/podborki/raschet_indeksaciya_po_indeksu_potrebitelskih_cen/" target="_blank" rel="noopener">🔎 Сверить в КонсультантПлюс</a>
+            </div>
+            <label style="margin-top:12px;">Импорт значений ИПЦ (вставьте строки из Росстата, КонсультантПлюс, Гаранта в формате "2026-01; 101,62" или "январь 2026 101,62")</label>
+            <textarea id="idx-cpi-import" rows="4" style="width:100%;padding:10px;border:1px solid #cfd8dc;border-radius:6px;font-family:inherit;" placeholder="2026-07; 100,54
+2026-06; 100,87"></textarea>
+            <button class="btn" type="button" style="margin-top:8px;" onclick="parseCpiImportText()">📥 Импортировать вставленные значения</button>
+            <div id="idx-cpi-status" style="margin-top:8px;font-size:14px;color:#607d8b;"></div>
+        </div>
+
+        <div class="note" style="margin-top:10px;">
+            Ниже указаны значения ИПЦ по месяцам. Пустое поле означает, что
+            используется значение из встроенной таблицы или из импортированных
+            вами данных. Проверяйте официальные значения на сайте Росстата, в
+            КонсультантПлюс, Гаранте или на калькуляторе dogovor-urist.ru и при
+            необходимости вставляйте актуальные данные через поле импорта ниже
+            либо исправляйте значение вручную в соответствующей строке таблицы.
+        </div>
+        <div id="idx-cpi-months-wrap"></div>
+
+        <button class="btn" style="margin-top:15px;" onclick="calculateIndexation()">Рассчитать индексацию</button>
+
+        <div id="idx-result" class="result-box" style="display:none;"></div>
+        <button class="btn btn-copy" style="display:none;" id="idx-copy-btn" onclick="copyResult('idx-result')">📋 Копировать результат</button>
+    `;
+
+    const container = document.querySelector('.container');
+    container.appendChild(tab);
+
+    renderCpiMonthInputs();
+});
+
+function calculateIndexation() {
+    const amount = parseFloat(document.getElementById('idx-amount').value);
+    const startStr = document.getElementById('idx-start-date').value;
+    const endStr = document.getElementById('idx-end-date').value;
+
+    if (!amount || amount <= 0) { alert('Укажите присуждённую сумму.'); return; }
+    if (!startStr || !endStr) { alert('Укажите обе даты.'); return; }
+
+    const start = parseDate(startStr);
+    const end = parseDate(endStr);
+    if (start > end) { alert('Дата исполнения не может быть раньше даты решения суда.'); return; }
+
+    const months = monthsBetween(start, end);
+    let coefficient = 1;
+    let stepsText = '';
+    let missingData = [];
+    const monthNames = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+
+    months.forEach(({year, month}, i) => {
+        const cpi = getCpiValue(year, month);
+        if (cpi === null) {
+            missingData.push(`${monthNames[month-1]} ${year}`);
+            return;
+        }
+        const monthCoef = cpi / 100;
+        coefficient *= monthCoef;
+        stepsText += `${monthNames[month-1]} ${year}: ИПЦ = ${cpi.toFixed(2)}% → коэффициент ${monthCoef.toFixed(5)}\n`;
+    });
+
+    if (missingData.length > 0) {
+        alert(`Нет данных ИПЦ за: ${missingData.join(', ')}. Заполните значения вручную или обновите данные автоматически.`);
+        return;
+    }
+
+    const indexedAmount = amount * coefficient;
+    const indexationSum = indexedAmount - amount;
+
+    const resultDiv = document.getElementById('idx-result');
+    resultDiv.style.display = 'block';
+    document.getElementById('idx-copy-btn').style.display = 'inline-block';
+
+    let text = `РАСЧЁТ ИНДЕКСАЦИИ ПРИСУЖДЁННЫХ ДЕНЕЖНЫХ СУММ (СТ. 208 ГПК РФ)\n\n`;
+    text += `Присуждённая сумма: ${amount.toFixed(2)} руб.\n`;
+    text += `Дата вынесения решения суда: ${formatDate(start)}\n`;
+    text += `Дата фактического исполнения (дата расчёта): ${formatDate(end)}\n\n`;
+    text += `РАСЧЁТ ПО МЕСЯЦАМ (индекс потребительских цен, цепной метод):\n${stepsText}\n`;
+    text += `Общий коэффициент индексации: ${coefficient.toFixed(5)}\n\n`;
+    text += `Сумма с учётом индексации: ${indexedAmount.toFixed(2)} руб.\n`;
+    text += `СУММА ИНДЕКСАЦИИ К ВЗЫСКАНИЮ: ${indexationSum.toFixed(2)} руб.\n\n`;
+    text += `ПРАВОВОЕ ОБОСНОВАНИЕ:\n`;
+    text += `В соответствии с частью 1 статьи 208 ГПК РФ по заявлению взыскателя суд, рассмотревший дело, производит индексацию присуждённых денежных сумм на день исполнения решения суда.\n`;
+    text += `Согласно правовым позициям Конституционного Суда РФ (постановления № 1-П от 12.01.2021, № 40-П от 22.07.2021), индексация не является мерой гражданско-правовой ответственности, а выступает механизмом восстановления покупательной способности присуждённых денежных сумм, обесценившихся в результате инфляции за период неисполнения решения суда.\n`;
+    text += `Расчёт произведён на основании индекса потребительских цен по Российской Федерации в целом методом последовательного (цепного) перемножения месячных коэффициентов, что соответствует Обзору судебной практики по вопросам, связанным с индексацией присуждённых судом денежных сумм, утверждённому Президиумом Верховного Суда РФ 18.12.2024.\n`;
+    text += `Заявление об индексации присуждённых денежных сумм может быть подано в срок, не превышающий одного года со дня фактического исполнения решения суда (с учётом правовой позиции, изложенной в постановлении Конституционного Суда РФ № 31-П от 20.06.2024).`;
+
+    resultDiv.textContent = text;
+}
+
+// ============================================================
+// ВКЛАДКА 13: АЛИМЕНТЫ (ЕЖЕМЕСЯЧНЫЙ РАСЧЁТ, ЗАДОЛЖЕННОСТЬ, НЕУСТОЙКА)
+// ============================================================
+
+let alimonyPeriods = [];
+
+function addAlimonyPeriod() {
+    const list = document.getElementById('alimony-periods-list');
+    const idx = alimonyPeriods.length;
+    alimonyPeriods.push({ from: '', to: '', type: 'share', share: 25, fixed: 0 });
+    renderAlimonyPeriods();
+}
+
+function removeAlimonyPeriod(idx) {
+    alimonyPeriods.splice(idx, 1);
+    renderAlimonyPeriods();
+}
+
+function renderAlimonyPeriods() {
+    const list = document.getElementById('alimony-periods-list');
+    if (!list) return;
+    list.innerHTML = alimonyPeriods.map((p, i) => `
+        <div class="payment-block" style="margin-bottom:12px;">
+            <div class="inline-group">
+                <div class="form-group">
+                    <label>Период с</label>
+                    <input type="date" value="${p.from}" onchange="alimonyPeriods[${i}].from=this.value">
+                </div>
+                <div class="form-group">
+                    <label>Период по (не включая дату прекращения)</label>
+                    <input type="date" value="${p.to}" onchange="alimonyPeriods[${i}].to=this.value">
+                </div>
+            </div>
+            <div class="inline-group">
+                <div class="form-group">
+                    <label>Вид взыскания</label>
+                    <select onchange="alimonyPeriods[${i}].type=this.value; renderAlimonyPeriods();">
+                        <option value="share" ${p.type==='share'?'selected':''}>Доля от заработка</option>
+                        <option value="fixed" ${p.type==='fixed'?'selected':''}>Твёрдая денежная сумма</option>
+                    </select>
+                </div>
+                ${p.type === 'share' ? `
+                <div class="form-group">
+                    <label>Доля, % от дохода</label>
+                    <input type="number" step="0.01" value="${p.share}" onchange="alimonyPeriods[${i}].share=parseFloat(this.value)">
+                </div>` : `
+                <div class="form-group">
+                    <label>Сумма в месяц, руб.</label>
+                    <input type="number" step="0.01" value="${p.fixed}" onchange="alimonyPeriods[${i}].fixed=parseFloat(this.value)">
+                </div>`}
+            </div>
+            <button class="btn" style="background:#c62828;" onclick="removeAlimonyPeriod(${i})">Удалить период</button>
+        </div>
+    `).join('');
+}
+
+let alimonyIncomes = [];
+
+function addAlimonyIncome() {
+    alimonyIncomes.push({ month: '', income: 0 });
+    renderAlimonyIncomes();
+}
+function removeAlimonyIncome(idx) {
+    alimonyIncomes.splice(idx, 1);
+    renderAlimonyIncomes();
+}
+function renderAlimonyIncomes() {
+    const list = document.getElementById('alimony-incomes-list');
+    if (!list) return;
+    list.innerHTML = alimonyIncomes.map((r, i) => `
+        <div class="inline-group">
+            <div class="form-group">
+                <label>Месяц (ГГГГ-ММ)</label>
+                <input type="month" value="${r.month}" onchange="alimonyIncomes[${i}].month=this.value">
+            </div>
+            <div class="form-group">
+                <label>Доход за месяц, руб.</label>
+                <input type="number" step="0.01" value="${r.income}" onchange="alimonyIncomes[${i}].income=parseFloat(this.value)">
+            </div>
+            <div class="form-group" style="display:flex;align-items:flex-end;">
+                <button class="btn" style="background:#c62828;" onclick="removeAlimonyIncome(${i})">Удалить</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+let alimonyPayments = [];
+function addAlimonyPayment() {
+    alimonyPayments.push({ date: '', amount: 0 });
+    renderAlimonyPayments();
+}
+function removeAlimonyPayment(idx) {
+    alimonyPayments.splice(idx, 1);
+    renderAlimonyPayments();
+}
+function renderAlimonyPayments() {
+    const list = document.getElementById('alimony-payments-list');
+    if (!list) return;
+    list.innerHTML = alimonyPayments.map((r, i) => `
+        <div class="inline-group">
+            <div class="form-group">
+                <label>Дата фактической выплаты</label>
+                <input type="date" value="${r.date}" onchange="alimonyPayments[${i}].date=this.value">
+            </div>
+            <div class="form-group">
+                <label>Сумма выплаты, руб.</label>
+                <input type="number" step="0.01" value="${r.amount}" onchange="alimonyPayments[${i}].amount=parseFloat(this.value)">
+            </div>
+            <div class="form-group" style="display:flex;align-items:flex-end;">
+                <button class="btn" style="background:#c62828;" onclick="removeAlimonyPayment(${i})">Удалить</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const tabs = document.getElementById('tabs');
+
+    if (tabs && !document.querySelector('[data-tab="tab13"]')) {
+        const tabButton = document.createElement('button');
+        tabButton.className = 'tab-btn';
+        tabButton.dataset.tab = 'tab13';
+        tabButton.textContent = 'Алименты';
+        tabButton.addEventListener('click', function () {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            tabButton.classList.add('active');
+            const tab = document.getElementById('tab13');
+            if (tab) tab.classList.add('active');
+        });
+        tabs.appendChild(tabButton);
+    }
+
+    if (document.getElementById('tab13')) return;
+
+    const tab = document.createElement('div');
+    tab.id = 'tab13';
+    tab.className = 'tab-content';
+    tab.innerHTML = `
+        <h2>Алименты: начисление, задолженность, неустойка</h2>
+
+        <div class="note">
+            Расчёт задолженности по алиментам производится исходя из размера
+            алиментов, установленного судебным актом или соглашением сторон
+            (статья 113 Семейного кодекса РФ). При взыскании доли от дохода и
+            отсутствии сведений о доходе плательщика за период задолженность
+            определяется исходя из размера средней заработной платы в Российской
+            Федерации на день определения задолженности — эти значения нужно
+            внести вручную по данным Росстата. Неустойка за несвоевременную уплату
+            алиментов по решению суда составляет 0,1% от невыплаченной суммы за
+            каждый день просрочки (статья 115 Семейного кодекса РФ); суд вправе
+            уменьшить неустойку при явной несоразмерности последствиям просрочки.
+        </div>
+
+        <div class="payment-block">
+            <label><strong>Периоды взыскания алиментов</strong></label>
+            <div id="alimony-periods-list"></div>
+            <button class="btn" type="button" onclick="addAlimonyPeriod()">+ Добавить период</button>
+        </div>
+
+        <div class="payment-block">
+            <label><strong>Доход плательщика по месяцам (нужен только для расчёта доли от дохода)</strong></label>
+            <div id="alimony-incomes-list"></div>
+            <button class="btn" type="button" onclick="addAlimonyIncome()">+ Добавить месяц дохода</button>
+        </div>
+
+        <div class="form-group">
+            <label>Средняя зарплата по РФ на дату определения задолженности, руб. (для месяцев без указанного дохода)</label>
+            <input type="number" id="alimony-avg-salary" value="0" step="0.01" min="0">
+        </div>
+
+        <div class="payment-block">
+            <label><strong>Фактические выплаты алиментов</strong></label>
+            <div id="alimony-payments-list"></div>
+            <button class="btn" type="button" onclick="addAlimonyPayment()">+ Добавить выплату</button>
+        </div>
+
+        <div class="form-group">
+            <label>
+                <input type="checkbox" id="alimony-calc-penalty" checked style="width:auto;display:inline-block;margin-right:8px;">
+                Рассчитать неустойку 0,1% в день (ст. 115 СК РФ) на дату
+            </label>
+            <input type="date" id="alimony-penalty-date" value="2026-08-17">
+        </div>
+
+        <button class="btn" onclick="calculateAlimony()">Рассчитать</button>
+
+        <div id="alimony-result" class="result-box" style="display:none;"></div>
+        <button class="btn btn-copy" style="display:none;" id="alimony-copy-btn" onclick="copyResult('alimony-result')">📋 Копировать результат</button>
+    `;
+
+    const container = document.querySelector('.container');
+    container.appendChild(tab);
+
+    addAlimonyPeriod();
+    addAlimonyPayment();
+});
+
+function monthKey(d) {
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+}
+
+function calculateAlimony() {
+    if (alimonyPeriods.length === 0 || !alimonyPeriods[0].from) {
+        alert('Добавьте хотя бы один период взыскания алиментов.');
+        return;
+    }
+
+    const avgSalary = parseFloat(document.getElementById('alimony-avg-salary').value) || 0;
+    const incomeMap = {};
+    alimonyIncomes.forEach(r => { if (r.month) incomeMap[r.month] = r.income || 0; });
+
+    let monthlyCharges = [];
+    alimonyPeriods.forEach(p => {
+        if (!p.from) return;
+        const from = parseDate(p.from);
+        const to = p.to ? parseDate(p.to) : new Date();
+        let cursor = new Date(from.getFullYear(), from.getMonth(), 1);
+        while (cursor < to) {
+            const mKey = monthKey(cursor);
+            const daysInMonth = new Date(cursor.getFullYear(), cursor.getMonth()+1, 0).getDate();
+            const periodStartInMonth = (cursor.getFullYear()===from.getFullYear() && cursor.getMonth()===from.getMonth()) ? from.getDate() : 1;
+            const monthEndDate = new Date(cursor.getFullYear(), cursor.getMonth()+1, 0);
+            const periodEndInMonth = (monthEndDate > to) ? to.getDate() : daysInMonth;
+            const daysCounted = Math.max(0, periodEndInMonth - periodStartInMonth + (monthEndDate > to ? 0 : 1));
+            const fraction = daysCounted / daysInMonth;
+
+            let due = 0;
+            if (p.type === 'share') {
+                const income = incomeMap[mKey] !== undefined ? incomeMap[mKey] : avgSalary;
+                due = income * (p.share / 100) * fraction;
+            } else {
+                due = p.fixed * fraction;
+            }
+            monthlyCharges.push({ month: mKey, due, dueDate: new Date(cursor.getFullYear(), cursor.getMonth()+1, 0) });
+            cursor.setMonth(cursor.getMonth() + 1);
+        }
+    });
+
+    const totalCharged = monthlyCharges.reduce((s, m) => s + m.due, 0);
+    const totalPaid = alimonyPayments.reduce((s, p) => s + (p.amount || 0), 0);
+    const debt = totalCharged - totalPaid;
+
+    let penaltyText = '';
+    let totalPenalty = 0;
+    if (document.getElementById('alimony-calc-penalty').checked) {
+        const penaltyDate = parseDate(document.getElementById('alimony-penalty-date').value);
+        let sortedPayments = [...alimonyPayments].filter(p => p.date).sort((a,b) => parseDate(a.date) - parseDate(b.date));
+        let remainingPayment = sortedPayments.map(p => ({ date: parseDate(p.date), amount: p.amount }));
+
+        monthlyCharges.forEach(charge => {
+            let remainingDue = charge.due;
+            remainingPayment.forEach(pay => {
+                if (remainingDue > 0 && pay.amount > 0 && pay.date >= charge.dueDate) {
+                    const applied = Math.min(remainingDue, pay.amount);
+                    remainingDue -= applied;
+                    pay.amount -= applied;
+                }
+            });
+            if (remainingDue > 0.005 && charge.dueDate < penaltyDate) {
+                const daysLate = Math.floor((penaltyDate - charge.dueDate) / (1000*60*60*24));
+                const penalty = remainingDue * 0.001 * daysLate;
+                totalPenalty += penalty;
+                penaltyText += `Задолженность за ${charge.month}: ${remainingDue.toFixed(2)} руб., дней просрочки: ${daysLate}, неустойка: ${penalty.toFixed(2)} руб.\n`;
+            }
+        });
+    }
+
+    const resultDiv = document.getElementById('alimony-result');
+    resultDiv.style.display = 'block';
+    document.getElementById('alimony-copy-btn').style.display = 'inline-block';
+
+    let chargesText = monthlyCharges.map(m => `${m.month}: начислено ${m.due.toFixed(2)} руб.`).join('\n');
+
+    let text = `РАСЧЁТ АЛИМЕНТОВ, ЗАДОЛЖЕННОСТИ И НЕУСТОЙКИ\n\n`;
+    text += `НАЧИСЛЕНО ПО МЕСЯЦАМ:\n${chargesText}\n\n`;
+    text += `Всего начислено: ${totalCharged.toFixed(2)} руб.\n`;
+    text += `Всего выплачено: ${totalPaid.toFixed(2)} руб.\n`;
+    text += `ЗАДОЛЖЕННОСТЬ ПО АЛИМЕНТАМ: ${debt.toFixed(2)} руб.\n\n`;
+
+    if (document.getElementById('alimony-calc-penalty').checked) {
+        text += `РАСЧЁТ НЕУСТОЙКИ (0,1% в день, ст. 115 СК РФ):\n${penaltyText || 'Просрочки, влекущей начисление неустойки, не выявлено.\n'}\n`;
+        text += `ИТОГО НЕУСТОЙКА: ${totalPenalty.toFixed(2)} руб.\n\n`;
+    }
+
+    text += `ПРАВОВОЕ ОБОСНОВАНИЕ:\n`;
+    text += `Задолженность по алиментам определяется в соответствии со статьёй 113 Семейного кодекса РФ исходя из размера алиментов, установленного судебным актом или соглашением сторон. `;
+    text += `При отсутствии сведений о доходе плательщика за спорный период задолженность определена исходя из размера средней заработной платы в Российской Федерации на день определения задолженности.\n`;
+    text += `Неустойка за несвоевременную уплату алиментов рассчитана в размере 0,1% от суммы невыплаченных алиментов за каждый день просрочки в соответствии со статьёй 115 Семейного кодекса РФ. Суд вправе уменьшить размер неустойки, если её начисленный размер явно несоразмерен последствиям просрочки исполнения обязательства.\n`;
+    text += `Расчёт носит вспомогательный характер; итоговый размер задолженности определяется судебным приставом-исполнителем или судом на основании первичных документов о доходах и фактических выплатах.`;
+
+    resultDiv.textContent = text;
+}
 </script>
 
 <!-- Правовая оговорка -->
 <div class="note" style="margin:20px 25px;"><strong>Правовая оговорка.</strong> Калькулятор является вспомогательным инструментом подготовки расчётов. Перед направлением в суд проверьте договор, первичные документы, действующую редакцию закона и применимую судебную практику. Неустойка рассчитывается без автоматического снижения: вопрос о применении статьи 333 ГК РФ разрешается судом. Расчёт срока исковой давности носит справочный характер; последствия её истечения применяются судом только по заявлению стороны.</div>
 </body>
-</html> 
+</html>
