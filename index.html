@@ -5368,8 +5368,13 @@ function calcGK395() {
         resultDiv.className = 'result-box error'; resultDiv.textContent = 'Добавьте хотя бы одну дату и ставку в блоке ручного ввода.'; resultBody.innerHTML = ''; return;
     }
     const lastKnownRateDate = gk395LastKnownRateDate();
+    let gk395StaleRateWarning = '';
     if (rateMode !== 'manual' && endDate > lastKnownRateDate) {
-        resultDiv.className = 'result-box error'; resultDiv.textContent = `В таблице ставок нет подтверждённых данных для периода после ${gk395FormatDate(lastKnownRateDate)}. Выберите ручной ввод ставки либо обновите массив по решениям Банка России.`; resultBody.innerHTML = ''; return;
+        if (typeof liveKeyRatesLoaded !== 'undefined' && liveKeyRatesLoaded) {
+            gk395StaleRateWarning = '';
+        } else {
+            gk395StaleRateWarning = `Внимание: после ${gk395FormatDate(lastKnownRateDate)} используется последняя известная ключевая ставка Банка России (автообновление сейчас недоступно). Проверьте актуальность ставки на сайте ЦБ РФ или переключитесь на ручной ввод.`;
+        }
     }
 
     const payments = gk395GetPayments(startDate, endDate);
@@ -5437,6 +5442,10 @@ function calcGK395() {
         warnings.push(
             'Период до 01.08.2016 рассчитан предварительно: для судебного расчёта требуется заменить временные ставки полной исторической таблицей Банка России.'
         );
+    }
+
+    if (gk395StaleRateWarning) {
+        warnings.push(gk395StaleRateWarning);
     }
 
     for (let index = 0; index < timeline.length - 1; index += 1) {
