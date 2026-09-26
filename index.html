@@ -8855,7 +8855,7 @@ function calculateAlimony() {
 <div class="note" style="margin:20px 25px;"><strong>Правовая оговорка.</strong> Калькулятор является вспомогательным инструментом подготовки расчётов. Перед направлением в суд проверьте договор, первичные документы, действующую редакцию закона и применимую судебную практику. Неустойка рассчитывается без автоматического снижения: вопрос о применении статьи 333 ГК РФ разрешается судом. Расчёт срока исковой давности носит справочный характер; последствия её истечения применяются судом только по заявлению стороны.</div>
 
 <script>
-/* ===== Автообновление данных ЦБ РФ и Росстата: версия без кэша, с автообновлением и индикатором свежести ===== */
+/* ===== Автообновление данных ЦБ РФ и Росстата: без кэша, автообновление, индикатор свежести и источника ===== */
 (function () {
     'use strict';
 
@@ -8873,22 +8873,29 @@ function calculateAlimony() {
             var parts = lastCpiInfo.month.split('-');
             var now = new Date();
             var diff = (now.getFullYear() - Number(parts[0])) * 12 + (now.getMonth() + 1 - Number(parts[1]));
-            if (diff > 2) warn = ' | ВНИМАНИЕ: данные старше 2 мес., проверьте источник';
+            if (diff > 2) warn = ' | ВНИМАНИЕ: данные старше 2 мес., обновите вручную через импорт';
             return ' | посл. месяц ' + lastCpiInfo.month + ' = ' +
                 String(lastCpiInfo.index).replace('.', ',') + warn;
         }
         return '';
     }
 
-    function enhanceBadge(source, success) {
+    function enhanceBadge(source, success, dataSource) {
         var badge = document.getElementById('data-status-' + source);
         if (!badge) return;
         badge.style.cursor = 'pointer';
         badge.title = 'Нажмите, чтобы принудительно обновить данные ЦБ РФ и Росстата';
         badge.onclick = function () { window.refreshLiveData(true); };
-        if (success) {
-            var base = source === 'key-rate' ? 'Ключевая ставка ЦБ: онлайн' : 'ИПЦ Росстата: онлайн';
-            badge.textContent = base + badgeFreshSuffix(source);
+        if (!success) return;
+        var name = source === 'key-rate' ? 'Ключевая ставка ЦБ' : 'ИПЦ Росстата';
+        if (dataSource === 'live') {
+            badge.style.background = '#e8f5e9';
+            badge.style.color = '#1b5e20';
+            badge.textContent = name + ': онлайн' + badgeFreshSuffix(source);
+        } else {
+            badge.style.background = '#fff3e0';
+            badge.style.color = '#e65100';
+            badge.textContent = name + ': встроенные данные (источник недоступен)' + badgeFreshSuffix(source);
         }
     }
 
@@ -8915,12 +8922,12 @@ function calculateAlimony() {
             lastKeyRateInfo = GK395KEYRATES[GK395KEYRATES.length - 1];
             liveKeyRatesLoaded = true;
             updateDataStatusBadge('key-rate', true);
-            enhanceBadge('key-rate', true);
-            console.log('[key-rate] Обновлено без кэша. Записей: ' + GK395KEYRATES.length);
+            enhanceBadge('key-rate', true, data.source || 'live');
+            console.log('[key-rate] Обновлено. Записей: ' + GK395KEYRATES.length + ', источник: ' + (data.source || 'live'));
         } catch (error) {
             console.error('[key-rate] Ошибка загрузки:', error);
             updateDataStatusBadge('key-rate', false, error.message);
-            enhanceBadge('key-rate', false);
+            enhanceBadge('key-rate', false, null);
         }
     };
 
@@ -8950,13 +8957,13 @@ function calculateAlimony() {
             lastCpiInfo = { month: lastMonth, index: lastIndex, count: loaded };
             liveCpiLoaded = true;
             updateDataStatusBadge('cpi', true);
-            enhanceBadge('cpi', true);
+            enhanceBadge('cpi', true, data.source || 'live');
             if (typeof renderCpiMonthInputs === 'function') renderCpiMonthInputs();
-            console.log('[cpi] Обновлено без кэша. Значений: ' + loaded + ', последний месяц: ' + lastMonth);
+            console.log('[cpi] Обновлено. Значений: ' + loaded + ', последний месяц: ' + lastMonth + ', источник: ' + (data.source || 'live'));
         } catch (error) {
             console.error('[cpi] Ошибка загрузки:', error);
             updateDataStatusBadge('cpi', false, error.message);
-            enhanceBadge('cpi', false);
+            enhanceBadge('cpi', false, null);
         }
     };
 
@@ -8981,7 +8988,7 @@ function calculateAlimony() {
 
 
 <script>
-/* ===== Новый раздел: расчёт площади застройки земельного участка ===== */
+/* ===== Раздел: расчёт площади застройки земельного участка (с пятном застройки и процентом) ===== */
 (function () {
     'use strict';
 
@@ -9104,7 +9111,8 @@ function calculateAlimony() {
             lines.push(s);
         });
         lines.push('');
-        lines.push('Суммарная площадь застройки: ' + pzFmt(totalBuilt) + ' м².');
+        lines.push('ПЯТНО ЗАСТРОЙКИ (суммарная площадь, занятая под строениями): ' + pzFmt(totalBuilt) + ' м².');
+        lines.push('ПРОЦЕНТ ЗАСТРОЙКИ участка: ' + builtPercent.toFixed(2).replace('.', ',') + '%.');
         lines.push('Суммарная поэтажная площадь наземной части: ' + pzFmt(totalFloor) + ' м².');
         lines.push('Свободная (незастроенная) площадь участка: ' + pzFmt(freeArea) + ' м².');
         lines.push('');
@@ -9114,8 +9122,13 @@ function calculateAlimony() {
             ' = ' + kizu.toFixed(4).replace('.', ',') + '.');
 
         if (limitPercent > 0) {
+            var maxFootprint = pzRound(siteArea * limitPercent / 100);
+            var restFootprint = pzRound(Math.max(0, maxFootprint - totalBuilt));
             var okP = builtPercent <= limitPercent;
             lines.push('');
+            lines.push('Максимально допустимое пятно застройки по ПЗЗ (' + String(limitPercent).replace('.', ',') +
+                '% от ' + pzFmt(siteArea) + ' м²): ' + pzFmt(maxFootprint) + ' м².');
+            lines.push('Остаток допустимого пятна застройки: ' + pzFmt(restFootprint) + ' м².');
             lines.push('Проверка по ПЗЗ — процент застройки: ' + builtPercent.toFixed(2).replace('.', ',') +
                 '% при пределе ' + String(limitPercent).replace('.', ',') + '% — ' +
                 (okP ? 'СООТВЕТСТВУЕТ.' : 'ПРЕВЫШЕНИЕ на ' + (builtPercent - limitPercent).toFixed(2).replace('.', ',') + ' п.п.!'));
@@ -9167,7 +9180,7 @@ function calculateAlimony() {
         tab.className = 'tab-content';
         tab.innerHTML = [
             '<h2>Расчёт площади застройки земельного участка</h2>',
-            '<div class="note">Площадь застройки определяется как площадь горизонтального сечения по внешнему обводу здания ',
+            '<div class="note">Площадь застройки (пятно застройки) определяется как площадь горизонтального сечения по внешнему обводу здания ',
             'на уровне цоколя, включая выступающие части (входные площадки и ступени, веранды, террасы, приямки, входы в подвал), ',
             'площадь под зданием на опорах, проезды под зданием и консольные выступы на высоте менее 4,5 м ',
             '(п. А.8 СП 118.13330.2022; для жилых зданий — аналогичные правила СП 54.13330). ',
