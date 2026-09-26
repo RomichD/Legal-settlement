@@ -8853,5 +8853,371 @@ function calculateAlimony() {
 
 <!-- Правовая оговорка -->
 <div class="note" style="margin:20px 25px;"><strong>Правовая оговорка.</strong> Калькулятор является вспомогательным инструментом подготовки расчётов. Перед направлением в суд проверьте договор, первичные документы, действующую редакцию закона и применимую судебную практику. Неустойка рассчитывается без автоматического снижения: вопрос о применении статьи 333 ГК РФ разрешается судом. Расчёт срока исковой давности носит справочный характер; последствия её истечения применяются судом только по заявлению стороны.</div>
+
+<script>
+/* ===== Автообновление данных ЦБ РФ и Росстата: версия без кэша, с автообновлением и индикатором свежести ===== */
+(function () {
+    'use strict';
+
+    var lastKeyRateInfo = null;
+    var lastCpiInfo = null;
+    var lastRefreshTs = 0;
+
+    function badgeFreshSuffix(source) {
+        if (source === 'key-rate' && lastKeyRateInfo) {
+            return ' | актуально с ' + lastKeyRateInfo.from.split('-').reverse().join('.') +
+                ' (' + String(lastKeyRateInfo.rate).replace('.', ',') + '%)';
+        }
+        if (source === 'cpi' && lastCpiInfo) {
+            var warn = '';
+            var parts = lastCpiInfo.month.split('-');
+            var now = new Date();
+            var diff = (now.getFullYear() - Number(parts[0])) * 12 + (now.getMonth() + 1 - Number(parts[1]));
+            if (diff > 2) warn = ' | ВНИМАНИЕ: данные старше 2 мес., проверьте источник';
+            return ' | посл. месяц ' + lastCpiInfo.month + ' = ' +
+                String(lastCpiInfo.index).replace('.', ',') + warn;
+        }
+        return '';
+    }
+
+    function enhanceBadge(source, success) {
+        var badge = document.getElementById('data-status-' + source);
+        if (!badge) return;
+        badge.style.cursor = 'pointer';
+        badge.title = 'Нажмите, чтобы принудительно обновить данные ЦБ РФ и Росстата';
+        badge.onclick = function () { window.refreshLiveData(true); };
+        if (success) {
+            var base = source === 'key-rate' ? 'Ключевая ставка ЦБ: онлайн' : 'ИПЦ Росстата: онлайн';
+            badge.textContent = base + badgeFreshSuffix(source);
+        }
+    }
+
+    window.fetchLiveKeyRates = async function () {
+        try {
+            var url = DATA_PROXY_BASE + '?route=key-rate&from=2016-01-01&to=' +
+                new Date().getFullYear() + '-12-31&_ts=' + Date.now();
+            var response = await fetch(url, { cache: 'no-store' });
+            if (!response.ok) throw new Error('HTTP ' + response.status);
+            var data = await response.json();
+            if (!data.ok || !Array.isArray(data.rates) || data.rates.length === 0) {
+                throw new Error('Некорректный или пустой ответ API');
+            }
+            var byDate = new Map(GK395KEYRATES.map(function (item) { return [item.from, item.rate]; }));
+            data.rates.forEach(function (item) {
+                if (item && typeof item.from === 'string' && Number.isFinite(item.rate)) {
+                    byDate.set(item.from, item.rate);
+                }
+            });
+            GK395KEYRATES.splice(0, GK395KEYRATES.length,
+                Array.from(byDate, function (entry) { return { from: entry[0], rate: entry[1] }; })
+                    .sort(function (a, b) { return a.from.localeCompare(b.from); })
+            );
+            lastKeyRateInfo = GK395KEYRATES[GK395KEYRATES.length - 1];
+            liveKeyRatesLoaded = true;
+            updateDataStatusBadge('key-rate', true);
+            enhanceBadge('key-rate', true);
+            console.log('[key-rate] Обновлено без кэша. Записей: ' + GK395KEYRATES.length);
+        } catch (error) {
+            console.error('[key-rate] Ошибка загрузки:', error);
+            updateDataStatusBadge('key-rate', false, error.message);
+            enhanceBadge('key-rate', false);
+        }
+    };
+
+    window.fetchLiveCpi = async function () {
+        try {
+            var url = DATA_PROXY_BASE + '?route=cpi&_ts=' + Date.now();
+            var response = await fetch(url, { cache: 'no-store' });
+            if (!response.ok) throw new Error('HTTP ' + response.status);
+            var data = await response.json();
+            if (!data.ok || !Array.isArray(data.values) || data.values.length === 0) {
+                throw new Error('Некорректный или пустой ответ API');
+            }
+            var loaded = 0;
+            var lastMonth = null;
+            var lastIndex = null;
+            data.values.forEach(function (item) {
+                if (item && typeof item.month === 'string' && Number.isFinite(item.index)) {
+                    CPITABLE[item.month] = item.index;
+                    loaded++;
+                    if (!lastMonth || item.month > lastMonth) {
+                        lastMonth = item.month;
+                        lastIndex = item.index;
+                    }
+                }
+            });
+            if (loaded === 0) throw new Error('Нет корректных значений ИПЦ');
+            lastCpiInfo = { month: lastMonth, index: lastIndex, count: loaded };
+            liveCpiLoaded = true;
+            updateDataStatusBadge('cpi', true);
+            enhanceBadge('cpi', true);
+            if (typeof renderCpiMonthInputs === 'function') renderCpiMonthInputs();
+            console.log('[cpi] Обновлено без кэша. Значений: ' + loaded + ', последний месяц: ' + lastMonth);
+        } catch (error) {
+            console.error('[cpi] Ошибка загрузки:', error);
+            updateDataStatusBadge('cpi', false, error.message);
+            enhanceBadge('cpi', false);
+        }
+    };
+
+    window.refreshLiveData = function (manual) {
+        if (!manual && Date.now() - lastRefreshTs < 5000) return Promise.resolve();
+        lastRefreshTs = Date.now();
+        return Promise.all([window.fetchLiveKeyRates(), window.fetchLiveCpi()]);
+    };
+
+    document.addEventListener('DOMContentLoaded', function () {
+        window.refreshLiveData(false);
+        setInterval(function () { window.refreshLiveData(false); }, 30 * 60 * 1000);
+    });
+
+    document.addEventListener('visibilitychange', function () {
+        if (!document.hidden && Date.now() - lastRefreshTs > 10 * 60 * 1000) {
+            window.refreshLiveData(false);
+        }
+    });
+})();
+</script>
+
+
+<script>
+/* ===== Новый раздел: расчёт площади застройки земельного участка ===== */
+(function () {
+    'use strict';
+
+    function pzRound(v) { return Math.round((v + Number.EPSILON) * 100) / 100; }
+    function pzFmt(v) {
+        return pzRound(v).toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+    function pzNum(id) {
+        var el = document.getElementById(id);
+        if (!el) return 0;
+        var n = Number(String(el.value).replace(',', '.'));
+        return Number.isFinite(n) ? n : 0;
+    }
+
+    window.pzBuildingRowHtml = function (name, len, width, floors, protr, pillars, und) {
+        return '<tr>' +
+            '<td><input type="text" class="pz-name" value="' + name + '" placeholder="Наименование"></td>' +
+            '<td><input type="number" class="pz-len" value="' + len + '" min="0.01" step="0.01"></td>' +
+            '<td><input type="number" class="pz-width" value="' + width + '" min="0.01" step="0.01"></td>' +
+            '<td><input type="number" class="pz-floors" value="' + floors + '" min="1" step="1"></td>' +
+            '<td><input type="number" class="pz-protr" value="' + protr + '" min="0" step="0.01"></td>' +
+            '<td><input type="number" class="pz-pillars" value="' + pillars + '" min="0" step="0.01"></td>' +
+            '<td><input type="number" class="pz-und" value="' + und + '" min="0" step="0.01"></td>' +
+            '<td><button type="button" class="danger-btn" onclick="pzRemoveBuildingRow(this)">✕</button></td>' +
+            '</tr>';
+    };
+
+    window.pzAddBuildingRow = function () {
+        document.getElementById('pz-buildings-tbody')
+            .insertAdjacentHTML('beforeend', window.pzBuildingRowHtml('', '', '', 1, 0, 0, 0));
+    };
+
+    window.pzRemoveBuildingRow = function (btn) {
+        var tbody = document.getElementById('pz-buildings-tbody');
+        if (tbody.rows.length > 1) btn.closest('tr').remove();
+    };
+
+    window.pzClearBuildings = function () {
+        document.getElementById('pz-buildings-tbody').innerHTML =
+            window.pzBuildingRowHtml('', '', '', 1, 0, 0, 0);
+    };
+
+    window.pzCalculate = function () {
+        var resultDiv = document.getElementById('pz-result');
+        var resultBody = document.getElementById('pz-result-tbody');
+        var copyBtn = document.getElementById('pz-copy-btn');
+        var fullCopyBtn = document.getElementById('pz-full-copy-btn');
+
+        var siteArea = pzNum('pz-site-area');
+        var limitPercent = pzNum('pz-limit-percent');
+        var limitKizu = pzNum('pz-limit-kizu');
+
+        if (siteArea <= 0) {
+            resultDiv.className = 'result-box error';
+            resultDiv.textContent = 'Укажите площадь земельного участка (больше нуля).';
+            resultBody.innerHTML = '';
+            return;
+        }
+
+        var rows = document.querySelectorAll('#pz-buildings-tbody tr');
+        var buildings = [];
+        rows.forEach(function (row, idx) {
+            var name = row.querySelector('.pz-name').value.trim() || ('Строение ' + (idx + 1));
+            var len = Number(String(row.querySelector('.pz-len').value).replace(',', '.'));
+            var width = Number(String(row.querySelector('.pz-width').value).replace(',', '.'));
+            var floors = parseInt(row.querySelector('.pz-floors').value, 10);
+            var protr = Number(String(row.querySelector('.pz-protr').value).replace(',', '.')) || 0;
+            var pillars = Number(String(row.querySelector('.pz-pillars').value).replace(',', '.')) || 0;
+            var und = Number(String(row.querySelector('.pz-und').value).replace(',', '.')) || 0;
+            if (!Number.isFinite(len) || len <= 0 || !Number.isFinite(width) || width <= 0) return;
+            if (!Number.isFinite(floors) || floors < 1) floors = 1;
+            var footprint = pzRound(len * width);
+            var built = pzRound(footprint + protr + pillars + und);
+            var floorArea = pzRound(footprint * floors);
+            buildings.push({
+                name: name, len: len, width: width, floors: floors,
+                protr: protr, pillars: pillars, und: und,
+                footprint: footprint, built: built, floorArea: floorArea
+            });
+        });
+
+        if (buildings.length === 0) {
+            resultDiv.className = 'result-box error';
+            resultDiv.textContent = 'Добавьте хотя бы одно строение с длиной и шириной больше нуля.';
+            resultBody.innerHTML = '';
+            return;
+        }
+
+        var totalBuilt = pzRound(buildings.reduce(function (s, b) { return s + b.built; }, 0));
+        var totalFloor = pzRound(buildings.reduce(function (s, b) { return s + b.floorArea; }, 0));
+        var freeArea = pzRound(siteArea - totalBuilt);
+        var kz = totalBuilt / siteArea;
+        var builtPercent = kz * 100;
+        var kizu = totalFloor / siteArea;
+
+        resultBody.innerHTML = buildings.map(function (b, i) {
+            return '<tr>' +
+                '<td>' + (i + 1) + '</td>' +
+                '<td>' + b.name + '</td>' +
+                '<td>' + pzFmt(b.len) + ' × ' + pzFmt(b.width) + '</td>' +
+                '<td>' + b.floors + '</td>' +
+                '<td>' + pzFmt(b.built) + '</td>' +
+                '<td>' + pzFmt(b.floorArea) + '</td>' +
+                '</tr>';
+        }).join('');
+
+        var lines = [];
+        lines.push('Площадь земельного участка: ' + pzFmt(siteArea) + ' м².');
+        lines.push('');
+        buildings.forEach(function (b, i) {
+            var s = (i + 1) + '. «' + b.name + '»: сечение по цоколю ' + pzFmt(b.len) + ' × ' + pzFmt(b.width) +
+                ' = ' + pzFmt(b.footprint) + ' м²';
+            var extras = [];
+            if (b.protr > 0) extras.push('выступающие части и входные группы ' + pzFmt(b.protr) + ' м²');
+            if (b.pillars > 0) extras.push('площадь под зданием на опорах/проезды ' + pzFmt(b.pillars) + ' м²');
+            if (b.und > 0) extras.push('подземная часть за контуром надземной ' + pzFmt(b.und) + ' м²');
+            if (extras.length) s += ', включая ' + extras.join(', ');
+            s += '. Площадь застройки: ' + pzFmt(b.built) + ' м².';
+            s += ' Поэтажная площадь (' + b.floors + ' эт.): ' + pzFmt(b.floorArea) + ' м².';
+            lines.push(s);
+        });
+        lines.push('');
+        lines.push('Суммарная площадь застройки: ' + pzFmt(totalBuilt) + ' м².');
+        lines.push('Суммарная поэтажная площадь наземной части: ' + pzFmt(totalFloor) + ' м².');
+        lines.push('Свободная (незастроенная) площадь участка: ' + pzFmt(freeArea) + ' м².');
+        lines.push('');
+        lines.push('Коэффициент застройки (КЗ) = ' + pzFmt(totalBuilt) + ' / ' + pzFmt(siteArea) +
+            ' = ' + kz.toFixed(4).replace('.', ',') + ' (' + builtPercent.toFixed(2).replace('.', ',') + '% участка).');
+        lines.push('Коэффициент плотности застройки (КИЗУ) = ' + pzFmt(totalFloor) + ' / ' + pzFmt(siteArea) +
+            ' = ' + kizu.toFixed(4).replace('.', ',') + '.');
+
+        if (limitPercent > 0) {
+            var okP = builtPercent <= limitPercent;
+            lines.push('');
+            lines.push('Проверка по ПЗЗ — процент застройки: ' + builtPercent.toFixed(2).replace('.', ',') +
+                '% при пределе ' + String(limitPercent).replace('.', ',') + '% — ' +
+                (okP ? 'СООТВЕТСТВУЕТ.' : 'ПРЕВЫШЕНИЕ на ' + (builtPercent - limitPercent).toFixed(2).replace('.', ',') + ' п.п.!'));
+        }
+        if (limitKizu > 0) {
+            var okK = kizu <= limitKizu;
+            lines.push('Проверка по ПЗЗ — КИЗУ: ' + kizu.toFixed(4).replace('.', ',') +
+                ' при пределе ' + String(limitKizu).replace('.', ',') + ' — ' +
+                (okK ? 'СООТВЕТСТВУЕТ.' : 'ПРЕВЫШЕНИЕ на ' + (kizu - limitKizu).toFixed(4).replace('.', ',') + '!'));
+        }
+
+        lines.push('');
+        lines.push('Правовое обоснование: площадь застройки определена по правилам п. А.8 СП 118.13330.2022 ' +
+            '(горизонтальное сечение по внешнему обводу здания на уровне цоколя, включая входные площадки и ступени, ' +
+            'веранды, террасы, приямки, консольные выступы на высоте менее 4,5 м, площадь под зданием на опорах и проезды, ' +
+            'а также выходящую за контур надземной части площадь подземной части); консольные выступы выше 4,5 м не учтены. ' +
+            'Коэффициенты рассчитаны по СП 42.13330 и ст. 38 ГрК РФ; предельные значения определяются градостроительным ' +
+            'регламентом (ПЗЗ) и ГПЗУ конкретного участка.');
+        lines.push('Расчёт справочный и не заменяет градостроительный план земельного участка и проектную документацию.');
+
+        resultDiv.className = 'result-box';
+        resultDiv.style.display = 'block';
+        resultDiv.textContent = lines.join('\n');
+        if (copyBtn) copyBtn.style.display = 'inline-block';
+        if (fullCopyBtn) fullCopyBtn.style.display = 'inline-block';
+    };
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var tabs = document.getElementById('tabs');
+        var container = document.querySelector('.container');
+        if (!tabs || !container) return;
+        if (document.querySelector('[data-tab="tab-zastroyka"]')) return;
+
+        var btn = document.createElement('button');
+        btn.className = 'tab-btn';
+        btn.dataset.tab = 'tab-zastroyka';
+        btn.textContent = 'Площадь застройки ЗУ';
+        btn.addEventListener('click', function () {
+            document.querySelectorAll('.tab-btn').forEach(function (b) { b.classList.remove('active'); });
+            document.querySelectorAll('.tab-content').forEach(function (c) { c.classList.remove('active'); });
+            btn.classList.add('active');
+            var tab = document.getElementById('tab-zastroyka');
+            if (tab) tab.classList.add('active');
+        });
+        tabs.appendChild(btn);
+
+        var tab = document.createElement('div');
+        tab.id = 'tab-zastroyka';
+        tab.className = 'tab-content';
+        tab.innerHTML = [
+            '<h2>Расчёт площади застройки земельного участка</h2>',
+            '<div class="note">Площадь застройки определяется как площадь горизонтального сечения по внешнему обводу здания ',
+            'на уровне цоколя, включая выступающие части (входные площадки и ступени, веранды, террасы, приямки, входы в подвал), ',
+            'площадь под зданием на опорах, проезды под зданием и консольные выступы на высоте менее 4,5 м ',
+            '(п. А.8 СП 118.13330.2022; для жилых зданий — аналогичные правила СП 54.13330). ',
+            'Предельные процент застройки и КИЗУ устанавливаются градостроительным регламентом (ПЗЗ) по ст. 38 ГрК РФ ',
+            'и указываются в ГПЗУ.</div>',
+
+            '<div class="grid">',
+            '<div class="form-group"><label>Площадь земельного участка, м²</label>',
+            '<input type="number" id="pz-site-area" value="1000" min="0.01" step="0.01"></div>',
+            '<div class="form-group"><label>Предельный процент застройки по ПЗЗ, % (необязательно)</label>',
+            '<input type="number" id="pz-limit-percent" placeholder="например, 30" min="0" step="0.01"></div>',
+            '<div class="form-group"><label>Предельный КИЗУ по ПЗЗ (необязательно)</label>',
+            '<input type="number" id="pz-limit-kizu" placeholder="например, 0,6" min="0" step="0.01"></div>',
+            '</div>',
+
+            '<div class="payment-block">',
+            '<label><strong>Строения на участке</strong></label>',
+            '<p class="muted">Для каждого строения укажите габариты в плане по внешнему обводу на уровне цоколя. ',
+            'В графе «Выступающие части» — суммарная площадь крылец, входных площадок, ступеней, веранд, террас, приямков ',
+            'и консольных выступов ниже 4,5 м. Консоли выше 4,5 м в площадь застройки не включаются.</p>',
+            '<div class="table-wrapper"><table>',
+            '<thead><tr>',
+            '<th>Наименование</th><th>Длина, м</th><th>Ширина, м</th><th>Этажей</th>',
+            '<th>Выступающие части, м²</th><th>На опорах/проезды, м²</th><th>Подземная часть за контуром, м²</th><th></th>',
+            '</tr></thead>',
+            '<tbody id="pz-buildings-tbody">',
+            window.pzBuildingRowHtml('Жилой дом', 12, 10, 2, 8, 0, 0),
+            '</tbody></table></div>',
+            '<button type="button" class="add-row-btn" onclick="pzAddBuildingRow()">Добавить строение</button>',
+            '<button type="button" class="add-row-btn" style="background:#6b7280;margin-left:8px" onclick="pzClearBuildings()">Очистить</button>',
+            '</div>',
+
+            '<button type="button" class="btn" onclick="pzCalculate()">Рассчитать</button>',
+
+            '<div class="result-wrapper">',
+            '<div id="pz-result" class="result-box" style="display:none"></div>',
+            '<button class="copy-btn" id="pz-copy-btn" style="display:none" onclick="copyResult(\'pz-result\')">Копировать результат</button>',
+            '</div>',
+            '<div class="scroll-table"><table>',
+            '<thead><tr><th>№</th><th>Строение</th><th>Габариты, м</th><th>Этажей</th>',
+            '<th>Площадь застройки, м²</th><th>Поэтажная площадь, м²</th></tr></thead>',
+            '<tbody id="pz-result-tbody"></tbody>',
+            '</table></div>',
+            '<button type="button" class="copy-btn" id="pz-full-copy-btn" style="display:none;margin-top:10px" ',
+            'onclick="copyFullCalculation(\'pz-result\', \'pz-result-tbody\')">Копировать полный расчёт</button>'
+        ].join('');
+        container.appendChild(tab);
+    });
+})();
+</script>
+
 </body>
 </html>
