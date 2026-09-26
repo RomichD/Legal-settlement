@@ -1892,14 +1892,32 @@ const DATA_PROXY_BASE = 'https://functions.yandexcloud.net/d4eikb7q338sph0h5u66'
 let liveKeyRatesLoaded = false;
 let liveCpiLoaded = false;
 
-async function fetchLiveKeyRates() {
+function dataProxyUrl(path) {
+    const sep = path.includes('?') ? '&' : '?';
+    return DATA_PROXY_BASE + path + sep + '_ts=' + Date.now();
+}
+
+async function fetchJsonNoCache(path, timeoutMs) {
+    timeoutMs = timeoutMs || 15000;
+    const controller = new AbortController();
+    const timer = setTimeout(function () { controller.abort(); }, timeoutMs);
     try {
-        const response = await fetch(
-            DATA_PROXY_BASE + '?route=key-rate&from=2016-01-01&to=' +
-            new Date().getFullYear() + '-12-31'
-        );
+        const response = await fetch(dataProxyUrl(path), {
+            cache: 'no-store',
+            signal: controller.signal,
+            headers: { 'Accept': 'application/json' }
+        });
         if (!response.ok) throw new Error('HTTP ' + response.status);
-        const data = await response.json();
+        return await response.json();
+    } finally {
+        clearTimeout(timer);
+    }
+}
+
+async function fetchLiveKeyRates(attempt) {
+    attempt = attempt || 1;
+    try {
+        const data = await fetchJsonNoCache('?route=key-rate&from=2016-01-01&to=' + new Date().getFullYear() + '-12-31');
         if (!data.ok || !Array.isArray(data.rates) || data.rates.length === 0) {
             throw new Error('Некорректный или пустой ответ API');
         }
@@ -1919,19 +1937,22 @@ async function fetchLiveKeyRates() {
         updateDataStatusBadge('key-rate', true);
     } catch (error) {
         console.error('[key-rate] Ошибка загрузки:', error);
-        updateDataStatusBadge('key-rate', false, error.message);
+        if (attempt < 3) {
+            updateDataStatusBadge('key-rate', false, 'Повтор ' + attempt + '/3: ' + error.message);
+            setTimeout(function () { fetchLiveKeyRates(attempt + 1); }, 1500 * attempt);
+        } else {
+            updateDataStatusBadge('key-rate', false, error.message);
+        }
     }
 }
 
-async function fetchLiveCpi() {
+async function fetchLiveCpi(attempt) {
+    attempt = attempt || 1;
     try {
-        const response = await fetch(DATA_PROXY_BASE + '?route=cpi');
-        if (!response.ok) throw new Error('HTTP ' + response.status);
-        const data = await response.json();
+        const data = await fetchJsonNoCache('?route=cpi');
         if (!data.ok || !Array.isArray(data.values) || data.values.length === 0) {
             throw new Error('Некорректный или пустой ответ API');
         }
-
         let loaded = 0;
         data.values.forEach(item => {
             if (item && typeof item.month === 'string' && Number.isFinite(item.index)) {
@@ -1939,23 +1960,26 @@ async function fetchLiveCpi() {
                 loaded++;
             }
         });
-        if (loaded === 0) throw new Error('Нет корректных значений ИПЦ');
+        if (loaded === 0) throw new Error('Нет валидных записей ИПЦ в ответе API');
         liveCpiLoaded = true;
-        console.log('[cpi] Обновлено. Загружено значений: ' + loaded);
+        console.log('[cpi] Обновлено. Загружено месяцев: ' + loaded);
         updateDataStatusBadge('cpi', true);
         if (typeof renderCpiMonthInputs === 'function') renderCpiMonthInputs();
     } catch (error) {
         console.error('[cpi] Ошибка загрузки:', error);
-        updateDataStatusBadge('cpi', false, error.message);
+        if (attempt < 3) {
+            updateDataStatusBadge('cpi', false, 'Повтор ' + attempt + '/3: ' + error.message);
+            setTimeout(function () { fetchLiveCpi(attempt + 1); }, 1500 * attempt);
+        } else {
+            updateDataStatusBadge('cpi', false, error.message);
+        }
     }
 }
 
 async function fetchLiveCalendarYear(year) {
     try {
-        const response = await fetch(DATA_PROXY_BASE + '?route=calendar&year=' + year);
-        if (!response.ok) return null;
-        const data = await response.json();
-        return data && data.ok && data.rawDayCodes ? data : null;
+        const data = await fetchJsonNoCache('?route=calendar&year=' + year);
+        return (data && data.ok && data.rawDayCodes) ? data : null;
     } catch (error) {
         console.warn('[calendar] Не удалось загрузить календарь:', error);
         return null;
@@ -1978,13 +2002,18 @@ function updateDataStatusBadge(source, success, errorMessage) {
         badge.style.fontFamily = 'inherit';
         badge.style.maxWidth = '300px';
         badge.style.textAlign = 'right';
+        badge.style.cursor = 'pointer';
+        badge.addEventListener('click', function () {
+            if (source === 'key-rate') fetchLiveKeyRates();
+            if (source === 'cpi') fetchLiveCpi();
+        });
         document.body.appendChild(badge);
     }
     badge.style.background = success ? '#e8f5e9' : '#fff3e0';
     badge.style.color = success ? '#1b5e20' : '#e65100';
     const label = source === 'key-rate' ? 'Ключевая ставка' : 'ИПЦ';
-    badge.textContent = label + ': ' + (success ? 'обновлено' : 'встроенные данные');
-    badge.title = success ? 'Данные получены из API.' : ('Онлайн-обновление недоступно. Причина: ' + (errorMessage || 'неизвестная ошибка'));
+    badge.textContent = label + ': ' + (success ? 'обновлено' : 'встроенные данные (нажмите — повтор)');
+    badge.title = success ? 'Данные получены из API.' : ('Онлайн-обновление недоступно. Причина: ' + (errorMessage || 'неизвестная ошибка') + '. Нажмите, чтобы повторить.');
 }
 
 document.addEventListener('DOMContentLoaded', function () {
