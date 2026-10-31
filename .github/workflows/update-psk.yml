@@ -1,0 +1,43 @@
+name: Обновление таблицы ПСК МФО
+
+# Банк России публикует предельные значения ПСК ежеквартально
+# (середина февраля / мая / августа / ноября). Проверяем раз в неделю,
+# чтобы не пропустить публикацию, и по кнопке вручную.
+on:
+  schedule:
+    - cron: '0 6 * * 1'  # каждый понедельник в 09:00 МСК
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-psk:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Загрузка репозитория
+        uses: actions/checkout@v4
+
+      - name: Настройка Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Установка зависимостей
+        run: pip install requests openpyxl
+
+      - name: Обновление значений ПСК из данных ЦБ РФ
+        run: python3 .github/scripts/update_psk.py index.html
+
+      - name: Коммит изменений (если есть)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "Новых данных ПСК нет — коммит не требуется"
+          else
+            git commit -m "Автообновление предельных значений ПСК МФО (данные ЦБ РФ)"
+            git push
+          fi
