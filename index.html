@@ -33,8 +33,7 @@ h1 {
     flex-wrap: wrap;
     background: #e8eaf6;
     border-bottom: 2px solid #c5cae9;
-}
-.tab-btn {
+}.tab-btn {
     flex: 1 0 auto;
     padding: 12px 16px;
     background: transparent;
@@ -244,6 +243,48 @@ button,
     scrollbar-width: thin;
     scroll-snap-type: x proximity;
 }
+.tabs-wrap {
+    position: relative;
+}
+.tabs-fade {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 34px;
+    background: linear-gradient(to right, rgba(232, 234, 246, 0), #e8eaf6 85%);
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 0.2s;
+    border-bottom: 2px solid #c5cae9;
+}
+.tabs-fade.hidden { opacity: 0; }
+.tabs-scroll-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #3f51b5;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    z-index: 60;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+    font-size: 15px;
+    line-height: 1;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.92;
+    transition: opacity 0.2s;
+}
+.tabs-scroll-btn:hover { opacity: 1; }
+.tabs-scroll-btn.right { right: 8px; }
+.tabs-scroll-btn.left { left: 8px; }
+.tabs-scroll-btn.hidden { display: none; }
 .tabs::-webkit-scrollbar {
     height: 5px;
 }
@@ -360,6 +401,7 @@ pre {
 <div class="container">
     <h1>⚖️ Универсальный юридический калькулятор</h1>
 
+    <div class="tabs-wrap">
     <div class="tabs" id="tabs">
         <button class="tab-btn active" data-tab="tab1">Проценты по займу</button>
         <button class="tab-btn" data-tab="tab2">Договорная неустойка</button>
@@ -367,6 +409,11 @@ pre {
         <button class="tab-btn" data-tab="tab4">Кредитная карта</button>
         <button class="tab-btn" data-tab="tab5">Срок исковой давности</button>
         <button class="tab-btn" data-tab="tab6">Ст. 395 ГК РФ</button>
+        <button class="tab-btn" data-tab="tab14">Микрозаймы</button>
+    </div>
+    <div class="tabs-fade" id="tabs-fade"></div>
+    <button type="button" class="tabs-scroll-btn left hidden" id="tabs-scroll-left" aria-label="Прокрутить вкладки влево">‹</button>
+    <button type="button" class="tabs-scroll-btn right" id="tabs-scroll-right" aria-label="Прокрутить вкладки вправо">›</button>
     </div>
 
     <!-- ========== ВКЛАДКА 1 (НОВАЯ: ПРОЦЕНТЫ ПО ДОГОВОРУ ЗАЙМА) ========== -->
@@ -1853,6 +1900,29 @@ pre {
             Рассчитать проценты
         </button>
 
+        <details style="margin-top: 14px;">
+            <summary style="cursor:pointer;font-weight:600;color:#37474f;">Таблица ключевой ставки Банка России (обновляется автоматически)</summary>
+            <div id="gk395-ratetable-info" class="muted" style="margin-top:6px;"></div>
+            <div class="scroll-table" style="margin-top:8px;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Действует с</th>
+                            <th>Ставка</th>
+                            <th>Статус</th>
+                        </tr>
+                    </thead>
+                    <tbody id="gk395-ratetable-tbody"></tbody>
+                </table>
+            </div>
+            <div class="muted">
+                Данные подгружаются с сайта Банка России при открытии калькулятора и далее каждые 30 минут;
+                при недоступности источника используется встроенная таблица. Обновлённые значения ставки
+                автоматически применяются во всех расчётах (ст. 395 ГК РФ и ст. 809 ГК РФ) — пересчитайте
+                расчёт после обновления данных.
+            </div>
+        </details>
+
         <div class="result-wrapper">
             <div id="gk395-result" class="result-box">
                 Введите данные и нажмите «Рассчитать проценты».
@@ -1881,7 +1951,290 @@ pre {
 
         <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyFullCalculation('gk395-result', 'gk395-result-tbody')">📋 Копировать</button>
     </div>
+
+    <div id="tab14" class="tab-content">
+    <h2>Расчёт задолженности по договору микрозайма</h2>
+
+    <div class="note">
+        Расчёт учитывает ограничения Федерального закона от 21.12.2013 № 353-ФЗ
+        «О потребительском кредите (займе)»: предельную дневную ставку (ч. 23 ст. 5),
+        потолок переплаты по займам на срок до года (ч. 24 ст. 5: 2,5-кратный,
+        двукратный, полуторакратный размер, 130% или 100% от суммы займа — в зависимости
+        от даты заключения договора) и особый режим для займов без обеспечения
+        до 10 000 ₽ на срок до 15 дней (ст. 6.2). После истечения срока, на который
+        выдан микрозайм, проценты начисляются в пределах предельного значения полной
+        стоимости кредита (ПСК), установленного Банком России по категории, соответствующей
+        фактическому сроку пользования займом и его сумме (правовая позиция Верховного
+        Суда РФ — определение от 02.10.2018 № 18-КГ18-181, п. 10 Обзора судебной
+        практики, утв. Президиумом ВС РФ 24.04.2019). Расчёт носит справочный характер:
+        сверяйте результат с договором, платёжными документами и актуальными решениями
+        Банка России.
+    </div>
+
+    <div class="payment-block">
+        <label><strong>Условия договора микрозайма</strong></label>
+
+        <div class="grid">
+            <div class="form-group">
+                <label for="mfo-amount">Сумма займа, руб.</label>
+                <input id="mfo-amount" type="number" min="1" step="0.01" value="15000" onchange="mfoUpdateSpecialMode()">
+            </div>
+            <div class="form-group">
+                <label for="mfo-date">Дата заключения договора</label>
+                <input id="mfo-date" type="date" value="2026-08-01" onchange="mfoUpdateSpecialMode()">
+            </div>
+            <div class="form-group">
+                <label for="mfo-term">Срок займа, дней</label>
+                <input id="mfo-term" type="number" min="1" step="1" value="30" onchange="mfoUpdateSpecialMode()">
+            </div>
+            <div class="form-group">
+                <label for="mfo-rate">Процентная ставка по договору, % в день</label>
+                <input id="mfo-rate" type="number" min="0" step="0.01" value="0.8">
+            </div>
+            <div class="form-group">
+                <label for="mfo-calc-date">Дата расчёта (по состоянию на)</label>
+                <input id="mfo-calc-date" type="date" value="2026-10-31">
+            </div>
+            <div class="form-group">
+                <label for="mfo-secured">Обеспечение по договору</label>
+                <select id="mfo-secured" onchange="mfoUpdateSpecialMode()">
+                    <option value="unsecured">Без обеспечения</option>
+                    <option value="secured">С обеспечением</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="payment-block">
+        <label><strong>Ограничения и метод расчёта</strong></label>
+
+        <div class="grid">
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="mfo-penalty-enabled" style="width:auto;margin-right:6px;" checked>
+                    Начислять неустойку (пени) за просрочку
+                </label>
+                <input id="mfo-penalty-rate" type="number" min="0" step="0.01" value="0.1">
+                <div class="muted">
+                    Ставка неустойки, % в день от просроченного основного долга.
+                    Неустойка входит в потолок переплаты (ч. 24 ст. 5 ФЗ № 353-ФЗ).
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="mfo-postterm-method">Ставка после истечения срока займа</label>
+                <select id="mfo-postterm-method">
+                    <option value="psk">Предельная ПСК (позиция ВС РФ)</option>
+                    <option value="contract">Договорная ставка</option>
+                </select>
+                <div class="muted">
+                    По позиции ВС РФ повышенные договорные проценты начисляются только на срок
+                    действия договора; после его истечения применяется ставка в пределах предельного
+                    значения ПСК по категории займа.
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="mfo-postterm-rate">Своя ставка после срока, % годовых (необязательно)</label>
+                <input id="mfo-postterm-rate" type="number" min="0" step="0.01" placeholder="напр. 22.5">
+                <div class="muted">
+                    Заполняется для договоров, заключённых до 01.07.2014 (до введения ПСК-лимитов), —
+                    средневзвешенная процентная ставка Банка России по кредитам физическим лицам,
+                    действовавшая на дату заключения договора.
+                </div>
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="mfo-special62" style="width:auto;margin-right:6px;" onchange="mfoUpdateSpecialNote()">
+                    Особый режим ст. 6.2 ФЗ № 353-ФЗ (до 10 000 ₽, до 15 дней, без обеспечения)
+                </label>
+                <div class="muted" id="mfo-special-note">
+                    Отмечается автоматически, если сумма и срок займа подходят под ст. 6.2. Убедитесь,
+                    что условия займа ей соответствуют (в том числе что запрет начисления процентов
+                    с указанием максимальной фиксируемой суммы платежей указан на первой странице
+                    договора): тогда проценты не начисляются, фиксируемая сумма платежей ограничена
+                    15% от суммы займа (30% — для договоров, заключённых до 01.07.2023), неустойка — 0,1% в день.
+                </div>
+            </div>
+        </div>
+
+        <div class="inline-group">
+            <a class="btn" style="text-decoration:none;text-align:center;" href="https://www.cbr.ru/statistics/bank_sector/psk/" target="_blank" rel="noopener">🏦 Проверить предельные значения ПСК на сайте ЦБ</a>
+            <a class="btn" style="text-decoration:none;text-align:center;background:#37474f;" href="https://www.consultant.ru/document/cons_doc_LAW_155986/" target="_blank" rel="noopener">🔎 Текст ФЗ № 353-ФЗ</a>
+        </div>
+    </div>
+
+    <div class="payment-block">
+        <label><strong>Платежи заёмщика</strong></label>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Дата платежа</th>
+                        <th>Сумма, руб.</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="mfo-payment-tbody"></tbody>
+            </table>
+        </div>
+
+        <div class="inline-group" style="margin-top:10px;">
+            <button
+                type="button"
+                class="add-row-btn"
+                onclick="addMfoPaymentRow()"
+            >
+                ➕ Добавить платёж
+            </button>
+
+            <button
+                type="button"
+                class="add-row-btn"
+                style="background: #6b7280; margin-left: 8px;"
+                onclick="clearMfoPayments()"
+            >
+                🗑 Очистить платежи
+            </button>
+        </div>
+        <div class="muted">
+            Платежи засчитываются в порядке ч. 20 ст. 5 ФЗ № 353-ФЗ и ст. 319 ГК РФ:
+            сначала проценты, затем основной долг, затем неустойка.
+        </div>
+    </div>
+
+    <button type="button" class="btn" onclick="calcMicroloan()">
+        Рассчитать задолженность по микрозайму
+    </button>
+
+    <div class="result-wrapper">
+        <div id="mfo-result" class="result-box">
+            Введите данные и нажмите «Рассчитать задолженность по микрозайму».
+        </div>
+
+        <button class="copy-btn" onclick="copyResult('mfo-result')">
+            📋 Копировать результат
+        </button>
+    </div>
+
+    <div class="scroll-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Период</th>
+                    <th>Дней</th>
+                    <th>Ставка</th>
+                    <th>Проценты</th>
+                    <th>Неустойка</th>
+                    <th>Остаток основного долга</th>
+                </tr>
+            </thead>
+
+            <tbody id="mfo-result-tbody"></tbody>
+        </table>
+    </div>
+
+    <button type="button" class="copy-btn" style="margin-top: 10px;" onclick="copyFullCalculation('mfo-result', 'mfo-result-tbody')">📋 Копировать</button>
+
+    <details style="margin-top:18px;">
+        <summary style="cursor:pointer;font-weight:600;color:#37474f;">Справочно: ограничения в зависимости от даты заключения договора</summary>
+        <div class="scroll-table" style="margin-top:10px;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Дата заключения договора</th>
+                        <th>Предельная дневная ставка (ч. 23 ст. 5)</th>
+                        <th>Потолок переплаты, займы до 1 года (ч. 24 ст. 5)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>до 28.01.2019</td><td>не ограничена</td><td>не применялся</td></tr>
+                    <tr><td>28.01.2019 — 30.06.2019</td><td>1,5% в день</td><td>2,5-кратный размер суммы займа</td></tr>
+                    <tr><td>01.07.2019 — 31.12.2019</td><td>1,5% в день</td><td>двукратный размер суммы займа</td></tr>
+                    <tr><td>01.01.2020 — 30.06.2023</td><td>1% в день</td><td>полуторакратный размер (150%)</td></tr>
+                    <tr><td>01.07.2023 — 31.03.2026</td><td>0,8% в день</td><td>130% от суммы займа</td></tr>
+                    <tr><td>с 01.04.2026</td><td>0,8% в день</td><td>100% от суммы займа</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="muted" style="margin-top:8px;">
+            Потолок переплаты ограничивает сумму процентов, неустоек (штрафов, пеней) и иных
+            платежей по займу на срок до года: после его достижения начисление прекращается
+            (ч. 24 ст. 5 ФЗ № 353-ФЗ). Применяется тот предел, который действовал на дату
+            заключения договора (законы № 554-ФЗ, № 613-ФЗ, № 545-ФЗ обратной силы не имеют).
+        </div>
+    </details>
+
+    <details style="margin-top:10px;">
+        <summary id="mfo-psk-summary" style="cursor:pointer;font-weight:600;color:#37474f;">Справочно: предельные значения ПСК для МФО (решения Банка России, IV квартал 2026 г.)</summary>
+        <div class="scroll-table" style="margin-top:10px;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Категория займа</th>
+                        <th>Предельная ПСК, % годовых</th>
+                    </tr>
+                </thead>
+                <tbody id="mfo-psk-tbody">
+                    <tr><td>Без обеспечения, до 30 дней, до 30 000 ₽</td><td>292</td></tr>
+                    <tr><td>Без обеспечения, до 30 дней, свыше 30 000 ₽</td><td>270,128</td></tr>
+                    <tr><td>Без обеспечения, 31–60 дней, до 30 000 ₽</td><td>292</td></tr>
+                    <tr><td>Без обеспечения, 31–60 дней, свыше 30 000 ₽</td><td>276,079</td></tr>
+                    <tr><td>Без обеспечения, 61–180 дней, до 30 000 ₽</td><td>292</td></tr>
+                    <tr><td>Без обеспечения, 61–180 дней, до 100 000 ₽</td><td>292</td></tr>
+                    <tr><td>Без обеспечения, 61–180 дней, свыше 100 000 ₽</td><td>67,152</td></tr>
+                    <tr><td>Без обеспечения, 181–365 дней, до 100 000 ₽</td><td>161,253</td></tr>
+                    <tr><td>Без обеспечения, 181–365 дней, свыше 100 000 ₽</td><td>46,81</td></tr>
+                    <tr><td>Без обеспечения, свыше 365 дней, до 100 000 ₽</td><td>114,437</td></tr>
+                    <tr><td>Без обеспечения, свыше 365 дней, свыше 100 000 ₽</td><td>84,223</td></tr>
+                    <tr><td>С иным обеспечением (кроме залога), 181–365 дней</td><td>93,39</td></tr>
+                    <tr><td>С иным обеспечением (кроме залога), свыше 365 дней</td><td>88,059</td></tr></tbody>
+            </table>
+        </div>
+        <div class="muted" style="margin-top:8px;">
+            Значения ПСК устанавливаются Банком России ежеквартально (ч. 11 ст. 6 ФЗ № 353-ФЗ)
+            и применяются на дату заключения договора. После истечения срока займа применяется
+            категория, соответствующая фактическому сроку пользования. Общий предел для всех
+            категорий — 292% годовых. Актуальные значения проверяйте на сайте ЦБ РФ.
+        </div>
+    </details>
+
+    <details style="margin-top:10px;">
+        <summary style="cursor:pointer;font-weight:600;color:#37474f;">Когда ограничения не применяются</summary>
+        <div class="note" style="margin-top:10px;">
+            <ul style="margin-left:18px;line-height:1.55;">
+                <li>
+                    <b>Договоры, заключённые до 28.01.2019</b> — ограничения дневной ставки и
+                    потолок переплаты не применяются (ФЗ № 554-ФЗ обратной силы не имеет).
+                    После истечения срока проценты исчисляются в пределах предельного значения
+                    ПСК, а для договоров до 01.07.2014 — по средневзвешенной процентной ставке
+                    Банка России по кредитам физическим лицам (п. 9 Обзора судебной практики,
+                    утв. Президиумом ВС РФ 27.09.2017).
+                </li>
+                <li>
+                    <b>Займы без обеспечения до 10 000 ₽ на срок до 15 дней</b> — при соблюдении
+                    условий ст. 6.2 ФЗ № 353-ФЗ не применяются предельная дневная ставка
+                    (ч. 23 ст. 5) и ограничение ПСК (ч. 11 ст. 6): действует лимит фиксируемой
+                    суммы платежей 15% от суммы займа (30% для договоров до 01.07.2023)
+                    и неустойка 0,1% в день от просроченной задолженности.
+                </li>
+                <li>
+                    <b>Займы на срок свыше 365 дней</b> — потолок переплаты (ч. 24 ст. 5)
+                    не применяется; действуют только предельная дневная ставка и ПСК.
+                </li>
+                <li>
+                    <b>Решения Банка России о неприменении ПСК</b> — Банк России периодически
+                    освобождает отдельные категории кредиторов и займов от ограничения ПСК
+                    (например, в I квартале 2025 г. — по большинству категорий для банков, КПК
+                    и ломбардов; в 2026 г. — по займам МФО, обеспеченным ипотекой). Для таких
+                    займов сверяйтесь с актуальными решениями Совета директоров Банка России.
+                </li>
+            </ul>
+        </div>
+    </details>
 </div>
+</div>
+
+
 
 <script>
 
@@ -1891,6 +2244,7 @@ pre {
 const DATA_PROXY_BASE = 'https://functions.yandexcloud.net/d4eikb7q338sph0h5u66';
 let liveKeyRatesLoaded = false;
 let liveCpiLoaded = false;
+let livePskLoaded = false;
 
 async function fetchLiveKeyRates() {
     try {
@@ -1950,6 +2304,29 @@ async function fetchLiveCpi() {
     }
 }
 
+// Онлайн-обновление предельных значений ПСК для микрозаймов.
+// Маршрут ?route=psk на прокси-сервере необязателен: если он не поддерживается,
+// калькулятор молча использует встроенную таблицу (без предупреждения пользователю).
+async function fetchLivePsk() {
+    try {
+        const response = await fetch(DATA_PROXY_BASE + '?route=psk');
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        const data = await response.json();
+        if (!data || !data.ok || !Array.isArray(data.unsecured) || data.unsecured.length === 0) {
+            throw new Error('Некорректный или пустой ответ API');
+        }
+        if (typeof window.applyLivePsk === 'function') {
+            window.applyLivePsk(data);
+            livePskLoaded = true;
+            console.log('[psk] Обновлено. Квартал: ' + (data.quarter || 'неизвестно'));
+            updateDataStatusBadge('psk', true);
+        }
+    } catch (error) {
+        // Тихий фолбэк на встроенную таблицу ПСК — маршрут прокси может отсутствовать.
+        console.warn('[psk] Онлайн-обновление недоступно, используется встроенная таблица:', error.message);
+    }
+}
+
 async function fetchLiveCalendarYear(year) {
     try {
         const response = await fetch(DATA_PROXY_BASE + '?route=calendar&year=' + year);
@@ -1964,32 +2341,49 @@ async function fetchLiveCalendarYear(year) {
 
 function updateDataStatusBadge(source, success, errorMessage) {
     const badgeId = 'data-status-' + source;
+    let holder = document.getElementById('data-status-badges');
+    if (!holder) {
+        holder = document.createElement('div');
+        holder.id = 'data-status-badges';
+        holder.style.display = 'flex';
+        holder.style.flexWrap = 'wrap';
+        holder.style.justifyContent = 'flex-end';
+        holder.style.gap = '6px';
+        holder.style.padding = '8px 16px 0';
+        var anchor = document.querySelector('.container .tabs-wrap');
+        if (anchor && anchor.parentNode) {
+            anchor.parentNode.insertBefore(holder, anchor);
+        } else {
+            document.body.appendChild(holder);
+        }
+    }
     let badge = document.getElementById(badgeId);
     if (!badge) {
         badge = document.createElement('div');
         badge.id = badgeId;
-        badge.style.position = 'fixed';
-        badge.style.bottom = (8 + (source === 'cpi' ? 28 : 0)) + 'px';
-        badge.style.right = '8px';
         badge.style.fontSize = '11px';
+        badge.style.lineHeight = '1.5';
         badge.style.padding = '4px 8px';
         badge.style.borderRadius = '4px';
-        badge.style.zIndex = '9999';
         badge.style.fontFamily = 'inherit';
-        badge.style.maxWidth = '300px';
+        badge.style.maxWidth = '340px';
         badge.style.textAlign = 'right';
-        document.body.appendChild(badge);
+        badge.style.whiteSpace = 'nowrap';
+        badge.style.pointerEvents = 'auto';
+        holder.appendChild(badge);
     }
     badge.style.background = success ? '#e8f5e9' : '#fff3e0';
     badge.style.color = success ? '#1b5e20' : '#e65100';
-    const label = source === 'key-rate' ? 'Ключевая ставка' : 'ИПЦ';
+    const label = source === 'key-rate' ? 'Ключевая ставка'
+        : (source === 'psk' ? 'ПСК МФО' : 'ИПЦ');
     badge.textContent = label + ': ' + (success ? 'обновлено' : 'встроенные данные');
     badge.title = success ? 'Данные получены из API.' : ('Онлайн-обновление недоступно. Причина: ' + (errorMessage || 'неизвестная ошибка'));
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-    fetchLiveKeyRates();
-    fetchLiveCpi();
+    // Онлайн-обновление ключевой ставки и ИПЦ выполняет единый блок
+    // «Автообновление данных ЦБ РФ и Росстата» (см. ниже по файлу),
+    // поэтому здесь повторный запрос не делается.
 });
 
 // ============================================================
@@ -8398,7 +8792,7 @@ function renderCpiMonthInputs() {
     months.forEach(({year, month}) => {
         const key = `${year}-${String(month).padStart(2,'0')}`;
         const value = getCpiValue(year, month);
-        const source = cpiOverrides[key] !== undefined ? 'автозагрузка' : (CPITABLE[key] !== undefined ? 'встроенная таблица' : 'нет данных — заполните вручную');
+        const source = cpiOverrides[key] !== undefined ? 'ручной импорт' : (CPITABLE[key] !== undefined ? (typeof liveCpiLoaded !== 'undefined' && liveCpiLoaded ? 'онлайн (обновлено)' : 'встроенная таблица') : 'нет данных — заполните вручную');
         html += `<tr>
             <td style="padding:6px;border-bottom:1px solid #eceff1;">${monthNames[month-1]} ${year}</td>
             <td style="padding:6px;border-bottom:1px solid #eceff1;">
@@ -8923,6 +9317,7 @@ function calculateAlimony() {
             liveKeyRatesLoaded = true;
             updateDataStatusBadge('key-rate', true);
             enhanceBadge('key-rate', true, data.source || 'live');
+            if (typeof window.renderGk395RateTable === 'function') window.renderGk395RateTable();
             console.log('[key-rate] Обновлено. Записей: ' + GK395KEYRATES.length + ', источник: ' + (data.source || 'live'));
         } catch (error) {
             console.error('[key-rate] Ошибка загрузки:', error);
@@ -8986,6 +9381,666 @@ function calculateAlimony() {
 })();
 </script>
 
+
+<script>
+// ============================================================
+// ВКЛАДКА 14: ЗАДОЛЖЕННОСТЬ ПО ДОГОВОРАМ МИКРОЗАЙМА
+// ============================================================
+
+// Ограничения ФЗ № 353-ФЗ в зависимости от даты заключения договора.
+// dailyCap — предельная дневная ставка (ч. 23 ст. 5, ФЗ № 554-ФЗ / № 613-ФЗ);
+// ceiling — потолок переплаты в % от суммы займа для займов на срок до года (ч. 24 ст. 5, ФЗ № 545-ФЗ).
+const MFO_LIMITS = [
+    { from: '2019-01-28', to: '2019-06-30', dailyCap: 1.5, ceiling: 250 },
+    { from: '2019-07-01', to: '2019-12-31', dailyCap: 1.5, ceiling: 200 },
+    { from: '2020-01-01', to: '2023-06-30', dailyCap: 1.0, ceiling: 150 },
+    { from: '2023-07-01', to: '2026-03-31', dailyCap: 0.8, ceiling: 130 },
+    { from: '2026-04-01', to: null, dailyCap: 0.8, ceiling: 100 }
+];
+
+// Квартал, к которому относятся встроенные значения ПСК (обновляется скриптом
+// .github/scripts/update_psk.py и онлайн — через window.applyLivePsk).
+var MFO_PSK_QUARTER = 'IV квартал 2026';
+
+// Предельные значения ПСК для МФО — займы без обеспечения (решения Банка России, IV квартал 2026 г.).
+// Применяются после истечения срока займа по категории, соответствующей фактическому сроку
+// пользования (позиция ВС РФ: определение от 02.10.2018 № 18-КГ18-181).
+const MFO_PSK_UNSECURED = [
+    { maxAmount: 30000, maxDays: 30, psk: 292 },
+    { maxAmount: null, maxDays: 30, psk: 270.128 },
+    { maxAmount: 30000, maxDays: 60, psk: 292 },
+    { maxAmount: null, maxDays: 60, psk: 276.079 },
+    { maxAmount: 30000, maxDays: 180, psk: 292 },
+    { maxAmount: 100000, maxDays: 180, psk: 292 },
+    { maxAmount: null, maxDays: 180, psk: 67.152 },
+    { maxAmount: 100000, maxDays: 365, psk: 161.253 },
+    { maxAmount: null, maxDays: 365, psk: 46.81 },
+    { maxAmount: 100000, maxDays: Infinity, psk: 114.437 },
+    { maxAmount: null, maxDays: Infinity, psk: 84.223 }
+];
+
+// Предельные значения ПСК для МФО — займы с иным обеспечением (кроме залога недвижимости)
+const MFO_PSK_SECURED = [
+    { maxDays: 365, psk: 93.39 },
+    { maxDays: Infinity, psk: 88.059 }
+];
+
+function mfoRound(v) { return Math.round((v + Number.EPSILON) * 100) / 100; }
+
+function mfoFmt(v) {
+    return mfoRound(v).toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function mfoPct(v) {
+    const s = String(Number(Number(v).toFixed(3)));
+    return s.replace('.', ',');
+}
+
+function mfoParseDate(value) {
+    if (!value) return null;
+    const parts = value.split('-');
+    if (parts.length !== 3) return null;
+    const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+    return isNaN(d) ? null : d;
+}
+
+function mfoAddDays(date, days) {
+    const d = new Date(date);
+    d.setDate(d.getDate() + days);
+    return d;
+}
+
+function mfoIsoKey(date) {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+function mfoFormatDate(date) {
+    return date.toLocaleDateString('ru-RU');
+}
+
+function mfoGetLimits(contractDate) {
+    const iso = mfoIsoKey(contractDate);
+    for (const lim of MFO_LIMITS) {
+        if (iso >= lim.from && (lim.to === null || iso <= lim.to)) return lim;
+    }
+    return null; // договор заключён до 28.01.2019 — ограничения не применяются
+}
+
+function mfoGetPsk(days, amount, secured) {
+    const table = secured ? MFO_PSK_SECURED : MFO_PSK_UNSECURED;
+    for (const cat of table) {
+        if (days <= cat.maxDays && (cat.maxAmount === null || amount <= cat.maxAmount)) {
+            return cat.psk;
+        }
+    }
+    return 292;
+}
+
+// Перерисовка справочной таблицы ПСК в разделе (используется встроенными данными
+// и при онлайн-обновлении через window.applyLivePsk).
+function renderMfoPskRefTable() {
+    const tbody = document.getElementById('mfo-psk-tbody');
+    if (tbody) {
+        let html = '';
+        for (const cat of MFO_PSK_UNSECURED) {
+            const amount = cat.maxAmount === null
+                ? (cat.maxDays <= 60 ? 'свыше 30 000 ₽' : 'свыше 100 000 ₽')
+                : (cat.maxAmount === 100000 ? 'до 100 000 ₽' : 'до 30 000 ₽');
+            html += '<tr><td>Без обеспечения, ' + mfoPskCategoryLabel(cat.maxDays) + ', ' + amount +
+                '</td><td>' + mfoPct(cat.psk) + '</td></tr>';
+        }
+        for (const cat of MFO_PSK_SECURED) {
+            html += '<tr><td>С иным обеспечением (кроме залога), ' +
+                mfoPskCategoryLabel(cat.maxDays) + '</td><td>' + mfoPct(cat.psk) + '</td></tr>';
+        }
+        tbody.innerHTML = html;
+    }
+    const summary = document.getElementById('mfo-psk-summary');
+    if (summary && MFO_PSK_QUARTER) {
+        summary.textContent = 'Справочно: предельные значения ПСК для МФО (решения Банка России, ' +
+            MFO_PSK_QUARTER + ' г.)';
+    }
+}
+
+function mfoPskCategoryLabel(maxDays) {
+    if (maxDays === 30) return 'до 30 дней';
+    if (maxDays === 60) return '31–60 дней';
+    if (maxDays === 180) return '61–180 дней';
+    if (maxDays === 365) return '181–365 дней';
+    return 'свыше 365 дней';
+}
+
+// Онлайн-обновление ПСК: вызывается из fetchLivePsk() при успешной загрузке.
+// data = { quarter: 'IV квартал 2026', updated: '2026-08-14',
+//          unsecured: [{maxDays, maxAmount, psk}...], secured: [...] }
+window.applyLivePsk = function (data) {
+    if (!data || typeof data !== 'object') return;
+    // JSON не передаёт Infinity — нормализуем строку 'Infinity' и валидируем записи
+    const norm = function (c) {
+        return {
+            maxDays: c && c.maxDays === 'Infinity' ? Infinity : (c ? c.maxDays : undefined),
+            maxAmount: c && c.maxAmount === undefined ? null : (c ? c.maxAmount : undefined),
+            psk: c ? c.psk : undefined
+        };
+    };
+    const isValid = function (c) {
+        return Number.isFinite(c.psk) &&
+            (Number.isFinite(c.maxDays) || c.maxDays === Infinity);
+    };
+    if (Array.isArray(data.unsecured) && data.unsecured.length) {
+        const valid = data.unsecured.map(norm).filter(isValid);
+        if (valid.length) {
+            MFO_PSK_UNSECURED.splice(0, MFO_PSK_UNSECURED.length, ...valid);
+        }
+    }
+    if (Array.isArray(data.secured) && data.secured.length) {
+        const valid = data.secured.map(norm).filter(isValid);
+        if (valid.length) {
+            MFO_PSK_SECURED.splice(0, MFO_PSK_SECURED.length, ...valid);
+        }
+    }
+    if (data.quarter && typeof data.quarter === 'string') {
+        MFO_PSK_QUARTER = data.quarter;
+    }
+    renderMfoPskRefTable();
+};
+
+function addMfoPaymentRow(date, amount) {
+    const tbody = document.getElementById('mfo-payment-tbody');
+    if (!tbody) return;
+    const row = document.createElement('tr');
+    row.innerHTML =
+        '<td><input type="date" class="mfo-pay-date" value="' + (date || '') + '"></td>' +
+        '<td><input type="number" class="mfo-pay-sum" min="0" step="0.01" value="' + (amount !== undefined ? amount : '') + '" placeholder="0.00"></td>' +
+        '<td><button type="button" class="danger-btn" onclick="removeMfoPaymentRow(this)">✕</button></td>';
+    tbody.appendChild(row);
+}
+
+function removeMfoPaymentRow(btn) {
+    const row = btn.closest('tr');
+    if (row) row.remove();
+}
+
+function clearMfoPayments() {
+    const tbody = document.getElementById('mfo-payment-tbody');
+    if (tbody) tbody.innerHTML = '';
+}
+
+function mfoGetPayments() {
+    const tbody = document.getElementById('mfo-payment-tbody');
+    if (!tbody) return [];
+    const result = [];
+    tbody.querySelectorAll('tr').forEach(row => {
+        const dateInput = row.querySelector('.mfo-pay-date');
+        const sumInput = row.querySelector('.mfo-pay-sum');
+        if (!dateInput || !sumInput) return;
+        const date = mfoParseDate(dateInput.value);
+        const amount = parseFloat(String(sumInput.value).replace(',', '.'));
+        if (date && Number.isFinite(amount) && amount > 0) {
+            result.push({ date, amount: mfoRound(amount) });
+        }
+    });
+    return result;
+}
+
+function mfoUpdateSpecialMode() {
+    const amount = parseFloat(document.getElementById('mfo-amount')?.value);
+    const term = parseInt(document.getElementById('mfo-term')?.value, 10);
+    const secured = document.getElementById('mfo-secured')?.value === 'secured';
+    const fits = !secured && Number.isFinite(amount) && amount > 0 && amount <= 10000 &&
+        Number.isFinite(term) && term > 0 && term <= 15;
+    const cb = document.getElementById('mfo-special62');
+    if (cb) cb.checked = fits;
+    mfoUpdateSpecialNote();
+}
+
+function mfoUpdateSpecialNote() {
+    const note = document.getElementById('mfo-special-note');
+    const cb = document.getElementById('mfo-special62');
+    if (note && cb) {
+        note.style.color = cb.checked ? '#b71c1c' : '';
+        note.style.fontWeight = cb.checked ? '600' : '';
+    }
+}
+
+// ===== Ядро расчёта =====
+function computeMicroloan(p) {
+    const DAYMS = 86400000;
+    const start = p.contractDate;
+    const termEnd = mfoAddDays(start, p.termDays); // день возврата займа
+    const end = p.calcDate;
+
+    const limits = mfoGetLimits(start);
+    const dailyCap = limits ? limits.dailyCap : null;
+    const ceilingPct = (p.termDays <= 365 && limits) ? limits.ceiling : null;
+    const ceilingAmount = ceilingPct !== null ? mfoRound(p.amount * ceilingPct / 100) : null;
+
+    const contractRate = dailyCap !== null ? Math.min(p.contractRate, dailyCap) : p.contractRate;
+
+    // Особый режим ст. 6.2 (займы «до зарплаты»)
+    const special = p.special62 && !p.secured && p.amount <= 10000 && p.termDays <= 15;
+    const specialCapPct = special ? (start >= new Date(2023, 6, 1) ? 15 : 30) : 0;
+    const specialCap = special ? mfoRound(p.amount * specialCapPct / 100) : 0;
+
+    let principal = p.amount;
+    let unpaidInterest = 0;
+    let unpaidPenalty = 0;
+    let specialAccrued = 0;
+    let specialPaid = 0;
+    let interestTotal = 0, interestPaid = 0;
+    let penaltyTotal = 0, penaltyPaid = 0;
+    let interestInTerm = 0, interestPostTerm = 0;
+    let accruedTotal = 0; // проценты + неустойка (+ фикс. платежи ст. 6.2) — для потолка переплаты
+    let stoppedOn = null;
+    const warnings = [];
+
+    if (p.termDays > 365 && limits) {
+        warnings.push('Срок займа превышает 365 дней — потолок переплаты (ч. 24 ст. 5 ФЗ № 353-ФЗ) не применяется; действует только предельная дневная ставка.');
+    }
+    if (!limits) {
+        warnings.push('Договор заключён до 28.01.2019: ограничения дневной ставки (ч. 23 ст. 5) и потолок переплаты (ч. 24 ст. 5) не применяются (ФЗ № 554-ФЗ обратной силы не имеет).');
+        if (start < new Date(2014, 6, 1) && !p.postTermRate) {
+            warnings.push('Договор заключён до 01.07.2014 — предельные значения ПСК не устанавливались; укажите средневзвешенную ставку Банка России по кредитам физическим лицам в поле «Своя ставка после срока».');
+        }
+    }
+
+    const payments = p.payments.slice().sort((a, b) => a.date - b.date);
+    const paysByDay = new Map();
+    payments.forEach(x => {
+        if (x.date < start || x.date > end) {
+            warnings.push('Платёж от ' + mfoFormatDate(x.date) + ' вне периода расчёта — не учтён.');
+            return;
+        }
+        const k = mfoIsoKey(x.date);
+        if (!paysByDay.has(k)) paysByDay.set(k, []);
+        paysByDay.get(k).push(x);
+    });
+
+    const rows = [];
+    let cur = null;
+    const openRow = (from, rate, basis) => {
+        cur = { type: 'seg', from, to: from, days: 0, rate, basis, interest: 0, penalty: 0, special: 0, principalStart: principal, principalEnd: principal };
+        rows.push(cur);
+    };
+
+    for (let d = new Date(start); d <= end; d = mfoAddDays(d, 1)) {
+        const dayStart = new Date(d);
+
+        // 1) Платежи этого дня (засчитываются до начислений за день)
+        const paysToday = paysByDay.get(mfoIsoKey(dayStart)) || [];
+        if (paysToday.length) {
+            for (const pay of paysToday) {
+                let rest = pay.amount;
+                const alloc = { toInterest: 0, toSpecial: 0, toPrincipal: 0, toPenalty: 0 };
+                if (special) {
+                    const specialDebt = mfoRound(specialAccrued - specialPaid);
+                    alloc.toSpecial = Math.min(rest, specialDebt); rest -= alloc.toSpecial; specialPaid = mfoRound(specialPaid + alloc.toSpecial);
+                } else {
+                    alloc.toInterest = Math.min(rest, unpaidInterest); rest -= alloc.toInterest;
+                    unpaidInterest = mfoRound(unpaidInterest - alloc.toInterest);
+                    interestPaid = mfoRound(interestPaid + alloc.toInterest);
+                }
+                alloc.toPrincipal = Math.min(rest, principal); rest -= alloc.toPrincipal;
+                principal = mfoRound(principal - alloc.toPrincipal);
+                alloc.toPenalty = Math.min(rest, unpaidPenalty); rest -= alloc.toPenalty;
+                unpaidPenalty = mfoRound(unpaidPenalty - alloc.toPenalty);
+                penaltyPaid = mfoRound(penaltyPaid + alloc.toPenalty);
+                rows.push({
+                    type: 'pay', from: dayStart, to: dayStart, days: 0,
+                    rate: null, basis: 'платёж',
+                    pay: mfoFmt(pay.amount), alloc, principalEnd: principal, over: mfoRound(rest)
+                });
+                cur = null;
+            }
+        }
+
+        // 2) Начисления за день (день выдачи не учитывается)
+        if (mfoIsoKey(dayStart) === mfoIsoKey(start) || stoppedOn) continue;
+
+        const elapsed = Math.round((dayStart - start) / DAYMS);
+        const inTerm = dayStart <= termEnd;
+
+        if (special) {
+            // ст. 6.2: фиксируемая сумма платежей, проценты не начисляются
+            if (elapsed <= 15 && specialAccrued < specialCap) {
+                const add = Math.min(mfoRound(p.amount * specialCapPct / 100 / 15), mfoRound(specialCap - specialAccrued));
+                if (add > 0) {
+                    specialAccrued = mfoRound(specialAccrued + add);
+                    accruedTotal = mfoRound(accruedTotal + add);
+                    if (!cur) openRow(dayStart, null, 'фикс. платёж ст. 6.2 (' + specialCapPct + '% / 15 дн.)');
+                    cur.special = mfoRound(cur.special + add);
+                    cur.to = dayStart; cur.days += 1; cur.principalEnd = principal;
+                }
+            }
+            // неустойка 0,1% в день после достижения максимума фиксируемых платежей и просрочки
+            if (dayStart > termEnd && specialAccrued >= specialCap && principal > 0) {
+                const pen = mfoRound(principal * 0.001);
+                if (!cur || cur.basis.indexOf('неустойка 0,1%') === -1) openRow(dayStart, 0.1, 'неустойка 0,1% в день (ст. 6.2)');
+                cur.penalty = mfoRound(cur.penalty + pen);
+                cur.to = dayStart; cur.days += 1; cur.principalEnd = principal;
+                penaltyTotal = mfoRound(penaltyTotal + pen);
+                unpaidPenalty = mfoRound(unpaidPenalty + pen);
+            }
+            continue;
+        }
+
+        // обычный режим
+        let rate = contractRate;
+        let basis = 'по договору';
+        if (inTerm) {
+            if (dailyCap !== null && p.contractRate > dailyCap) {
+                basis = 'договор, огранич. ч. 23 ст. 5';
+            }
+        } else {
+            if (p.postTermRate && p.postTermRate > 0) {
+                rate = p.postTermRate / 365;
+                basis = 'указано вручную: ' + mfoPct(p.postTermRate) + '% год.';
+            } else if (p.method === 'psk') {
+                const psk = mfoGetPsk(elapsed, p.amount, p.secured);
+                rate = psk / 365;
+                if (dailyCap !== null) rate = Math.min(rate, dailyCap);
+                basis = 'ПСК ' + mfoPct(psk) + '% год. (по факт. сроку)';
+            } else {
+                basis = 'договор (после срока)';
+            }
+        }
+
+        let dayInterest = principal > 0 ? mfoRound(principal * rate / 100) : 0;
+        let dayPenalty = 0;
+        if (!inTerm && p.penaltyEnabled && p.penaltyRate > 0 && principal > 0) {
+            dayPenalty = mfoRound(principal * p.penaltyRate / 100);
+        }
+
+        // потолок переплаты (ч. 24 ст. 5)
+        if (ceilingAmount !== null && accruedTotal + dayInterest + dayPenalty > ceilingAmount) {
+            const rest = mfoRound(ceilingAmount - accruedTotal);
+            dayInterest = Math.min(dayInterest, rest);
+            dayPenalty = Math.min(dayPenalty, mfoRound(rest - dayInterest));
+            stoppedOn = new Date(dayStart);
+        }
+
+        if (dayInterest > 0 || dayPenalty > 0) {
+            const basisKey = basis + '|' + rate;
+            if (!cur || (cur.basis + '|' + cur.rate) !== basisKey) {
+                openRow(dayStart, rate, basis);
+            }
+            cur.interest = mfoRound(cur.interest + dayInterest);
+            cur.penalty = mfoRound(cur.penalty + dayPenalty);
+            cur.to = dayStart; cur.days += 1; cur.principalEnd = principal;
+        }
+
+        accruedTotal = mfoRound(accruedTotal + dayInterest + dayPenalty);
+        unpaidInterest = mfoRound(unpaidInterest + dayInterest);
+        interestTotal = mfoRound(interestTotal + dayInterest);
+        if (inTerm) interestInTerm = mfoRound(interestInTerm + dayInterest);
+        else interestPostTerm = mfoRound(interestPostTerm + dayInterest);
+        penaltyTotal = mfoRound(penaltyTotal + dayPenalty);
+        unpaidPenalty = mfoRound(unpaidPenalty + dayPenalty);
+    }
+
+    const specialUnpaid = mfoRound(specialAccrued - specialPaid);
+    const totalDue = mfoRound(principal + unpaidInterest + unpaidPenalty + specialUnpaid);
+
+    return {
+        limits, dailyCap, ceilingPct, ceilingAmount, contractRate,
+        special, specialCapPct, specialCap, specialAccrued, specialUnpaid,
+        principal, unpaidInterest, unpaidPenalty,
+        interestTotal, interestInTerm, interestPostTerm, interestPaid,
+        penaltyTotal, penaltyPaid,
+        termEnd, stoppedOn, rows, warnings,
+        paymentsCount: payments.length,
+        totalDue
+    };
+}
+
+function calcMicroloan() {
+    const resultDiv = document.getElementById('mfo-result');
+    const resultBody = document.getElementById('mfo-result-tbody');
+    if (!resultDiv || !resultBody) return;
+
+    resultDiv.className = 'result-box';
+    resultDiv.innerHTML = 'Расчёт...';
+    resultBody.innerHTML = '';
+
+    const amount = parseFloat(String((document.getElementById('mfo-amount') || {}).value || '').replace(',', '.'));
+    const contractDate = mfoParseDate((document.getElementById('mfo-date') || {}).value);
+    const termDays = parseInt((document.getElementById('mfo-term') || {}).value, 10);
+    const contractRate = parseFloat(String((document.getElementById('mfo-rate') || {}).value || '').replace(',', '.'));
+    const calcDate = mfoParseDate((document.getElementById('mfo-calc-date') || {}).value);
+    const secured = (document.getElementById('mfo-secured') || {}).value === 'secured';
+    const penaltyEnabled = (document.getElementById('mfo-penalty-enabled') || {}).checked;
+    const penaltyRate = parseFloat(String((document.getElementById('mfo-penalty-rate') || {}).value || '0').replace(',', '.'));
+    const method = (document.getElementById('mfo-postterm-method') || {}).value;
+    const postTermRate = parseFloat(String((document.getElementById('mfo-postterm-rate') || {}).value || '0').replace(',', '.'));
+    const special62 = (document.getElementById('mfo-special62') || {}).checked;
+    const payments = mfoGetPayments();
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+        resultDiv.className = 'result-box error';
+        resultDiv.innerHTML = 'Укажите корректную сумму займа.';
+        return;
+    }
+    if (!contractDate || !calcDate) {
+        resultDiv.className = 'result-box error';
+        resultDiv.innerHTML = 'Укажите дату заключения договора и дату расчёта.';
+        return;
+    }
+    if (!Number.isFinite(termDays) || termDays < 1) {
+        resultDiv.className = 'result-box error';
+        resultDiv.innerHTML = 'Укажите срок займа (в днях).';
+        return;
+    }
+    if (!Number.isFinite(contractRate) || contractRate < 0) {
+        resultDiv.className = 'result-box error';
+        resultDiv.innerHTML = 'Укажите корректную ставку по договору.';
+        return;
+    }
+    if (calcDate < contractDate) {
+        resultDiv.className = 'result-box error';
+        resultDiv.innerHTML = 'Дата расчёта не может быть раньше даты заключения договора.';
+        return;
+    }
+
+    const p = {
+        amount: mfoRound(amount),
+        contractDate, termDays, contractRate, calcDate, secured,
+        penaltyEnabled, penaltyRate: Number.isFinite(penaltyRate) ? penaltyRate : 0,
+        method, postTermRate: Number.isFinite(postTermRate) && postTermRate > 0 ? postTermRate : null,
+        special62, payments
+    };
+
+    const r = computeMicroloan(p);
+    const lines = [];
+
+    lines.push('<b>ИСХОДНЫЕ ДАННЫЕ</b>');
+    lines.push('Сумма займа: ' + mfoFmt(p.amount) + ' руб.');
+    lines.push('Дата заключения договора: ' + mfoFormatDate(p.contractDate));
+    lines.push('Срок займа: ' + p.termDays + ' дн. (до ' + mfoFormatDate(r.termEnd) + ')');
+    lines.push('Ставка по договору: ' + mfoPct(p.contractRate) + '% в день' +
+        (r.dailyCap !== null && p.contractRate > r.dailyCap ? ' (превышает предельную — к расчёту принята ' + mfoPct(r.contractRate) + '%)' : ''));
+    lines.push('Дата расчёта: ' + mfoFormatDate(p.calcDate));
+    lines.push('Платежи заёмщика: ' + (r.paymentsCount ? r.paymentsCount + ' шт. на сумму ' + mfoFmt(payments.reduce((s, x) => s + x.amount, 0)) + ' руб.' : 'не указаны'));
+
+    lines.push('');
+    lines.push('<b>ПРИМЕНЁННЫЕ ОГРАНИЧЕНИЯ</b>');
+    if (r.dailyCap !== null) {
+        lines.push('Предельная дневная ставка: ' + mfoPct(r.dailyCap) + '% в день (ч. 23 ст. 5 ФЗ № 353-ФЗ, на дату заключения договора)');
+    } else {
+        lines.push('Предельная дневная ставка: не применялась (договор до 28.01.2019)');
+    }
+    if (r.ceilingPct !== null) {
+        lines.push('Потолок переплаты: ' + mfoPct(r.ceilingPct) + '% от суммы займа = ' + mfoFmt(r.ceilingAmount) + ' руб. (ч. 24 ст. 5 ФЗ № 353-ФЗ)');
+    } else {
+        lines.push('Потолок переплаты: не применялся' + (p.termDays > 365 ? ' (срок займа свыше года)' : ''));
+    }
+    if (p.postTermRate) {
+        lines.push('Ставка после истечения срока: ' + mfoPct(p.postTermRate) + '% годовых (указано вручную)');
+    } else if (r.special) {
+        lines.push('Особый режим ст. 6.2 ФЗ № 353-ФЗ: проценты не начисляются, фиксируемая сумма платежей ограничена ' + r.specialCapPct + '% от суммы займа (' + mfoFmt(r.specialCap) + ' руб.), неустойка — 0,1% в день');
+    } else if (p.method === 'psk') {
+        lines.push('Ставка после истечения срока: предельное значение ПСК по категории займа (фактический срок пользования) — позиция ВС РФ (определение № 18-КГ18-181)');
+    } else {
+        lines.push('Ставка после истечения срока: договорная, в пределах ч. 23 ст. 5 и потолка переплаты');
+    }
+
+    lines.push('');
+    lines.push('<b>РАСЧЁТ</b>');
+    if (r.special) {
+        lines.push('Фиксируемая сумма платежей (ст. 6.2): начислено ' + mfoFmt(r.specialAccrued) + ' руб., погашено ' + mfoFmt(mfoRound(r.specialAccrued - r.specialUnpaid)) + ' руб.');
+        lines.push('Неустойка (0,1% в день): начислено ' + mfoFmt(r.penaltyTotal) + ' руб., погашено ' + mfoFmt(r.penaltyPaid) + ' руб.');
+    } else {
+        lines.push('Проценты за срок договора (' + p.termDays + ' дн.): ' + mfoFmt(r.interestInTerm) + ' руб.');
+        const postDays = Math.max(0, Math.round((p.calcDate - r.termEnd) / 86400000));
+        lines.push('Проценты после истечения срока (' + postDays + ' дн.): ' + mfoFmt(r.interestPostTerm) + ' руб.');
+        if (p.penaltyEnabled) {
+            lines.push('Неустойка за просрочку (' + mfoPct(p.penaltyRate) + '% в день): начислено ' + mfoFmt(r.penaltyTotal) + ' руб., погашено ' + mfoFmt(r.penaltyPaid) + ' руб.');
+        }
+        lines.push('Проценты, погашенные платежами: ' + mfoFmt(r.interestPaid) + ' руб.');
+    }
+    lines.push('Основной долг, погашенный платежами: ' + mfoFmt(mfoRound(p.amount - r.principal)) + ' руб.');
+
+    if (r.stoppedOn) {
+        lines.push('');
+        lines.push('⚠ Начисление процентов и неустойки прекращено ' + mfoFormatDate(r.stoppedOn) + ' — достигнут потолок переплаты (' + mfoPct(r.ceilingPct) + '% от суммы займа, ч. 24 ст. 5 ФЗ № 353-ФЗ).');
+    }
+
+    lines.push('');
+    lines.push('<b>ИТОГО К ВЗЫСКАНИЮ на ' + mfoFormatDate(p.calcDate) + '</b>');
+    lines.push('— остаток основного долга: ' + mfoFmt(r.principal) + ' руб.');
+    if (r.special) {
+        lines.push('— фиксируемая сумма платежей (ст. 6.2): ' + mfoFmt(r.specialUnpaid) + ' руб.');
+    } else {
+        lines.push('— проценты: ' + mfoFmt(r.unpaidInterest) + ' руб.');
+        if (p.penaltyEnabled || r.penaltyTotal > 0) {
+            lines.push('— неустойка: ' + mfoFmt(r.unpaidPenalty) + ' руб.');
+        }
+    }
+    lines.push('<b>ВСЕГО: ' + mfoFmt(r.totalDue) + ' руб.</b>');
+
+    if (r.warnings.length) {
+        lines.push('');
+        lines.push('<b>ОГОВОРКИ</b>');
+        r.warnings.forEach(w => lines.push('• ' + w));
+    }
+
+    lines.push('');
+    lines.push('<b>ПРАВОВОЕ ОБОСНОВАНИЕ</b>');
+    if (r.special) {
+        lines.push('Ст. 6.2 ФЗ № 353-ФЗ (особый режим для займов без обеспечения до 10 000 ₽ на срок до 15 дней): предельная дневная ставка (ч. 23 ст. 5) и ПСК (ч. 11 ст. 6) не применяются; ежедневная фиксируемая сумма платежей не превышает 1/15 от 15% (30% для договоров до 01.07.2023) суммы займа; после достижения максимума — неустойка 0,1% в день от просроченной задолженности.');
+    } else {
+        if (r.dailyCap !== null) lines.push('Ч. 23 ст. 5 ФЗ № 353-ФЗ: ставка по договору ограничена ' + mfoPct(r.dailyCap) + '% в день (для договоров от 01.07.2023 — ФЗ № 613-ФЗ; ранее — ФЗ № 554-ФЗ).');
+        if (r.ceilingPct !== null) lines.push('Ч. 24 ст. 5 ФЗ № 353-ФЗ: проценты, неустойки и иные платежи не могут превышать ' + mfoPct(r.ceilingPct) + '% от суммы займа (с 01.04.2026 — ФЗ № 545-ФЗ; ранее 130%, 1,5-кратный, двукратный и 2,5-кратный размеры).');
+        if (!p.postTermRate && p.method === 'psk') {
+            lines.push('После истечения срока займа проценты исчислены в пределах предельного значения ПСК по категории, соответствующей фактическому сроку пользования и сумме займа (правовая позиция ВС РФ: определение от 02.10.2018 № 18-КГ18-181; п. 10 Обзора судебной практики по делам о защите прав потребителей финансовых услуг, утв. Президиумом ВС РФ 24.04.2019).');
+        } else {
+            lines.push('П. 9 Обзора судебной практики, утв. Президиумом ВС РФ 27.09.2017: повышенные договорные проценты начисляются только на срок действия договора микрозайма.');
+        }
+        lines.push('Платежи заёмщика засчитаны в порядке ч. 20 ст. 5 ФЗ № 353-ФЗ, ст. 319 ГК РФ (сначала проценты, затем основной долг, затем неустойка).');
+    }
+    lines.push('Расчёт справочный. Сверяйте результат с условиями договора, платёжными документами и актуальными решениями Банка России о предельных значениях ПСК.');
+
+    resultDiv.innerHTML = lines.join('<br>');
+
+    // Таблица расчёта
+    const bodyRows = [];
+    r.rows.forEach(row => {
+        if (row.type === 'pay') {
+            const a = row.alloc;
+            bodyRows.push('<tr>' +
+                '<td style="padding:6px;border-bottom:1px solid #eceff1;">Платёж ' + mfoFormatDate(row.from) + '</td>' +
+                '<td style="padding:6px;border-bottom:1px solid #eceff1;">—</td>' +
+                '<td style="padding:6px;border-bottom:1px solid #eceff1;">' + mfoFmt(a.toInterest + a.toSpecial) + ' руб. в счёт процентов</td>' +
+                '<td style="padding:6px;border-bottom:1px solid #eceff1;">—</td>' +
+                '<td style="padding:6px;border-bottom:1px solid #eceff1;">' + (a.toPenalty > 0 ? mfoFmt(a.toPenalty) + ' руб. пени' : '—') + '</td>' +
+                '<td style="padding:6px;border-bottom:1px solid #eceff1;">' + mfoFmt(row.principalEnd) + '</td>' +
+                '</tr>');
+        } else {
+            const rateTxt = row.special > 0
+                ? '—'
+                : (mfoPct(row.rate) + '% в день<br><span style="color:#78909c;font-size:12px;">' + row.basis + '</span>');
+            const periodDays = Math.round((row.to - row.from) / 86400000) + 1;
+            bodyRows.push('<tr>' +
+                '<td style="padding:6px;border-bottom:1px solid #eceff1;">' + mfoFormatDate(row.from) + ' — ' + mfoFormatDate(row.to) + '</td>' +
+                '<td style="padding:6px;border-bottom:1px solid #eceff1;">' + periodDays + '</td>' +
+                '<td style="padding:6px;border-bottom:1px solid #eceff1;">' + rateTxt + '</td>' +
+                '<td style="padding:6px;border-bottom:1px solid #eceff1;">' + (row.interest > 0 ? mfoFmt(row.interest) : '—') + '</td>' +
+                '<td style="padding:6px;border-bottom:1px solid #eceff1;">' + (row.penalty > 0 ? mfoFmt(row.penalty) : '—') + '</td>' +
+                '<td style="padding:6px;border-bottom:1px solid #eceff1;">' + mfoFmt(row.principalEnd) + '</td>' +
+                '</tr>');
+        }
+    });
+    if (!r.rows.length) {
+        bodyRows.push('<tr><td colspan="6" style="padding:10px;color:#78909c;">Нет периодов начисления.</td></tr>');
+    }
+    resultBody.innerHTML = bodyRows.join('');
+}
+
+// ===== Отображение таблицы ключевой ставки (вкладка «Ст. 395 ГК РФ») =====
+function renderGk395RateTable() {
+    const tbody = document.getElementById('gk395-ratetable-tbody');
+    const info = document.getElementById('gk395-ratetable-info');
+    if (!tbody || typeof GK395KEYRATES === 'undefined' || !GK395KEYRATES.length) return;
+
+    const sorted = GK395KEYRATES.slice().sort((a, b) => String(a.from).localeCompare(String(b.from)));
+    const last = sorted[sorted.length - 1];
+    const today = mfoIsoKey(new Date());
+    const show = sorted.slice(-14).reverse();
+
+    tbody.innerHTML = show.map(item => {
+        const active = String(item.from) <= today;
+        return '<tr' + (active ? ' style="background:#e8f5e9;"' : '') + '>' +
+            '<td style="padding:6px;border-bottom:1px solid #eceff1;">' + String(item.from).split('-').reverse().join('.') + '</td>' +
+            '<td style="padding:6px;border-bottom:1px solid #eceff1;font-weight:' + (active ? '700' : '400') + ';">' + String(item.rate.toFixed(2)).replace('.', ',') + '%</td>' +
+            '<td style="padding:6px;border-bottom:1px solid #eceff1;">' + (active ? 'действует' : 'истекла') + '</td>' +
+            '</tr>';
+    }).join('');
+
+    if (info) {
+        const source = (typeof liveKeyRatesLoaded !== 'undefined' && liveKeyRatesLoaded)
+            ? 'источник: онлайн, сайт ЦБ РФ'
+            : 'источник: встроенная таблица';
+        info.textContent = 'Актуально на: ' + String(last.from).split('-').reverse().join('.') +
+            ' — ставка ' + String(last.rate.toFixed(2)).replace('.', ',') + '% годовых · ' + source +
+            ' · всего записей: ' + sorted.length;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    if (!document.querySelector('#mfo-payment-tbody tr')) {
+        addMfoPaymentRow();
+    }
+    mfoUpdateSpecialMode();
+    renderGk395RateTable();
+    renderMfoPskRefTable();
+
+    // Индикаторы и кнопки горизонтальной прокрутки панели вкладок
+    var tabsBar = document.getElementById('tabs');
+    var tabsFade = document.getElementById('tabs-fade');
+    var tabsLeft = document.getElementById('tabs-scroll-left');
+    var tabsRight = document.getElementById('tabs-scroll-right');
+    if (tabsBar && tabsFade) {
+        var updateFade = function () {
+            var atStart = tabsBar.scrollLeft <= 4;
+            var atEnd = tabsBar.scrollLeft + tabsBar.clientWidth >= tabsBar.scrollWidth - 4;
+            tabsFade.classList.toggle('hidden', atEnd);
+            if (tabsLeft) tabsLeft.classList.toggle('hidden', atStart);
+            if (tabsRight) tabsRight.classList.toggle('hidden', atEnd);
+        };
+        tabsBar.addEventListener('scroll', function () {
+            window.requestAnimationFrame(updateFade);
+        });
+        window.addEventListener('resize', updateFade);
+        if (tabsRight) tabsRight.addEventListener('click', function () {
+            tabsBar.scrollBy({ left: tabsBar.clientWidth * 0.8, behavior: 'smooth' });
+        });
+        if (tabsLeft) tabsLeft.addEventListener('click', function () {
+            tabsBar.scrollBy({ left: -tabsBar.clientWidth * 0.8, behavior: 'smooth' });
+        });
+        updateFade();
+    }
+});
+
+</script>
 
 <script>
 /* ===== Раздел: расчёт площади застройки земельного участка (с пятном застройки и процентом) ===== */
@@ -9252,6 +10307,7 @@ function calculateAlimony() {
                 }
                 if (typeof window.fetchLiveKeyRates === 'function' && source === 'key-rate') window.fetchLiveKeyRates();
                 if (typeof window.fetchLiveCpi === 'function' && source === 'cpi') window.fetchLiveCpi();
+                if (typeof window.fetchLivePsk === 'function' && source === 'psk') window.fetchLivePsk();
             };
         }
     };
@@ -9260,6 +10316,7 @@ function calculateAlimony() {
     // как весь документ (включая правку выше) полностью выполнен.
     if (typeof window.fetchLiveKeyRates === 'function') window.fetchLiveKeyRates();
     if (typeof window.fetchLiveCpi === 'function') window.fetchLiveCpi();
+    if (typeof window.fetchLivePsk === 'function') window.fetchLivePsk();
 })();
 </script>
 </body>
