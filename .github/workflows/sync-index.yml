@@ -1,53 +1,109 @@
-name: Sync index.html to app branches
+name: Build current Windows and Android apps
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
     paths:
       - index.html
+      - manifest.json
+      - '*.png'
+      - .github/workflows/sync-index.yml
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+
+concurrency:
+  group: current-apps-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  sync:
-    runs-on: ubuntu-latest
-
+  build:
+    if: github.ref == 'refs/heads/main'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: windows
+            os: windows-latest
+            branch: windows-build
+          - platform: android
+            os: ubuntu-latest
+            branch: Android-Legal-settlement
+    runs-on: ${{ matrix.os }}
     steps:
-      - name: Загрузка ветки main
+      - name: Checkout platform wrapper
         uses: actions/checkout@v4
         with:
-          ref: main
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Настройка автора коммитов
+          ref: ${{ matrix.branch }}
+          path: app
+      - name: Checkout exact shared source revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: source
+      - name: Prepare identical current web assets
+        shell: bash
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-      - name: Копирование в Android-ветку
+          set -euo pipefail
+          mkdir -p app/www
+          cp source/index.html app/index.html
+          cp source/index.html app/www/index.html
+          cp source/manifest.json app/manifest.json
+          cp source/manifest.json app/www/manifest.json
+          for asset in source/*.png; do
+            [ -f "$asset" ] || continue
+            cp "$asset" app/
+            cp "$asset" app/www/
+          done
+          cmp source/index.html app/www/index.html
+          printf '%s\n' '${{ github.sha }}' > app/www/build-revision.txt
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Setup Java
+        if: matrix.platform == 'android'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Install dependencies
+        working-directory: app
+        run: npm install
+      - name: Build Windows installer
+        if: matrix.platform == 'windows'
+        working-directory: app
+        run: npx electron-builder --win --publish never
+      - name: Prepare Android platform
+        if: matrix.platform == 'android'
+        working-directory: app
+        shell: bash
         run: |
-          git checkout Android-Legal-settlement
-          git checkout main -- index.html
-          git add index.html
-          if git diff --cached --quiet; then
-            echo "Изменений для Android-ветки нет"
-          else
-            git commit -m "Автообновление index.html из main"
-            git push origin Android-Legal-settlement
+          set -euo pipefail
+          if [ ! -d android ]; then
+            npx cap add android
           fi
-
-      - name: Копирование в Windows-ветку
+          npx cap sync android
+      - name: Build Android APK
+        if: matrix.platform == 'android'
+        working-directory: app/android
+        shell: bash
         run: |
-          git checkout windows-build
-          git checkout main -- index.html
-          git add index.html
-          if git diff --cached --quiet; then
-            echo "Изменений для Windows-ветки нет"
-          else
-            git commit -m "Автообновление index.html из main"
-            git push origin windows-build
-          fi
+          set -euo pipefail
+          chmod +x gradlew
+          ./gradlew assembleDebug
+      - name: Upload Windows installer
+        if: matrix.platform == 'windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: legal-calculator-windows
+          path: app/dist/*.exe
+          if-no-files-found: error
+      - name: Upload Android APK
+        if: matrix.platform == 'android'
+        uses: actions/upload-artifact@v4
+        with:
+          name: legal-calculator-debug-apk
+          path: app/android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
