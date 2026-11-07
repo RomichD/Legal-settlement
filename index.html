@@ -1632,6 +1632,106 @@ pre {
         </div>
 
         <div class="payment-block">
+            <label><strong>Способ задания платежей</strong></label>
+
+            <div class="form-group">
+                <label>Как задать график обязательных платежей?</label>
+
+                <select id="lim-mode" onchange="toggleLimitationMode()">
+                    <option value="manual">
+                        Вручную (таблица платежей)
+                    </option>
+                    <option value="auto">
+                        Автоматически (периодические платежи по кредиту/займу)
+                    </option>
+                </select>
+
+                <p class="muted">
+                    Автоматический режим строит ежемесячный график платежей от
+                    даты первой просрочки до конца срока кредита и определяет
+                    точную дату, с которой срок исковой давности по платежам
+                    пропущен, с учётом судебного приказа и даты подачи иска.
+                </p>
+            </div>
+        </div>
+
+        <div class="payment-block" id="lim-auto-block" style="display: none;">
+            <label><strong>Периодические платежи (кредит/заём)</strong></label>
+
+            <div class="inline-group">
+                <div class="form-group">
+                    <label>Дата заключения договора (необязательно)</label>
+                    <input type="date" id="lim-auto-contract-date">
+                </div>
+
+                <div class="form-group">
+                    <label>Срок кредита, месяцев (необязательно)</label>
+                    <input
+                        type="number"
+                        id="lim-auto-contract-months"
+                        min="1"
+                        step="1"
+                        placeholder="например, 84"
+                    >
+                </div>
+            </div>
+
+            <div class="inline-group">
+                <div class="form-group">
+                    <label>Дата первого просроченного платежа</label>
+                    <input type="date" id="lim-auto-first-missed">
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        Дата последнего платежа по графику (или дата окончания
+                        срока кредита)
+                    </label>
+                    <input type="date" id="lim-auto-last-payment">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Сумма ежемесячного платежа, руб. (необязательно)</label>
+                <input type="number" id="lim-auto-sum" min="0.01" step="0.01">
+            </div>
+
+            <p class="muted">
+                Платежи генерируются ежемесячно, в тот же день месяца, в который
+                был должен быть внесён первый просроченный платёж, до последней
+                даты включительно. Данные судебного приказа, признания долга и
+                дата подачи иска берутся из полей выше.
+            </p>
+
+            <div class="inline-group">
+                <div class="form-group">
+                    <label>Истец (кредитор) — для формулировки (необязательно)</label>
+                    <input
+                        type="text"
+                        id="lim-auto-plaintiff"
+                        placeholder="например, АО «Альфа-Банк»"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label>Должник — для формулировки (необязательно)</label>
+                    <input
+                        type="text"
+                        id="lim-auto-defendant"
+                        placeholder="например, А.С. Минеев"
+                    >
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="lim-auto-cession" style="width:auto;margin-right:6px;">
+                    Была уступка права (перемена лиц в обязательстве)
+                </label>
+            </div>
+        </div>
+
+        <div class="payment-block" id="lim-manual-block">
             <label><strong>График обязательных платежей</strong></label>
 
             <p class="muted">
@@ -2322,8 +2422,9 @@ async function fetchLivePsk() {
             updateDataStatusBadge('psk', true);
         }
     } catch (error) {
-        // Тихий фолбэк на встроенную таблицу ПСК — маршрут прокси может отсутствовать.
+        // Фолбэк на встроенную таблицу ПСК — бейдж покажет встроенный квартал.
         console.warn('[psk] Онлайн-обновление недоступно, используется встроенная таблица:', error.message);
+        updateDataStatusBadge('psk', false, error.message);
     }
 }
 
@@ -2337,6 +2438,45 @@ async function fetchLiveCalendarYear(year) {
         console.warn('[calendar] Не удалось загрузить календарь:', error);
         return null;
     }
+}
+
+// Текст актуального значения для бейджа статуса данных
+function badgeValueText(source) {
+    try {
+        if (source === 'key-rate') {
+            if (typeof GK395KEYRATES !== 'undefined' && GK395KEYRATES.length) {
+                const last = GK395KEYRATES[GK395KEYRATES.length - 1];
+                /*
+                   API ЦБ возвращает ежедневные строки: показываем дату,
+                   с которой действует текущее значение ставки (начало
+                   серии одинаковых значений), а не последнюю дату ряда.
+                */
+                let i = GK395KEYRATES.length - 1;
+                while (i > 0 && GK395KEYRATES[i - 1].rate === last.rate) {
+                    i -= 1;
+                }
+                const effective = GK395KEYRATES[i];
+                const rate = String(Number(effective.rate.toFixed(2))).replace('.', ',');
+                const parts = effective.from.split('-');
+                return rate + '% с ' + parts[2] + '.' + parts[1] + '.' + parts[0];
+            }
+        } else if (source === 'cpi') {
+            if (typeof CPITABLE !== 'undefined') {
+                const months = Object.keys(CPITABLE).sort();
+                const last = months[months.length - 1];
+                if (last) {
+                    const idx = String(Number(CPITABLE[last].toFixed(2))).replace('.', ',');
+                    const parts = last.split('-');
+                    return idx + '% (' + parts[1] + '.' + parts[0] + ')';
+                }
+            }
+        } else if (source === 'psk') {
+            if (typeof MFO_PSK_QUARTER !== 'undefined' && MFO_PSK_QUARTER) {
+                return MFO_PSK_QUARTER;
+            }
+        }
+    } catch (e) { /* данные ещё не готовы — покажем статус без значения */ }
+    return null;
 }
 
 function updateDataStatusBadge(source, success, errorMessage) {
@@ -2361,12 +2501,12 @@ function updateDataStatusBadge(source, success, errorMessage) {
     if (!badge) {
         badge = document.createElement('div');
         badge.id = badgeId;
-        badge.style.fontSize = '11px';
+        badge.style.fontSize = '12px';
         badge.style.lineHeight = '1.5';
-        badge.style.padding = '4px 8px';
-        badge.style.borderRadius = '4px';
+        badge.style.padding = '5px 10px';
+        badge.style.borderRadius = '6px';
         badge.style.fontFamily = 'inherit';
-        badge.style.maxWidth = '340px';
+        badge.style.maxWidth = '460px';
         badge.style.textAlign = 'right';
         badge.style.whiteSpace = 'nowrap';
         badge.style.pointerEvents = 'auto';
@@ -2374,10 +2514,16 @@ function updateDataStatusBadge(source, success, errorMessage) {
     }
     badge.style.background = success ? '#e8f5e9' : '#fff3e0';
     badge.style.color = success ? '#1b5e20' : '#e65100';
-    const label = source === 'key-rate' ? 'Ключевая ставка'
+    const label = source === 'key-rate' ? 'Ключевая ставка ЦБ'
         : (source === 'psk' ? 'ПСК МФО' : 'ИПЦ');
-    badge.textContent = label + ': ' + (success ? 'обновлено' : 'встроенные данные');
-    badge.title = success ? 'Данные получены из API.' : ('Онлайн-обновление недоступно. Причина: ' + (errorMessage || 'неизвестная ошибка'));
+    const value = badgeValueText(source);
+    // На бейдже видно само актуальное значение (даже если онлайн недоступен — встроенное)
+    badge.innerHTML = label + ': <b>' + (value || (success ? 'обновлено' : 'встроенные данные')) + '</b>';
+    badge.title = value
+        ? (success
+            ? 'Актуальное значение, данные получены онлайн.'
+            : 'Онлайн-обновление недоступно — показано встроенное значение. Причина: ' + (errorMessage || 'неизвестная ошибка'))
+        : (success ? 'Данные получены из API.' : 'Онлайн-обновление недоступно. Причина: ' + (errorMessage || 'неизвестная ошибка'));
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -4992,6 +5138,83 @@ function toggleLimitationOrderFields() {
         used === 'yes' ? 'block' : 'none';
 }
 
+/* Переключение режима задания платежей: вручную / периодические платежи */
+function toggleLimitationMode() {
+    const mode = document.getElementById('lim-mode').value;
+    document.getElementById('lim-manual-block').style.display =
+        mode === 'auto' ? 'none' : 'block';
+    document.getElementById('lim-auto-block').style.display =
+        mode === 'auto' ? 'block' : 'none';
+}
+
+function limitationIsAutoMode() {
+    const modeEl = document.getElementById('lim-mode');
+    return !!modeEl && modeEl.value === 'auto';
+}
+
+/* Добавление месяцев с сохранением дня месяца (клампинг для коротких месяцев) */
+function limitationClampAddMonths(date, months) {
+    const result = new Date(date.getFullYear(), date.getMonth(), 1);
+    result.setMonth(result.getMonth() + months);
+    const daysInMonth = new Date(
+        result.getFullYear(), result.getMonth() + 1, 0
+    ).getDate();
+    const day = Math.min(date.getDate(), daysInMonth);
+    result.setDate(day);
+    return result;
+}
+
+/*
+   Генерация периодических платежей для автоматического режима:
+   ежемесячно, в день месяца первого просроченного платежа,
+   до даты последнего платежа по графику включительно.
+*/
+function limitationGenerateSchedulePayments() {
+    const firstValue = document.getElementById('lim-auto-first-missed').value;
+    const lastValue = document.getElementById('lim-auto-last-payment').value;
+    if (!firstValue || !lastValue) {
+        throw new Error(
+            'Укажите дату первого просроченного платежа и дату последнего платежа по графику.'
+        );
+    }
+    const firstDate = parseDate(firstValue);
+    const lastDate = parseDate(lastValue);
+    if (lastDate < firstDate) {
+        throw new Error(
+            'Дата последнего платежа не может быть раньше даты первой просрочки.'
+        );
+    }
+    const sumValue = document.getElementById('lim-auto-sum').value;
+    const sum = parseFloat(sumValue);
+    const hasSum = sumValue !== '' && Number.isFinite(sum) && sum > 0;
+
+    const payments = [];
+    let cursor = new Date(firstDate);
+    let guard = 0;
+    while (cursor <= lastDate && guard < 1200) {
+        payments.push({
+            number: payments.length + 1,
+            dueDate: new Date(cursor),
+            sum: hasSum ? sum : 0,
+            status: 'unpaid',
+            sumProvided: hasSum
+        });
+        cursor = limitationClampAddMonths(cursor, 1);
+        guard += 1;
+    }
+    if (guard >= 1200) {
+        throw new Error(
+            'Слишком большой период между первой просрочкой и последним платежом (более 100 лет). Проверьте даты.'
+        );
+    }
+    if (!payments.length) {
+        throw new Error(
+            'Не удалось построить график платежей — проверьте даты.'
+        );
+    }
+    return payments;
+}
+
 function toggleLimitationClaimProcedureFields() {
     const used = document.getElementById(
         'lim-claim-procedure-used'
@@ -5104,6 +5327,11 @@ function calcLimitationEarlyDemand(
 /* === КОНЕЦ НОВЫХ ФУНКЦИЙ === */
 
 function limitationGetPayments() {
+    /* Автоматический режим: периодические платежи по графику */
+    if (limitationIsAutoMode()) {
+        return limitationGenerateSchedulePayments();
+    }
+
     const payments = [];
     document.querySelectorAll('#payment-tbody tr').forEach((row, index) => {
         const dueDateValue = row.querySelector(
@@ -5220,11 +5448,46 @@ function limitationApplySuspension(limitationStart, limitationEnd, periods) {
     sortedPeriods.forEach(period => {
         if (period.start > finalEnd) return;
         const actualStart = period.start < limitationStart ? limitationStart : period.start;
-        const actualEnd = period.end > finalEnd ? finalEnd : period.end;
-        if (actualEnd < actualStart) return;
+        if (period.end < actualStart) return;
 
-        const days = Math.floor((actualEnd - actualStart) / 86400000) + 1;
         const endBeforeSuspension = new Date(finalEnd);
+
+        if (period.end >= finalEnd) {
+            /*
+               Период судебной защиты полностью накрывает оставшуюся часть
+               срока (в том числе когда судебный приказ отменён уже после
+               первоначальной даты истечения срока): течение срока
+               «замораживается» и возобновляется после отмены приказа,
+               а к остатку срока применяется то же правило о шести месяцах
+               (пункт 1 статьи 204 ГК РФ, пункты 17 и 18 постановления
+               Пленума ВС РФ от 29.09.2015 № 43).
+            */
+            const remainingDays = Math.floor(
+                (finalEnd - actualStart) / 86400000
+            );
+            finalEnd = limitationAddDays(period.end, remainingDays);
+            let extendedToSixMonths = false;
+            if (remainingDays < 180) {
+                finalEnd = limitationAddMonths(period.end, 6);
+                extendedToSixMonths = true;
+            }
+            appliedPeriods.push({
+                type: period.type,
+                periodStart: period.start,
+                periodEnd: period.end,
+                actualStart,
+                actualEnd: new Date(period.end),
+                days: remainingDays,
+                fullSuspension: true,
+                endBeforeSuspension,
+                endAfterSuspension: new Date(finalEnd),
+                extendedToSixMonths
+            });
+            return;
+        }
+
+        const actualEnd = period.end;
+        const days = Math.floor((actualEnd - actualStart) / 86400000) + 1;
         finalEnd = limitationAddDays(finalEnd, days);
         const remainingDays = Math.floor((finalEnd - period.end) / 86400000);
         let extendedToSixMonths = false;
@@ -5302,6 +5565,184 @@ function limitationBuildReasoning(row, claimDate) {
     if (d.objectiveCapApplied) text += ` При этом применён предельный десятилетний срок исковой давности, истекающий ${limitationDateText(d.objectiveLimit)} (пункт 2 статьи 196 ГК РФ).`;
     text += ` Итоговый срок исковой давности истекал ${limitationDateText(d.endDate)}. Поскольку иск предъявлен ${limitationDateText(claimDate)}, срок исковой давности по данному платежу ${row.isExpired ? 'пропущен' : 'не пропущен'}.`;
     return text;
+}
+
+/* ============================================================
+   АВТОМАТИЧЕСКИЙ РЕЖИМ: ГРАНИЦА СРОКА И ФОРМУЛИРОВКА
+   ============================================================ */
+
+/* Приблизительное форматирование длительности: «1 год 5 месяцев 3 дня» */
+function limitationFormatDuration(ms) {
+    if (ms < 0) ms = 0;
+    const totalDays = Math.floor(ms / 86400000);
+    const years = Math.floor(totalDays / 365);
+    const months = Math.floor((totalDays - years * 365) / 30);
+    const days = totalDays - years * 365 - months * 30;
+    const parts = [];
+    if (years) {
+        parts.push(`${years} ${limitationPlural(years, 'год', 'года', 'лет')}`);
+    }
+    if (months) {
+        parts.push(
+            `${months} ${limitationPlural(months, 'месяц', 'месяца', 'месяцев')}`
+        );
+    }
+    if (days && parts.length < 2) {
+        parts.push(
+            `${days} ${limitationPlural(days, 'день', 'дня', 'дней')}`
+        );
+    }
+    if (!parts.length) return 'менее одного дня';
+    return parts.join(' ');
+}
+
+function limitationPlural(number, one, few, many) {
+    const mod10 = number % 10;
+    const mod100 = number % 100;
+    if (mod10 === 1 && mod100 !== 11) return one;
+    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return few;
+    return many;
+}
+
+/* Оставшаяся часть срока исковой давности на дату обращения за приказом */
+function limitationRemainingAtOrder(orderDate, firstDueDate) {
+    const elapsed = orderDate - firstDueDate;
+    const fullTerm = limitationAddYears(firstDueDate, 3) - firstDueDate;
+    return fullTerm - elapsed;
+}
+
+/* Граница пропуска срока по периодическим платежам */
+function limitationBuildBoundary(rows) {
+    const unpaid = rows
+        .filter(row => row.status !== 'paid')
+        .sort((a, b) => a.dueDate - b.dueDate);
+    const expired = unpaid.filter(row => row.isExpired);
+    const active = unpaid.filter(row => !row.isExpired);
+    return {
+        total: unpaid.length,
+        expiredCount: expired.length,
+        activeCount: active.length,
+        firstExpired: expired.length ? expired[0].dueDate : null,
+        lastExpired: expired.length
+            ? expired[expired.length - 1].dueDate
+            : null,
+        firstActive: active.length ? active[0].dueDate : null,
+        lastActive: active.length ? active[active.length - 1].dueDate : null,
+        firstDue: unpaid.length ? unpaid[0].dueDate : null,
+        lastDue: unpaid.length ? unpaid[unpaid.length - 1].dueDate : null,
+        expiredSum: expired.reduce((acc, row) => acc + row.sum, 0),
+        activeSum: active.reduce((acc, row) => acc + row.sum, 0),
+        firstRow: unpaid.length ? unpaid[0] : null,
+        lastRow: unpaid.length ? unpaid[unpaid.length - 1] : null
+    };
+}
+
+/*
+   Формулировка для процессуального документа (автоматический режим).
+   Подставляет расчётные значения в текст, аналогичный примерному
+   образцу пользователя, со ссылками на ст. 196, п. 2 ст. 200 ГК РФ,
+   п. 24 Пленума ВС РФ № 43, ст. 201, п. 1 ст. 204 ГК РФ,
+   п. 17–18 Пленума ВС РФ № 43.
+*/
+function limitationBuildAutoFormulation(rows, claimDate, suspensionPeriods) {
+    const boundary = limitationBuildBoundary(rows);
+    const firstRow = boundary.firstRow;
+    const lastRow = boundary.lastRow;
+
+    const plaintiffRaw = document.getElementById('lim-auto-plaintiff').value.trim();
+    const defendantRaw = document.getElementById('lim-auto-defendant').value.trim();
+    const cessionUsed = document.getElementById('lim-auto-cession').checked;
+
+    const contractDateValue = document.getElementById(
+        'lim-auto-contract-date'
+    ).value;
+    const contractMonthsValue = document.getElementById(
+        'lim-auto-contract-months'
+    ).value;
+    const hasContract =
+        contractDateValue &&
+        contractMonthsValue &&
+        Number.isInteger(Number(contractMonthsValue)) &&
+        Number(contractMonthsValue) > 0;
+    const contractDate = hasContract ? parseDate(contractDateValue) : null;
+    const contractMonths = hasContract ? Number(contractMonthsValue) : null;
+    const contractEnd = hasContract
+        ? limitationClampAddMonths(contractDate, contractMonths)
+        : null;
+
+    const orderPeriod = suspensionPeriods.find(
+        period => period.type === 'Судебный приказ'
+    );
+
+    const parts = [];
+
+    parts.push(
+        'В силу статьи 196 Гражданского кодекса Российской Федерации общий срок исковой давности составляет три года.'
+    );
+    parts.push(
+        'Согласно пункту 2 статьи 200 Гражданского кодекса Российской Федерации по обязательствам с определённым сроком исполнения течение исковой давности начинается по окончании срока исполнения.'
+    );
+    parts.push(
+        'При этом, согласно разъяснениям, изложенным в пункте 24 постановления Пленума Верховного Суда Российской Федерации от 29 сентября 2015 года № 43 «О некоторых вопросах, связанных с применением норм Гражданского кодекса Российской Федерации об исковой давности», по обязательствам, предусматривающим исполнение в виде периодических платежей, срок исковой давности исчисляется отдельно по каждому платежу.'
+    );
+    if (cessionUsed) {
+        parts.push(
+            'В соответствии со статьёй 201 Гражданского кодекса Российской Федерации перемена лиц в обязательстве не влечёт изменения срока исковой давности и порядка его исчисления.'
+        );
+    }
+
+    if (hasContract) {
+        parts.push(
+            `Как следует из материалов дела, кредитный договор заключён ${limitationDateText(contractDate)} на срок ${contractMonths} ${limitationPlural(contractMonths, 'месяц', 'месяца', 'месяцев')} (до ${limitationDateText(contractEnd)})${defendantRaw ? `, должником по которому является ${defendantRaw}` : ''}.`
+        );
+        parts.push(
+            `Первая просрочка платежа допущена ${limitationDateText(boundary.firstDue)}.`
+        );
+    } else {
+        parts.push(
+            `Первая просрочка платежа допущена ${defendantRaw ? `${defendantRaw} ` : ''}по платёжному обязательству, срок исполнения которого наступил ${limitationDateText(boundary.firstDue)}.`
+        );
+    }
+
+    if (orderPeriod) {
+        const remainingMs = limitationRemainingAtOrder(
+            orderPeriod.start,
+            boundary.firstDue
+        );
+        parts.push(
+            `С заявлением о выдаче судебного приказа ${plaintiffRaw ? `${plaintiffRaw} ` : 'кредитор'}обратился ${limitationDateText(orderPeriod.start)}, то есть в пределах срока исковой давности: до истечения трёхлетнего срока по первому просроченному платежу от ${limitationDateText(boundary.firstDue)} оставалось ${limitationFormatDuration(remainingMs)}.`
+        );
+        parts.push(
+            `Определением мирового судьи от ${limitationDateText(orderPeriod.end)} судебный приказ был отменён.`
+        );
+        parts.push(
+            `Поскольку на момент обращения в суд с заявлением о вынесении судебного приказа срок исковой давности не истёк, в период осуществления судебной защиты с ${limitationDateText(orderPeriod.start)} по ${limitationDateText(orderPeriod.end)} срок исковой давности не тёк в силу пункта 1 статьи 204 Гражданского кодекса Российской Федерации (пункты 17 и 18 постановления Пленума Верховного Суда РФ от 29.09.2015 № 43), а после отмены судебного приказа ${limitationDateText(orderPeriod.end)} течение оставшейся части срока исковой давности (${limitationFormatDuration(remainingMs)}) возобновилось, в связи с чем срок исковой давности по самому первому просроченному платежу оканчивается ${limitationDateText(firstRow.limitationEnd)}.`
+        );
+        const extended = (firstRow.deadline.appliedPeriods || []).some(
+            period => period.extendedToSixMonths
+        );
+        if (extended) {
+            parts.push(
+                'Поскольку неистёкшая часть срока исковой давности составляла менее шести месяцев, она была удлинена до шести месяцев (пункт 18 постановления Пленума Верховного Суда РФ от 29.09.2015 № 43).'
+            );
+        }
+    }
+
+    if (boundary.expiredCount === 0) {
+        parts.push(
+            `С настоящим исковым заявлением ${plaintiffRaw ? `${plaintiffRaw} ` : 'истец'}обратился в суд ${limitationDateText(claimDate)}, то есть до истечения срока исковой давности по первоначальному платежу, а равно в пределах срока давности по всем последующим периодическим платежам, срок исполнения которых наступал в период до ${limitationDateText(boundary.lastDue)}.`
+        );
+    } else if (boundary.activeCount > 0) {
+        parts.push(
+            `С настоящим исковым заявлением ${plaintiffRaw ? `${plaintiffRaw} ` : 'истец'}обратился в суд ${limitationDateText(claimDate)}. При этом срок исковой давности пропущен по платежам, срок исполнения которых наступал в период с ${limitationDateText(boundary.firstExpired)} по ${limitationDateText(boundary.lastExpired)} (то есть по ${boundary.expiredCount} из ${boundary.total} ${limitationPlural(boundary.total, 'платежу', 'платежам', 'платежам')}); по платежам, подлежавшим уплате начиная с ${limitationDateText(boundary.firstActive)} (первый платёж, по которому срок исковой давности не пропущен), а равно по всем последующим периодическим платежам до ${limitationDateText(boundary.lastDue)} включительно срок исковой давности не пропущен.`
+        );
+    } else {
+        parts.push(
+            `С настоящим исковым заявлением ${plaintiffRaw ? `${plaintiffRaw} ` : 'истец'}обратился в суд ${limitationDateText(claimDate)}. При этом срок исковой давности пропущен по всем ${boundary.total} ${limitationPlural(boundary.total, 'платежу', 'платежам', 'платежам')} за период с ${limitationDateText(boundary.firstExpired)} по ${limitationDateText(boundary.lastExpired)}: срок исполнения последнего из них наступил ${limitationDateText(boundary.lastExpired)}, а его трёхлетний срок исковой давности истёк ${limitationDateText(lastRow.limitationEnd)}, то есть ранее даты обращения в суд.`
+        );
+    }
+
+    return parts.join(' ');
 }
 
 function calcLimitation() {
@@ -5456,13 +5897,43 @@ function calcLimitation() {
     }
     // === КОНЕЦ БЛОКА ===
 
+    // === АВТОМАТИЧЕСКИЙ РЕЖИМ: ГРАНИЦА ПРОПУСКА СРОКА ===
+    let autoBoundaryBlock = '';
+    if (limitationIsAutoMode()) {
+        const boundary = limitationBuildBoundary(rows);
+        let boundaryLines;
+        if (boundary.expiredCount === 0) {
+            boundaryLines =
+                `Срок исковой давности НЕ ПРОПУЩЕН ни по одному платежу: даже по самому раннему\n` +
+                `платежу от ${limitationDateText(boundary.firstDue)} он истекает\n` +
+                `${limitationDateText(boundary.firstRow.limitationEnd)}, то есть позже даты обращения в суд.`;
+        } else if (boundary.activeCount === 0) {
+            boundaryLines =
+                `Срок исковой давности пропущен по ВСЕМ платежам (${boundary.total} из ${boundary.total}):\n` +
+                `последний платёж от ${limitationDateText(boundary.lastExpired)}, срок по нему истёк\n` +
+                `${limitationDateText(boundary.lastRow.limitationEnd)} — раньше даты обращения в суд.`;
+        } else {
+            boundaryLines =
+                `Первый платёж с пропущенным сроком: ${limitationDateText(boundary.firstExpired)}\n` +
+                `Последний платёж с пропущенным сроком: ${limitationDateText(boundary.lastExpired)}\n` +
+                `ДАТА, НАЧИНАЯ С КОТОРОЙ СРОК НЕ ПРОПУЩЕН: ${limitationDateText(boundary.firstActive)}\n` +
+                `(первый платёж, по которому срок не пропущен; по нему и всем последующим\n` +
+                `платежам до ${limitationDateText(boundary.lastDue)} иск подан в пределах срока).`;
+        }
+        autoBoundaryBlock =
+            `\nГРАНИЦА ПРОПУСКА СРОКА ИСКОВОЙ ДАВНОСТИ\n` +
+            `Периодические платежи: ${boundary.total}, с ${limitationDateText(boundary.firstDue)} по ${limitationDateText(boundary.lastDue)}\n` +
+            boundaryLines + '\n\n';
+    }
+    // === КОНЕЦ АВТОМАТИЧЕСКОГО РЕЖИМА ===
+
     resultDiv.className = 'result-box';
     resultDiv.textContent =
         `РАСЧЁТ СРОКА ИСКОВОЙ ДАВНОСТИ\n\n` +
         `Дата подачи иска: ${limitationDateText(claimDate)}\n` +
         `Обязательных платежей в таблице: ${payments.length}\n` +
         `Оплаченных платежей: ${paidCount}\n\n` +
-
+        autoBoundaryBlock +
         `ТРЕБОВАНИЯ С ИСТЁКШИМ СРОКОМ\n` +
         `Количество платежей: ${expiredCount}\n` +
         `Сумма платежей: ${limitationMoney(expiredSum)} руб.\n\n` +
@@ -5480,7 +5951,23 @@ function calcLimitation() {
 
     const reasoningDiv = document.getElementById('lim-reasoning');
     const reasoningRows = rows.filter(row => row.status !== 'paid');
-    if (reasoningRows.length) {
+
+    if (limitationIsAutoMode() && reasoningRows.length) {
+        /* Автоматический режим: единая формулировка вместо блоков по каждому платежу */
+        const formulation = limitationBuildAutoFormulation(
+            rows,
+            claimDate,
+            suspensionPeriods
+        );
+        reasoningDiv.style.display = 'block';
+        reasoningDiv.innerHTML =
+            `<div style="font-weight:700; margin-bottom:10px;">ФОРМУЛИРОВКА ДЛЯ ПРОЦЕССУАЛЬНОГО ДОКУМЕНТА</div>` +
+            `<div style="margin-bottom:12px; font-size:0.93em;">Готовый текст с подставленными расчётными значениями и ссылками на нормы. Скопируйте его в соответствующее поле документа.</div>` +
+            `<div style="margin:14px 0; padding:12px; border:1px solid #cfd8dc; border-radius:8px; background:#fff;">` +
+            `<div id="lim-auto-formulation" style="white-space:pre-wrap; line-height:1.55;">${formulation}</div>` +
+            `<button type="button" class="copy-btn" style="margin-top:10px;" onclick="copyResult('lim-auto-formulation')">📋 Копировать формулировку</button>` +
+            `</div>`;
+    } else if (reasoningRows.length) {
         reasoningDiv.style.display = 'block';
         reasoningDiv.innerHTML = `<div style="font-weight:700; margin-bottom:10px;">МОТИВИРОВОЧНЫЕ БЛОКИ ПО КАЖДОМУ ПЛАТЕЖУ</div>` +
             `<div style="margin-bottom:12px; font-size:0.93em;">Каждый блок подготовлен для самостоятельного копирования в проект судебного акта.</div>` +
@@ -8708,7 +9195,8 @@ const CPITABLE = {
     "2025-05":100.43,"2025-06":100.20,"2025-07":100.57,"2025-08":99.60,
     "2025-09":100.34,"2025-10":100.50,"2025-11":100.42,"2025-12":100.32,
     "2026-01":101.62,"2026-02":100.73,"2026-03":100.60,"2026-04":100.14,
-    "2026-05":100.17,"2026-06":100.87,"2026-07":100.54
+    "2026-05":100.17,"2026-06":100.87,"2026-07":100.54,"2026-08":99.92,
+    "2026-09":100.35
 };
 
 let cpiOverrides = {};
@@ -9278,19 +9766,17 @@ function calculateAlimony() {
         var badge = document.getElementById('data-status-' + source);
         if (!badge) return;
         badge.style.cursor = 'pointer';
-        badge.title = 'Нажмите, чтобы принудительно обновить данные ЦБ РФ и Росстата';
         badge.onclick = function () { window.refreshLiveData(true); };
-        if (!success) return;
-        var name = source === 'key-rate' ? 'Ключевая ставка ЦБ' : 'ИПЦ Росстата';
-        if (dataSource === 'live') {
-            badge.style.background = '#e8f5e9';
-            badge.style.color = '#1b5e20';
-            badge.textContent = name + ': онлайн' + badgeFreshSuffix(source);
-        } else {
-            badge.style.background = '#fff3e0';
-            badge.style.color = '#e65100';
-            badge.textContent = name + ': встроенные данные (источник недоступен)' + badgeFreshSuffix(source);
-        }
+        /*
+           Текст бейджа (само актуальное значение) задаётся единой функцией
+           updateDataStatusBadge — здесь только клик-обработчик и подсказка,
+           чтобы не перезаписывать значение ставки/ИПЦ другим форматом.
+        */
+        var sourceNote = dataSource === 'live'
+            ? 'Источник: онлайн (API). '
+            : 'Источник: встроенные данные. ';
+        badge.title = sourceNote + badgeFreshSuffix(source) +
+            ' Нажмите, чтобы принудительно обновить данные ЦБ РФ и Росстата';
     }
 
     window.fetchLiveKeyRates = async function () {
