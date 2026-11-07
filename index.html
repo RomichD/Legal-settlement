@@ -1560,6 +1560,24 @@ pre {
                     Если после отмены оставалось менее шести месяцев, срок
                     продлевается до шести месяцев.
                 </p>
+
+                <div class="form-group">
+                    <label>
+                        Последняя дата платежа, вошедшего в судебный приказ
+                        (необязательно)
+                    </label>
+                    <input type="date" id="lim-order-coverage">
+                    <p class="muted">
+                        Если поле пусто, считается, что приказ был выдан по всей
+                        задолженности, существовавшей на дату подачи заявления,
+                        — то есть по платежам, срок исполнения которых наступил
+                        не позднее этой даты. Укажите точную дату, если приказ
+                        был выдан только по части платежей: по остальным платежам
+                        срок исковой давности продолжал течь без приостановления
+                        (определение Судебной коллегии по гражданским делам
+                        Верховного Суда РФ от 21.04.2026 № 18-КГ26-19-К4).
+                    </p>
+                </div>
             </div>
         </div>
 
@@ -5386,10 +5404,23 @@ function limitationGetSuspensionPeriods() {
                 'Дата отмены судебного приказа не может быть раньше даты обращения.'
             );
         }
+        /*
+           Охват судебного приказа: приостановление действует только по
+           платежам, вошедшим в приказ. Если пользователь не указал дату,
+           считается, что приказ выдан по всей задолженности, существовавшей
+           на дату подачи заявления (платежи, срок исполнения которых
+           наступил не позднее этой даты) — определение ВС РФ
+           от 21.04.2026 № 18-КГ26-19-К4.
+        */
+        const coverageValue = document.getElementById('lim-order-coverage').value;
+        const appliesUntil = coverageValue
+            ? parseDate(coverageValue)
+            : orderDate;
         periods.push({
             type: 'Судебный приказ',
             start: orderDate,
-            end: cancelDate
+            end: cancelDate,
+            appliesUntil
         });
     }
 
@@ -5511,6 +5542,15 @@ function limitationApplySuspension(limitationStart, limitationEnd, periods) {
 }
 
 function limitationGetDeadline(dueDate, acknowledgmentDate, suspensionPeriods) {
+    /*
+       Периоды приостановления с границей применимости (appliesUntil —
+       охват судебного приказа) действуют только по платежам, вошедшим
+       в приказ: по остальным платежам срок продолжал течь
+       (определение ВС РФ от 21.04.2026 № 18-КГ26-19-К4).
+    */
+    const applicablePeriods = suspensionPeriods.filter(
+        period => !period.appliesUntil || dueDate <= period.appliesUntil
+    );
     const originalStartDate = limitationAddDays(dueDate, 1);
     const originalEndDate = limitationAddYears(originalStartDate, 3);
     let startDate = new Date(originalStartDate);
@@ -5522,7 +5562,7 @@ function limitationGetDeadline(dueDate, acknowledgmentDate, suspensionPeriods) {
         startDate = limitationAddDays(acknowledgmentDate, 1);
         endDateBeforeSuspension = limitationAddYears(startDate, 3);
     }
-    const suspensionResult = limitationApplySuspension(startDate, endDateBeforeSuspension, suspensionPeriods);
+    const suspensionResult = limitationApplySuspension(startDate, endDateBeforeSuspension, applicablePeriods);
     let finalEndDate = suspensionResult.finalEnd;
     const objectiveLimit = limitationAddYears(dueDate, 10);
     const objectiveCapApplied = finalEndDate > objectiveLimit;
@@ -5618,22 +5658,48 @@ function limitationBuildBoundary(rows) {
         .sort((a, b) => a.dueDate - b.dueDate);
     const expired = unpaid.filter(row => row.isExpired);
     const active = unpaid.filter(row => !row.isExpired);
+
+    /*
+       С учётом охвата судебного приказа срок может быть не пропущен
+       по ранним платежам (вошедшим в приказ), пропущен по средним
+       и снова не пропущен по поздним. Граница ищется после последнего
+       пропущенного платежа; платежи в сроке до первого пропущенного
+       выделяются отдельно (защищены приказом).
+    */
+    const lastExpiredDue = expired.length
+        ? expired[expired.length - 1].dueDate
+        : null;
+    const firstExpiredDue = expired.length ? expired[0].dueDate : null;
+    const activeAfterExpired = lastExpiredDue
+        ? active.filter(row => row.dueDate > lastExpiredDue)
+        : active;
+    const activeBeforeExpired = firstExpiredDue
+        ? active.filter(row => row.dueDate < firstExpiredDue)
+        : [];
+
     return {
         total: unpaid.length,
         expiredCount: expired.length,
         activeCount: active.length,
-        firstExpired: expired.length ? expired[0].dueDate : null,
-        lastExpired: expired.length
-            ? expired[expired.length - 1].dueDate
+        firstExpired: firstExpiredDue,
+        lastExpired: lastExpiredDue,
+        firstActive: activeAfterExpired.length
+            ? activeAfterExpired[0].dueDate
             : null,
-        firstActive: active.length ? active[0].dueDate : null,
         lastActive: active.length ? active[active.length - 1].dueDate : null,
         firstDue: unpaid.length ? unpaid[0].dueDate : null,
         lastDue: unpaid.length ? unpaid[unpaid.length - 1].dueDate : null,
         expiredSum: expired.reduce((acc, row) => acc + row.sum, 0),
         activeSum: active.reduce((acc, row) => acc + row.sum, 0),
         firstRow: unpaid.length ? unpaid[0] : null,
-        lastRow: unpaid.length ? unpaid[unpaid.length - 1] : null
+        lastRow: unpaid.length ? unpaid[unpaid.length - 1] : null,
+        protectedInTimeCount: activeBeforeExpired.length,
+        protectedInTimeFrom: activeBeforeExpired.length
+            ? activeBeforeExpired[0].dueDate
+            : null,
+        protectedInTimeTo: activeBeforeExpired.length
+            ? activeBeforeExpired[activeBeforeExpired.length - 1].dueDate
+            : null
     };
 }
 
@@ -5726,6 +5792,22 @@ function limitationBuildAutoFormulation(rows, claimDate, suspensionPeriods) {
                 'Поскольку неистёкшая часть срока исковой давности составляла менее шести месяцев, она была удлинена до шести месяцев (пункт 18 постановления Пленума Верховного Суда РФ от 29.09.2015 № 43).'
             );
         }
+        /*
+           Охват приказа: приостановление действует только по платежам,
+           вошедшим в приказ; по остальным платежам срок продолжал течь
+           (определение ВС РФ от 21.04.2026 № 18-КГ26-19-К4).
+        */
+        const coveredRows = rows.filter(
+            row => row.status !== 'paid' && row.dueDate <= orderPeriod.appliesUntil
+        );
+        const uncoveredRows = rows.filter(
+            row => row.status !== 'paid' && row.dueDate > orderPeriod.appliesUntil
+        );
+        if (uncoveredRows.length) {
+            parts.push(
+                `При этом судебным приказом взыскивалась задолженность по периодическим платежам, срок исполнения которых наступал не позднее ${limitationDateText(orderPeriod.appliesUntil)}${coveredRows.length ? ` (платежи с ${limitationDateText(boundary.firstDue)} по ${limitationDateText(orderPeriod.appliesUntil)})` : ''}; в период судебной защиты срок исковой давности не тек только по этим платежам, тогда как по остальным периодическим платежам (с ${limitationDateText(uncoveredRows[0].dueDate)} по ${limitationDateText(boundary.lastDue)}) течение срока исковой давности продолжалось без изменений, если не имелось иных оснований для его приостановления или перерыва (определение Судебной коллегии по гражданским делам Верховного Суда РФ от 21.04.2026 № 18-КГ26-19-К4).`
+            );
+        }
     }
 
     if (boundary.expiredCount === 0) {
@@ -5733,9 +5815,21 @@ function limitationBuildAutoFormulation(rows, claimDate, suspensionPeriods) {
             `С настоящим исковым заявлением ${plaintiffRaw ? `${plaintiffRaw} ` : 'истец'}обратился в суд ${limitationDateText(claimDate)}, то есть до истечения срока исковой давности по первоначальному платежу, а равно в пределах срока давности по всем последующим периодическим платежам, срок исполнения которых наступал в период до ${limitationDateText(boundary.lastDue)}.`
         );
     } else if (boundary.activeCount > 0) {
-        parts.push(
-            `С настоящим исковым заявлением ${plaintiffRaw ? `${plaintiffRaw} ` : 'истец'}обратился в суд ${limitationDateText(claimDate)}. При этом срок исковой давности пропущен по платежам, срок исполнения которых наступал в период с ${limitationDateText(boundary.firstExpired)} по ${limitationDateText(boundary.lastExpired)} (то есть по ${boundary.expiredCount} из ${boundary.total} ${limitationPlural(boundary.total, 'платежу', 'платежам', 'платежам')}); по платежам, подлежавшим уплате начиная с ${limitationDateText(boundary.firstActive)} (первый платёж, по которому срок исковой давности не пропущен), а равно по всем последующим периодическим платежам до ${limitationDateText(boundary.lastDue)} включительно срок исковой давности не пропущен.`
-        );
+        let mixedSentence =
+            `С настоящим исковым заявлением ${plaintiffRaw ? `${plaintiffRaw} ` : 'истец'}обратился в суд ${limitationDateText(claimDate)}. При этом срок исковой давности пропущен по платежам, срок исполнения которых наступал в период с ${limitationDateText(boundary.firstExpired)} по ${limitationDateText(boundary.lastExpired)} (то есть по ${boundary.expiredCount} из ${boundary.total} ${limitationPlural(boundary.total, 'платежу', 'платежам', 'платежам')}); по платежам, подлежавшим уплате начиная с ${limitationDateText(boundary.firstActive)} (первый платёж, по которому срок исковой давности не пропущен), а равно по всем последующим периодическим платежам до ${limitationDateText(boundary.lastDue)} включительно срок исковой давности не пропущен.`;
+        if (orderPeriod) {
+            const coveredInTime = rows.filter(
+                row => row.status !== 'paid' &&
+                    !row.isExpired &&
+                    row.dueDate <= orderPeriod.appliesUntil &&
+                    row.dueDate < boundary.firstExpired
+            );
+            if (coveredInTime.length) {
+                mixedSentence +=
+                    ` Срок исковой давности не пропущен также по ${coveredInTime.length} ${limitationPlural(coveredInTime.length, 'платежу', 'платежам', 'платежам')}, вошедшим в судебный приказ (с ${limitationDateText(coveredInTime[0].dueDate)} по ${limitationDateText(coveredInTime[coveredInTime.length - 1].dueDate)}): по ним течение срока было приостановлено на период судебной защиты, и после его окончания оставшаяся часть срока не истекла к дате обращения в суд.`;
+            }
+        }
+        parts.push(mixedSentence);
     } else {
         parts.push(
             `С настоящим исковым заявлением ${plaintiffRaw ? `${plaintiffRaw} ` : 'истец'}обратился в суд ${limitationDateText(claimDate)}. При этом срок исковой давности пропущен по всем ${boundary.total} ${limitationPlural(boundary.total, 'платежу', 'платежам', 'платежам')} за период с ${limitationDateText(boundary.firstExpired)} по ${limitationDateText(boundary.lastExpired)}: срок исполнения последнего из них наступил ${limitationDateText(boundary.lastExpired)}, а его трёхлетний срок исковой давности истёк ${limitationDateText(lastRow.limitationEnd)}, то есть ранее даты обращения в суд.`
@@ -5859,8 +5953,11 @@ function calcLimitation() {
 
     const suspensionText = suspensionPeriods.length
         ? suspensionPeriods.map(period => {
+            const coverage = period.type === 'Судебный приказ' && period.appliesUntil
+                ? ` — по платежам, вошедшим в приказ (до ${limitationDateText(period.appliesUntil)} включительно)`
+                : '';
             return `${period.type}: ${limitationDateText(period.start)} — ` +
-                `${limitationDateText(period.end)}`;
+                `${limitationDateText(period.end)}${coverage}`;
         }).join('; ')
         : 'Не применялись';
 
@@ -5916,9 +6013,15 @@ function calcLimitation() {
             boundaryLines =
                 `Первый платёж с пропущенным сроком: ${limitationDateText(boundary.firstExpired)}\n` +
                 `Последний платёж с пропущенным сроком: ${limitationDateText(boundary.lastExpired)}\n` +
-                `ДАТА, НАЧИНАЯ С КОТОРОЙ СРОК НЕ ПРОПУЩЕН: ${limitationDateText(boundary.firstActive)}\n` +
-                `(первый платёж, по которому срок не пропущен; по нему и всем последующим\n` +
-                `платежам до ${limitationDateText(boundary.lastDue)} иск подан в пределах срока).`;
+                (boundary.protectedInTimeCount
+                    ? `Платежи, вошедшие в судебный приказ (${limitationDateText(boundary.protectedInTimeFrom)} — ${limitationDateText(boundary.protectedInTimeTo)}): срок НЕ пропущен — приостановлен на период судебной защиты (${boundary.protectedInTimeCount} шт.)\n`
+                    : '') +
+                (boundary.firstActive
+                    ? `ДАТА, НАЧИНАЯ С КОТОРОЙ СРОК НЕ ПРОПУЩЕН: ${limitationDateText(boundary.firstActive)}\n` +
+                      `(первый платёж, по которому срок не пропущен; по нему и всем последующим\n` +
+                      `платежам до ${limitationDateText(boundary.lastDue)} иск подан в пределах срока).`
+                    : `Платежей с непропущенным сроком после пропущенных нет: срок не пропущен\n` +
+                      `только по платежам, вошедшим в судебный приказ.`);
         }
         autoBoundaryBlock =
             `\nГРАНИЦА ПРОПУСКА СРОКА ИСКОВОЙ ДАВНОСТИ\n` +
